@@ -2,9 +2,19 @@ package org.swissbib.linked;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.shared.PrefixMapping;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.node.Node;
+
+
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import static org.elasticsearch.node.NodeBuilder.*;
 
 /**
  * Created by swissbib on 19.01.15.
@@ -29,6 +39,9 @@ public class JenaTesting {
         }
     }
 
+    private static Client client;
+    private static Node node;
+
     private static PrefixMapping pm;
 
     static {
@@ -50,14 +63,28 @@ public class JenaTesting {
         pm = PrefixMapping.Factory.create();
         pm.setNsPrefixes(map);
 
+        //node = nodeBuilder().clusterName("linked-swissbib").node();
+        //client = node.client();
+
+        Settings settings = ImmutableSettings.settingsBuilder()
+                .put("cluster.name", "linked-swissbib").build();
+
+        client = new TransportClient(settings)
+                .addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
+                //.addTransportAddress(new InetSocketTransportAddress("host2", 9300));
+
+
     }
+
 
 
 
     public static void main (String [] args) {
 
 
+        Resource subject;
 
+        Map<String,ArrayList<RDFNode>> predicates;
 
         final Model model = ModelFactory.createDefaultModel();
 
@@ -67,26 +94,47 @@ public class JenaTesting {
         ResIterator resIter = model.listSubjects();
 
         while (resIter.hasNext()) {
-            Resource resource = resIter.next();
-            String uriResource = resource.getURI();
+            //Resource resource = resIter.next();
+            subject = resIter.next();
+            //Statement pStat = resource.getProperty(ResourceFactory.createProperty("dct", "hasPart"));
+            //String uriResource = resource.getURI();
             //AnonId anonId = resource.getId();
             //String labelStringOfSubject = anonId.getLabelString();
             //String toStringOfAnon = anonId.toString();
 
             //todo: Namespace und localName werden falsch ermittelt
             //Problem des fehlenden Modells?
-            String localNameOfResource = resource.getLocalName();
-            boolean isUriResource = resource.isURIResource();
-            String namespaceOfResource = resource.getNameSpace();
+            //String localNameOfResource = resource.getLocalName();
+            //boolean isUriResource = resource.isURIResource();
+            //String namespaceOfResource = resource.getNameSpace();
 
-            Model subjectModel = resource.getModel();
+            Model subjectModel = subject.getModel();
+            /*
+            NodeIterator nodeIterator = subjectModel.listObjectsOfProperty(ResourceFactory.createProperty("dct", "hasPart"));
 
+            while (nodeIterator.hasNext()) {
+                RDFNode rdfNode = nodeIterator.next();
+
+
+                String s = "";
+            }
+            */
+
+            predicates = new HashMap<String, ArrayList<RDFNode>>();
             StmtIterator iterator = subjectModel.listStatements();
             while (iterator.hasNext()) {
 
                 Statement st = iterator.next();
                 //Resource subjectOfStatement  = st.getSubject();
-                System.out.println("uri of predicate " + st.getPredicate().getURI());
+                //System.out.println("uri of predicate " + st.getPredicate().getURI());
+                if (predicates.containsKey(st.getPredicate().getURI())) {
+                    predicates.get(st.getPredicate().getURI()).add(st.getObject());
+                } else {
+                    predicates.put(st.getPredicate().getURI(),new ArrayList<RDFNode>());
+                    predicates.get(st.getPredicate().getURI()).add(st.getObject());
+                }
+
+                /*
                 RDFNode objectRDFNode = st.getObject();
                 if (objectRDFNode.isURIResource()) {
 
@@ -96,9 +144,12 @@ public class JenaTesting {
                 } else {
                     System.out.println( "literal value of object: " + objectRDFNode.asLiteral().toString());
                 }
+                */
 
 
             }
+            String s = "";
+            client.close();
 
 
 
