@@ -2,19 +2,24 @@ package org.swissbib.linked;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.shared.PrefixMapping;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.node.Node;
 
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import static org.elasticsearch.node.NodeBuilder.*;
+import static org.elasticsearch.common.xcontent.XContentFactory.*;
+
 
 /**
  * Created by swissbib on 19.01.15.
@@ -148,7 +153,26 @@ public class JenaTesting {
 
 
             }
-            String s = "";
+
+            try {
+
+
+                IndexResponse response = client.prepareIndex("swissbib", "RDF")
+                        .setSource(XContentFactory.jsonBuilder()
+                                        .startObject()
+
+                                        .field("title","erster Titel", "zweiter Titel", "dritter Titel")
+                                        .field("subject", "my subject")
+                                        .endObject()
+                        )
+                        .execute()
+                        .actionGet();
+
+                String test = "";
+
+            } catch (IOException ioEx ) {
+                System.out.println(ioEx.getMessage());
+            }
             client.close();
 
 

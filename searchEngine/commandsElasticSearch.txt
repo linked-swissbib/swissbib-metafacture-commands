@@ -1,0 +1,99 @@
+
+1) Erstellen des Index
+curl -XPUT "http://localhost:9200/swissbib"
+
+2) Erstellen des Mappings
+Ich musste das Mapping für unterscheidliche Typen nachinander absetzen
+
+curl -XPUT "http://localhost:9200/swissbib/RDF/_mapping" -d'
+{
+"RDF": {
+    "properties": {
+      "contentType": {
+        "type": "string"
+      },
+      "mediaType": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "issued": {
+        "type": "string"
+      },
+      "placeOfPublication": {
+        "type": "string"
+      },
+      "isbn13": {
+        "type": "string"
+      },
+      "isbn10": {
+        "type": "string"
+      },
+      "issn": {
+        "type": "string"
+      },
+      "contributor": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "alternative": {
+        "type": "string"
+      },
+      "edition": {
+        "type": "string"
+      },
+      "publicationStatement": {
+        "type": "string"
+      },
+      "format": {
+        "type": "string"
+      },
+      "bibliographicCitation": {
+        "type": "string"
+      },
+      "noteOnResource": {
+        "type": "string"
+      },
+      "dissertationOrThesisInformation": {
+        "type": "string"
+      },
+      "hasPart": {
+        "type": "string"
+      },
+
+      "subject": {
+        "type": "string"
+      },
+
+      "isDefinedBy": {
+        "type": "string"
+      }
+
+
+    }
+
+  }
+}'
+
+
+curl -XPUT "http://localhost:9200/swissbib/RDFabout/_mapping" -d'
+{
+  "RDFabout": {
+    "properties": {
+      "issued": {
+        "type": "date"
+      },
+      "modified": {
+        "type": "date"
+      },
+      "isDefinedBy": {
+        "type": "string"
+      }
+    }
+  }
+}'
+
+
