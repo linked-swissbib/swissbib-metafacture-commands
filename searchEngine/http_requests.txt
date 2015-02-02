@@ -1,0 +1,15 @@
+1) install marvel
+
+ES_BASE/bin/plugin -i elasticsearch/marvel/latest
+
+
+http://localhost:9200/_plugin/marvel
+http://localhost:9200/_plugin/marvel/sense/
+
+2) shutdwown
+
+curl -XPOST 'http://localhost:9200/_shutdown'
+
+
+2) lösche Dokumente eines Index mit einem bestimmenten Typ
+curl -XDELETE 'http://localhost:9200/swissbib/RDF'

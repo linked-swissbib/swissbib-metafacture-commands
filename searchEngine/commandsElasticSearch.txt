@@ -70,6 +70,12 @@ curl -XPUT "http://localhost:9200/swissbib/RDF/_mapping" -d'
 
       "isDefinedBy": {
         "type": "string"
+      },
+      "fullRecord" : {
+        "type" : "string"
+      },
+      "resourceType" : {
+        "type" : "string"
       }
 
 
