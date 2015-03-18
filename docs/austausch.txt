@@ -1,0 +1,25 @@
+
+
+GH: 18.3.2015
+Hallo Sebastian,
+wie heute noch kurz besprochen:
+- in org.swissbib.linked.mf.sparql.writer.SparqlWriter
+habe ich einen Rahmen erstellt, den man evtl. als Gefäss für Deine Implementierung Serialisierung von daten in Sarql nutzen könnte.
+- willst Du mal probieren, Deine Sachen in der process Methode zu integrieren?
+
+- in src/resources/flux-commands.properties habe ich das neue Kommando registriert.
+Mit dem Maven packaging
+(ich benutze zur Zeit mvn install assembly:assembly -Dmaven.test.skip=true um eine jar mit allen dependencies zu erstellen)
+erhalten wir die jar, welche dann bei Start mit flux.sh aus dem plugins Verzeichnis von metafacture-runner geladen werden kann
+
+
+- in der Intellij IDE habe ich zwei Module integriert. Du siehst die Anordnung im screenshot docs/ide.2.module.start.mit.flux.png des repositories
+https://github.com/linked-swissbib/swissbib-metafacture-commands.
+Die zwei Module sind metafacture-runner und das Repository swissbib-metafacture-commands (als abhängige Komponente).
+Dies ermöglicht mir das Debugging des neuen commands in der IDE. (s. auch screenshot docs/status.debugging.mit.sparql.writer.png)
+
+- ,am ,uss noch vieles, vieles machen (und auch lernen. Ich habe das Problem, dass ich mich längere Zeit damit nicht beschäftigen kann und dann wieder 'herausfalle')
+
+
+willst Du mal probieren wie weit Du kommst? Wir können über Tag auch gerne skypen oder telefonieren.
+

@@ -27,6 +27,13 @@
 			</roles>
 			<timezone>+1</timezone>
 		</developer>
+        <!--
+        <developer>
+
+            Hallo Sebastian:
+            bitte setze Deine Initialen
+        </developer>
+        -->
 	</developers>
 
   	<scm>
