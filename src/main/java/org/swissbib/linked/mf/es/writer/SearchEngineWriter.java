@@ -1,4 +1,4 @@
-package org.swissbib.linked.mf.writer;
+package org.swissbib.linked.mf.es.writer;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.shared.PrefixMapping;
