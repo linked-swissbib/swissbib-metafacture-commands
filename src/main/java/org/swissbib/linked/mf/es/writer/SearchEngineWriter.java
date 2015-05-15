@@ -71,7 +71,7 @@ public final class SearchEngineWriter<T> implements ConfigurableObjectWriter<T> 
     private boolean firstObject = true;
     private boolean closed;
 
-    private final String documentHeader = "<rdf:RDF xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\" xmlns:foaf=\"http://xmlns.com/foaf/0.1/\" xmlns:dct=\"http://purl.org/dc/terms/\" xmlns:rdau=\"http://rdaregistry.info/Elements/u/\" xmlns:bibo=\"http://purl.org/ontology/bibo/\" xmlns:owl=\"http://www.w3.org/2004/02/skos/core#\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:void=\"http://rdfs.org/ns/void#\" xmlns:skos=\"http://www.w3.org/2004/02/skos/core#\">\n";
+    private final String documentHeader = "<rdf:RDF xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\" xmlns:foaf=\"http://xmlns.com/foaf/0.1/\" xmlns:dct=\"http://purl.org/dc/terms/\" xmlns:rdau=\"http://rdaregistry.info/Elements/u/\" xmlns:bibo=\"http://purl.org/ontology/bibo/\" xmlns:owl=\"http://www.w3.org/2004/02/skos/core#\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" xmlns:void=\"http://rdfs.org/ns/void#\" xmlns:skos=\"http://www.w3.org/2004/02/skos/core#\" xmlns:dbp=\"http://dbpedia.org/ontology/\">\n";
     private final String documentFooter = "</rdf:RDF>";
 
     private Map<String, String> keyMapping = null;
@@ -90,6 +90,7 @@ public final class SearchEngineWriter<T> implements ConfigurableObjectWriter<T> 
         map.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
         map.put("skos", "http://www.w3.org/2004/02/skos/core#");
         map.put("void", "http://rdfs.org/ns/void#");
+        map.put("dbp", "http://dbpedia.org/ontology/");
 
         this.pm = PrefixMapping.Factory.create();
         this.pm.setNsPrefixes(map);
@@ -232,7 +233,7 @@ public final class SearchEngineWriter<T> implements ConfigurableObjectWriter<T> 
 
                                         if (node.isURIResource()) {
                                             keyValues.add(node.asResource().getURI());
-                                        } else {
+                                        } else if (node.isLiteral()){
                                             keyValues.add(node.asLiteral().toString());
                                         }
                                     }
