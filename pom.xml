@@ -70,7 +70,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<targetJdk>1.6</targetJdk>
+		<targetJdk>1.7</targetJdk>
 	</properties>
 
 	<build>
