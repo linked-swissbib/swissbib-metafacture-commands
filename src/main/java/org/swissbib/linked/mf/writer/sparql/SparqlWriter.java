@@ -1,4 +1,4 @@
-package org.swissbib.linked.mf.sparql.writer;
+package org.swissbib.linked.mf.writer.sparql;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.shared.PrefixMapping;
