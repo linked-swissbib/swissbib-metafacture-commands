@@ -34,6 +34,7 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
     protected HashMap< String, VirtuaStructure> virtuaNetworks;
     protected HashMap< String, BacklinksTemplate> urlTemplates;
     protected HashMap<String, Pattern> systemNumberPattern;
+    protected Pattern pNebisReplacePattern = Pattern.compile("\\{bib-system-number\\}");
 
 
     public ItemLink() {
@@ -182,8 +183,46 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
 
     private String createBacklinkFromTemplate (String [] valueParts) {
 
-        return "";
+        if (!this.systemNumberPattern.containsKey(valueParts[0])) return "";
+        if (!this.urlTemplates.containsKey(valueParts[0])) return "";
 
+
+        Pattern p = this.systemNumberPattern.get(valueParts[0]);
+        Matcher m = p.matcher(valueParts[5]);
+        if (!m.find()) return "";
+        String url = "";
+        String subLibraryCode = valueParts[2].length() > 0 ? valueParts[2] : valueParts[1].length() > 0 ? valueParts[1] : null;
+        String bibSysNumber = "";
+        switch (valueParts[0]) {
+            case "IDSBB":
+                //IDSBB  "http://baselbern.swissbib.ch/Record/{id}?expandlib={sub-library-code}#holding-institution-{network}-{sub-library-code}"
+                if (subLibraryCode != null) {
+                    url = String.format(this.urlTemplates.get(valueParts[0]).urlTemplate,valueParts[4],subLibraryCode,valueParts[0],subLibraryCode);
+                }
+                break;
+            case "NEBIS":
+                //http://recherche.nebis.ch/primo_library/libweb/action/display.do?tabs=locationsTab&ct=display&fn=search&doc=ebi01_prod{bib-system-number}&indx=1&recIds=ebi01_prod{bib-system-number}&recIdxs=0&elementId=0&renderMode=poppedOut&displayMode=full&frbrVersion=&dscnt=0&scp.scps=scope%3A%28ebi01_prod%29&frbg=&tab=default_tab&vl%28585331958UI1%29=all_items&srt=rank&mode=Basic&dum=true&tb=t&vid=NEBIS
+                bibSysNumber = m.group(1);
+                Matcher nebisMatcher = this.pNebisReplacePattern.matcher(this.urlTemplates.get(valueParts[0]).urlTemplate);
+                url = nebisMatcher.replaceAll(bibSysNumber);
+                break;
+            case "IDSSG":
+                //"http://aleph.unisg.ch/php/bib_holdings.php?docnr={bib-system-number}"
+                bibSysNumber = m.group(1);
+                url = String.format(this.urlTemplates.get(valueParts[0]).urlTemplate, bibSysNumber);
+                break;
+            case "CHARCH":
+                break;
+            case "CCSA":
+                break;
+            case "RERO":
+                break;
+            default:
+                break;
+
+        }
+
+        return url;
 
     }
 
