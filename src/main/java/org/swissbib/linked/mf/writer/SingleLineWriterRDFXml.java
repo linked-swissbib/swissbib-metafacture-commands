@@ -58,6 +58,10 @@ public class SingleLineWriterRDFXml<T> implements ConfigurableObjectWriter<T> {
     private int numberOpenedFiles = 0;
     private int numberLinesWritten = 0;
 
+    private FileCompression compression = FileCompression.AUTO;
+    private String encoding = "UTF-8";
+
+
 
     private BufferedWriter fout = null;
 
@@ -237,8 +241,7 @@ public class SingleLineWriterRDFXml<T> implements ConfigurableObjectWriter<T> {
                 this.currentSubDir++;
                 subDir = new File(this.baseOutDir + File.separator + this.currentSubDir);
                 if (!subDir.exists()) {
-                    subDir = new File(this.baseOutDir + File.separator + this.currentSubDir);
-
+                    subDirexists = subDir.mkdir();
                 }
                 this.numberOpenedFiles = 0;
             }
@@ -246,15 +249,24 @@ public class SingleLineWriterRDFXml<T> implements ConfigurableObjectWriter<T> {
             Date dNow = new Date( );
             SimpleDateFormat ft =  new SimpleDateFormat("yyyyMMdd_hhmmssS");
 
-            this.fout = subDirexists? new BufferedWriter(new OutputStreamWriter(new FileOutputStream( subDir + File.separator +
-                    this.outFilePrefix + "_" + ft.format(dNow) + ".xml"),"UTF-8")): null;
+            if (subDirexists) {
+                String path = this.baseOutDir + File.separator + this.currentSubDir + File.separator + this.outFilePrefix + "_" + ft.format(dNow) + ".xml.gz";
+                final OutputStream file = new FileOutputStream(path);
+                OutputStream compressor = compression.createCompressor(file, path);
+
+                this.fout = new BufferedWriter(new OutputStreamWriter(compressor,this.encoding));
+                this.writeText(this.documentHeader);
+
+            } else {
+                this.fout = null;
+            }
+
 
             if (this.fout != null) {
                 this.numberOpenedFiles++;
             }
 
             this.writeText(this.documentHeader);
-
 
             //Todo: GH: Look up Exception Handlng in Metafacture Framework
             //hint: implementation of File opener in MF
