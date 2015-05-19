@@ -266,8 +266,6 @@ public class SingleLineWriterRDFXml<T> implements ConfigurableObjectWriter<T> {
                 this.numberOpenedFiles++;
             }
 
-            this.writeText(this.documentHeader);
-
             //Todo: GH: Look up Exception Handlng in Metafacture Framework
             //hint: implementation of File opener in MF
         } catch (FileNotFoundException fnfEx) {
