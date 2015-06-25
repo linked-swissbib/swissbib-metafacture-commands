@@ -23,3 +23,16 @@ Dies ermöglicht mir das Debugging des neuen commands in der IDE. (s. auch scree
 
 willst Du mal probieren wie weit Du kommst? Wir können über Tag auch gerne skypen oder telefonieren.
 
+
+Json-LD Informationen
+http://users.jyu.fi/~olkhriye/ties452/lectures/Lecture05.pdf
+http://elasticsearch-users.115913.n3.nabble.com/Loading-JSON-LD-into-ES-td4064056.html
+http://de.slideshare.net/gkellogg1/jsonld-and-mongodb
+http://www.infoq.com/news/2014/02/JSON-LD-W3C-recommendation
+https://fsteeg.wordpress.com/2014/01/28/one-issue-with-json-ld-that-seems-not-so-pragmatic/
+http://de.slideshare.net/gkellogg1/json-for-linked-data
+
+
+anschauen!
+https://github.com/jsonld-java/jsonld-java/issues/101
+
