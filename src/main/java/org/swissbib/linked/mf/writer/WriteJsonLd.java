@@ -42,10 +42,12 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
     Pattern bracketedValue;
 
     String jsonldString;
+    String jsonldSubstring;
 
     String baseOutDir = "/tmp";
     String outFilePrefix = "rdfxml1Line";
     String contextFile = "";
+    String outputFormat;
     int fileSize = 2000;
     int numberFilesPerDirectory = 300;
     int currentSubDir = 1;
@@ -60,10 +62,10 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
 
     public WriteJsonLd()
     {
-        this.bibliographicResource = Pattern.compile("(\"dct:BibliographicResource\":.*?)(})(?=})");
-        this.biboDoc = Pattern.compile("(\"bibo:Document\":.*?)(})(?=,\"index\")");
-        this.biboDocHeader = Pattern.compile("\"index\":.*?document.*?}");
-        this.bibliographicResourceHeader = Pattern.compile("\"index\":.{1,40}bibliographicResource.*?}");
+        this.bibliographicResource = Pattern.compile("(\"dct:BibliographicResource\":.*?)}}$");
+        this.biboDoc = Pattern.compile("(\"bibo:Document\":.*?)}(?=,\"index\")");
+        this.biboDocHeader = Pattern.compile("(\"index\":.*?document.*?)}");
+        this.bibliographicResourceHeader = Pattern.compile("(\"index\":.{1,40}bibliographicResource.*?)}");
         this.bracketedValue = Pattern.compile("(\"[^\"]*\"):\\[(\"[^\"]*\")\\]");
     }
 
@@ -93,6 +95,10 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
 
     public void setFilesPerDir(int numberFilesPerDirectory) {
         this.numberFilesPerDirectory = numberFilesPerDirectory;
+    }
+
+    public void setOutputFormat (final String outputFormat) {
+        this.outputFormat = outputFormat;
     }
 
 
@@ -172,8 +178,6 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
             firstObject = false;
 
         } else {
-
-            bracketsToList();
             String bdh = this.convertToRootNode(this.biboDocHeader, false);
             String bd = this.convertToRootNode(this.biboDoc, true);
             String brh = this.convertToRootNode(this.bibliographicResourceHeader, false);
@@ -181,7 +185,6 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
             this.writeText(bdh + bd + brh + br);
 
         }
-
     }
 
 
@@ -189,9 +192,9 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
         Matcher m = ptr.matcher(this.jsonldString);
         if (m.find()) {
             if (ctx) {
-                return "{" + m.group(1) + "," + this.contextFile + m.group(2) + "}\n";
+                return "{" + bracketsToList(m.group()) + "," + this.contextFile + "}}\n";
             } else {
-                return "{" + m.group() + "}\n";
+                return "{" + bracketsToList(m.group()) + "}}\n";
             }
         } else {
             return null;
@@ -199,7 +202,9 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
     }
 
 
-    private String bracketsToList() {
+    private String bracketsToList(String text) {
+        // Todo: Problem mit dc:contributor in bibliographicResource beheben
+        this.jsonldSubstring = text;
         Map<String, List<String>> doubleKeys = new HashMap<>();
         Matcher m1 = this.bracketedValue.matcher(this.jsonldString);
 
@@ -212,6 +217,7 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
             values.add(m1.group(2));
         }
         String output = "";
+        StringBuffer sb = new StringBuffer();
         for (Map.Entry<String, List<String>> entry: doubleKeys.entrySet()) {
             output += entry.getKey() + ":[";
             Integer i = 0;
@@ -220,12 +226,21 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
                 output += element;
                 i++;
             }
-            output += "]";
-            this.jsonldString = m1.replaceFirst(output);
+            // Append a whitespace before the closing bracket to avoid removing the content below
+            output += " ]";
+            Matcher m2 = Pattern.compile("(" + entry.getKey() + ":[.*?])[,}]").matcher(this.jsonldSubstring);
+            int j = 0;
+
+            while (m2.find()) {
+                if (j < 1) m2.appendReplacement(sb, output);
+                else m2.appendReplacement(sb, "");
+                j++;
+            }
+            m2.appendTail( sb );
+            this.jsonldSubstring = sb.toString();
         }
-        this.jsonldString = this.jsonldString.replaceAll("\"[^\"]*\":\\[\"[^\"]*\"\\],?", "");
-        this.jsonldString = this.jsonldString.replaceAll(",}", "}");
-        return this.jsonldString;
+        this.jsonldSubstring = this.jsonldSubstring.replaceAll(",}", "}");
+        return this.jsonldSubstring;
     }
 
 
