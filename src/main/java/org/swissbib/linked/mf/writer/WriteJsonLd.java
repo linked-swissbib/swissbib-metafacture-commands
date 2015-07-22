@@ -66,7 +66,7 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
         this.biboDoc = Pattern.compile("(\"bibo:Document\":.*?)}(?=,\"index\")");
         this.biboDocHeader = Pattern.compile("(\"index\":.*?document.*?)}");
         this.bibliographicResourceHeader = Pattern.compile("(\"index\":.{1,40}bibliographicResource.*?)}");
-        this.bracketedValue = Pattern.compile("(\"[^\"]*\"):\\[(\"[^\"]*\")\\]");
+        this.bracketedValue = Pattern.compile("(\"[^\"]*\"):\\[([\\{]?\".*?\"[\\}]?)\\]");
     }
 
 
@@ -192,9 +192,9 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
         Matcher m = ptr.matcher(this.jsonldString);
         if (m.find()) {
             if (ctx) {
-                return "{" + bracketsToList(m.group()) + "," + this.contextFile + "}}\n";
+                return "{" + bracketsToList(m.group()) + "," + this.contextFile + "}\n";
             } else {
-                return "{" + bracketsToList(m.group()) + "}}\n";
+                return "{" + bracketsToList(m.group()) + "}\n";
             }
         } else {
             return null;
@@ -203,10 +203,9 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
 
 
     private String bracketsToList(String text) {
-        // Todo: Problem mit dc:contributor in bibliographicResource beheben
         this.jsonldSubstring = text;
         Map<String, List<String>> doubleKeys = new HashMap<>();
-        Matcher m1 = this.bracketedValue.matcher(this.jsonldString);
+        Matcher m1 = this.bracketedValue.matcher(this.jsonldSubstring);
 
         while (m1.find()) {
             List<String> values = doubleKeys.get(m1.group(1));
@@ -216,9 +215,9 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
             }
             values.add(m1.group(2));
         }
-        String output = "";
-        StringBuffer sb = new StringBuffer();
         for (Map.Entry<String, List<String>> entry: doubleKeys.entrySet()) {
+            String output = "";
+            StringBuffer sb = new StringBuffer();
             output += entry.getKey() + ":[";
             Integer i = 0;
             for (String element : entry.getValue()) {
@@ -226,9 +225,10 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
                 output += element;
                 i++;
             }
-            // Append a whitespace before the closing bracket to avoid removing the content below
-            output += " ]";
-            Matcher m2 = Pattern.compile("(" + entry.getKey() + ":[.*?])[,}]").matcher(this.jsonldSubstring);
+            output += "]";
+            // Todo: dc:contributor now hardcoded since for the moment we can't get rid of the closing
+            // apostrophe.
+            Matcher m2 = Pattern.compile("(\"dc:contributor\":\\[[\\{]?\".*?\")[\\}]?\\]").matcher(this.jsonldSubstring);
             int j = 0;
 
             while (m2.find()) {
