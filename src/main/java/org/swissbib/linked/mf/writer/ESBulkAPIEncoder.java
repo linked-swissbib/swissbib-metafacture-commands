@@ -15,11 +15,9 @@
  */
 package org.swissbib.linked.mf.writer;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.io.CharacterEscapes;
+import com.fasterxml.jackson.core.io.SerializedString;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.culturegraph.mf.exceptions.MetafactureException;
 import org.culturegraph.mf.framework.DefaultStreamPipe;
@@ -29,13 +27,8 @@ import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonStreamContext;
-import com.fasterxml.jackson.core.SerializableString;
-import com.fasterxml.jackson.core.io.CharacterEscapes;
-import com.fasterxml.jackson.core.io.SerializedString;
+import java.io.IOException;
+import java.io.StringWriter;
 
 /**
  * Serialises an object as JSON. Records and entities are represented
@@ -53,27 +46,24 @@ public final class ESBulkAPIEncoder extends
         DefaultStreamPipe<ObjectReceiver<String>> {
 
     public static final String ARRAY_MARKER = "[]";
-    public static final String NO_KEY_OBJECT_MARKER = "{}";
+    public static final String BNODE_MARKER = "{}";
     private Boolean IN_ARRAY = false;
-    private Boolean FIRST_LINE = true;
     public static final String ROOT_ELEMENT_SEPARATOR = "\n";
-
-    // protected ArrayList<JsonGenerator> jsonObjectThreads;
-    // protected Byte subThread = 0;
 
     private final JsonGenerator jsonGenerator;
     private final StringWriter writer = new StringWriter();
-    private final JsonGenerator arrayReservoir;
+    private JsonGenerator arrayReservoir;
     private final StringWriter resWriter = new StringWriter();
 
     public ESBulkAPIEncoder() {
         try {
             jsonGenerator = new JsonFactory().createGenerator(writer);
-            // jsonGenerator.setRootValueSeparator(new SerializedString("\n"));
             jsonGenerator.setRootValueSeparator(null);
 
             arrayReservoir = new JsonFactory().createGenerator(resWriter);
             arrayReservoir.setRootValueSeparator(null);
+
+            arrayReservoir.writeRaw(",");
 
         } catch (final IOException e) {
             throw new MetafactureException(e);
@@ -165,35 +155,23 @@ public final class ESBulkAPIEncoder extends
     @Override
     public void literal(final String name, final String value) {
         try {
-            JsonStreamContext ctx = jsonGenerator.getOutputContext();
 
-            // Check if an explicitly created array has ended. If so, close array bracket
-            if (!name.endsWith(ARRAY_MARKER) && IN_ARRAY && !ctx.inObject()) {
-                IN_ARRAY = false;
-                arrayReservoir.writeEndArray();
-                arrayReservoir.flush();
-                jsonGenerator.writeRawValue(resWriter.toString());
-            }
+            JsonStreamContext ctx = getJsonGenerator().getOutputContext();
 
-            ctx = jsonGenerator.getOutputContext();
-
-            // If a new explicit array begins, remove array marker and open array bracket
-            if (name.endsWith(ARRAY_MARKER) && !IN_ARRAY) {
+            if (IN_ARRAY) {
                 if (ctx.inObject()) {
-                    jsonGenerator.writeFieldName(name.substring(0, name.length() - ARRAY_MARKER.length()));
+                    getJsonGenerator().writeFieldName(name);
                 }
-                jsonGenerator.writeStartArray();
-                IN_ARRAY = true;
             } else {
                 if (ctx.inObject()) {
-                    jsonGenerator.writeFieldName(name);
+                    getJsonGenerator().writeFieldName(name);
                 }
             }
 
             if (value == null) {
-                jsonGenerator.writeNull();
+                getJsonGenerator().writeNull();
             } else {
-                jsonGenerator.writeString(value);
+                getJsonGenerator().writeString(value);
             }
 
         } catch (final JsonGenerationException e) {
@@ -211,79 +189,41 @@ public final class ESBulkAPIEncoder extends
     private void startGroup(final String name) {
         try {
 
-            JsonStreamContext ctx = getJsonStreamContext();
+            JsonStreamContext ctx = getJsonGenerator().getOutputContext();
 
-
-            if(IN_ARRAY) {
-
-                // Check if an explicitly created array has ended. If so, close array bracket
-                if (!name.endsWith(ARRAY_MARKER)
-                        && !ctx.inObject()
-                        && !name.endsWith(NO_KEY_OBJECT_MARKER)) {
-                    IN_ARRAY = false;
-                    // arrayReservoir.writeEndArray();
-                    // arrayReservoir.flush();
-                    // jsonGenerator.writeRawValue(resWriter.toString());
-                    if (name.equals("index")
-                            || name.equals("dct:bibliographicResource")
-                            || name.equals("bibo:Document")) {
-                        jsonGenerator.writeEndObject();
-                    }
-                    checkIfNewRootObject(name);
-                }
-
-                //
+            if (IN_ARRAY) {
 
                 if (!name.endsWith(ARRAY_MARKER)
-                        && !name.endsWith(NO_KEY_OBJECT_MARKER)) {
-                    // Todo: Check corresponding new root method!
-                    if (IN_ARRAY) {
-                        // A key-value pair isn't allowed directly embedded in an array. However it is allowed as descendant of a
-                        // blank node (i.e. a JSON-LD object without key).
-                        arrayReservoir.writeFieldName(name);
-                    } else {
-                        jsonGenerator.writeFieldName(name);
-                    }
-
+                        && !name.endsWith(BNODE_MARKER)) {
+                    getJsonGenerator().writeFieldName(name);
                 }
 
-
+                getJsonGenerator().writeStartObject();
 
             } else {
 
-                checkIfNewRootObject(name);
+                if (ctx.inRoot() && !name.equals("")) {
+                    getJsonGenerator().writeStartObject();
+                }
 
-                JsonStreamContext ctx = jsonGenerator.getOutputContext();
-
+                ctx = getJsonGenerator().getOutputContext();
 
                 // If a new explicit array begins, remove array marker and open array bracket
                 if (name.endsWith(ARRAY_MARKER)) {
-                    if (ctx.inObject()) {
-                        arrayReservoir.writeFieldName(name.substring(0, name.length() - ARRAY_MARKER.length()));
-                    }
-                    arrayReservoir.writeStartArray();
                     IN_ARRAY = true;
+                    ctx = getJsonGenerator().getOutputContext();
+                    if(!ctx.inArray()) {
+                        getJsonGenerator().writeFieldName(name.substring(0, name.length() - ARRAY_MARKER.length()));
+                        getJsonGenerator().writeRaw(":");
+                        getJsonGenerator().writeStartArray();
+                    }
+                } else {
+                    if (ctx.inObject() || (ctx.inRoot() && !name.equals(""))) {
+                        getJsonGenerator().writeFieldName(name);
+                    }
+                    getJsonGenerator().writeStartObject();
                 }
 
-            }
-
-
-
-
-
-
-
-
-
-
-            // Write field name if not in explicitly created array
-            if (ctx.inObject() && !IN_ARRAY) {
-                jsonGenerator.writeFieldName(name);
-            }
-
-            // Open object brace
-            if (!name.endsWith(ARRAY_MARKER)) {
-                jsonGenerator.writeStartObject();
             }
 
         } catch (final JsonGenerationException e) {
@@ -296,11 +236,24 @@ public final class ESBulkAPIEncoder extends
 
     private void endGroup() {
         try {
-            final JsonStreamContext ctx = jsonGenerator.getOutputContext();
+            JsonStreamContext ctx = getJsonGenerator().getOutputContext();
             if (ctx.inObject()) {
-                jsonGenerator.writeEndObject();
-            } else if (ctx.inArray() && !IN_ARRAY) {
-                jsonGenerator.writeEndArray();
+                if (!IN_ARRAY && ctx.getParent().getParent().inRoot()) {
+                    closeRootObject();
+                } else {
+                    getJsonGenerator().writeEndObject();
+                }
+            } else if (ctx.inArray()) {
+                //
+                if (ctx.getParent().inRoot() && IN_ARRAY) {
+                    IN_ARRAY = false;
+                } else {
+                    getJsonGenerator().writeEndArray();
+                    if (ctx.getParent().getParent().inRoot()) {
+                        closeRootObject();
+                    }
+                }
+
             }
         } catch (final JsonGenerationException e) {
             throw new MetafactureException(e);
@@ -312,37 +265,31 @@ public final class ESBulkAPIEncoder extends
 
 
     /**
-     * Check if object is on the root level. If so, close old root element (if one exists), go to new line and create
-     * a new root element
-     * @param name Name of the current element
+     * Check if root element can be closed
      * @throws IOException
      */
-    protected void checkIfNewRootObject(String name) throws IOException {
-        //
-        if (!name.equals("")) {
-            JsonStreamContext ctx = getJsonStreamContext();
-            if (ctx.getParent().inRoot()) {
-                if (FIRST_LINE) {
-                    FIRST_LINE = false;
-                } else {
-                    jsonGenerator.writeEndObject();
-                    jsonGenerator.writeRaw(ROOT_ELEMENT_SEPARATOR);
-                    jsonGenerator.writeStartObject();
-                }
-            }
+    protected void closeRootObject() throws IOException {
+        if (arrayReservoir.getOutputContext().inArray()) {
+            arrayReservoir.writeEndArray();
+            arrayReservoir.flush();
+            jsonGenerator.writeRaw(resWriter.toString());
+            resWriter.getBuffer().setLength(0);
         }
+        jsonGenerator.writeEndObject();
+        jsonGenerator.writeEndObject();
+        jsonGenerator.writeRaw(ROOT_ELEMENT_SEPARATOR);
     }
 
 
     /**
-     * Get JsonStreamContext of current JsonGenerator (depends on switch IN_ARRAY)
-     * @return JsonStreamContext of current JsonGenerator
+     * Get JsonGenerator (depends on switch IN_ARRAY)
+     * @return Current JsonGenerator
      */
-    protected JsonStreamContext getJsonStreamContext() {
-        if (IN_ARRAY) {
-            return arrayReservoir.getOutputContext();
+    protected JsonGenerator getJsonGenerator() {
+        if(IN_ARRAY) {
+            return arrayReservoir;
         } else {
-            return jsonGenerator.getOutputContext();
+            return jsonGenerator;
         }
     }
 
