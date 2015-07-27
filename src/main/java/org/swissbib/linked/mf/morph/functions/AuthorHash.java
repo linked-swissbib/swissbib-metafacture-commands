@@ -27,38 +27,39 @@ public class AuthorHash extends AbstractSimpleStatelessFunction {
     private Pattern charsToReplace = Pattern.compile(",| *",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE|Pattern.DOTALL);
 
 
+    /**
+     *
+     * @param value
+     * we expect for value a string which contains single tokens separated by ## delimiters
+     * we don't validate the tokens if they are in a defined sequence. The single tokens are
+     * - normalized
+     * - concatenated
+     * - as concatenated String used to generate a hash value
+     * @return String
+     * the generated hash value
+     */
+
     @Override
     protected String process(String value) {
 
         String globalIdentifier = "";
         String[] valueParts =  value.split("##");
+        StringBuilder normalizedValueParts = new StringBuilder();
+        for (String valuePart : valueParts) {
+            normalizedValueParts.append(this.charsToReplace.matcher(valuePart).replaceAll(""));
+        }
         try {
-            switch (valueParts.length) {
-                case 1:
-                    Matcher cleanerName = this.charsToReplace.matcher(valueParts[0]);
-                    String name = cleanerName.replaceAll("");
-                    globalIdentifier = this.generateAuthorId(name).toString();
-                    break;
-                case 2:
-                    Matcher cleanerFirstName = this.charsToReplace.matcher(valueParts[0]);
-                    String firstName = cleanerFirstName.replaceAll("");
-                    Matcher cleanerLastName = this.charsToReplace.matcher(valueParts[1]);
-                    String lastName = cleanerLastName.replaceAll("");
-                    globalIdentifier = this.generateAuthorId(firstName + lastName).toString();
-                    break;
-
-            }
+            globalIdentifier = this.generateAuthorId(normalizedValueParts.toString());
         } catch (URISyntaxException syntaxException) {
             //Todo: better logging
             syntaxException.printStackTrace();
+
         }
-
-
         return globalIdentifier;
     }
 
 
-    private URI generateAuthorId(String name) throws URISyntaxException {
+    private String generateAuthorId(String name) throws URISyntaxException {
         String normalizedName = null;
         //decompose unicode characters eg. é -> e´
         if (!Normalizer.isNormalized(name, Normalizer.Form.NFD)) {
@@ -72,7 +73,8 @@ public class AuthorHash extends AbstractSimpleStatelessFunction {
         normalizedName = normalizedName.toLowerCase();
         //URL generation
         UUID uuid = UUID.nameUUIDFromBytes(normalizedName.getBytes(Charset.forName("UTF-8")));
-        return new URI(this.URI_PREFIX + uuid.toString());
+        //return new URI(this.URI_PREFIX + uuid.toString());
+        return uuid.toString();
     }
 
 }
