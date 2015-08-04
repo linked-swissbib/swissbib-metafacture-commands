@@ -9,9 +9,7 @@ import org.culturegraph.mf.util.FileCompression;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Date;
 
 
 /**
@@ -35,39 +33,20 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
 
     static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
 
-    Pattern bibliographicResource;
-    Pattern biboDoc;
-    Pattern biboDocHeader;
-    Pattern bibliographicResourceHeader;
-    Pattern bracketedValue;
-
-    String jsonldString;
-    String jsonldSubstring;
-
     String baseOutDir = "/tmp";
     String outFilePrefix = "rdfxml1Line";
-    String contextFile = "";
+    // String contextFile = "";
     String outputFormat;
     int fileSize = 2000;
     int numberFilesPerDirectory = 300;
     int currentSubDir = 1;
     int numberOpenedFiles = 0;
-    int numberLinesWritten = 0;
+    int numberRecordsWritten = 0;
 
     FileCompression compression = FileCompression.AUTO;
     String encoding = "UTF-8";
 
     BufferedWriter fout = null;
-
-
-    public WriteJsonLd()
-    {
-        this.bibliographicResource = Pattern.compile("(\"dct:BibliographicResource\":.*?)}}$");
-        this.biboDoc = Pattern.compile("(\"bibo:Document\":.*?)}(?=,\"index\")");
-        this.biboDocHeader = Pattern.compile("(\"index\":.*?document.*?)}");
-        this.bibliographicResourceHeader = Pattern.compile("(\"index\":.{1,40}bibliographicResource.*?)}");
-        this.bracketedValue = Pattern.compile("(\"[^\"]*\"):\\[([\\{]?\".*?\"[\\}]?)\\]");
-    }
 
 
     public void setBaseOutDir (final String outDir) {
@@ -85,12 +64,12 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
     }
 
 
-    public void setContextFile (final String contextFile) throws IOException {
+/*    public void setContextFile (final String contextFile) throws IOException {
         String line = "";
         try (BufferedReader reader = new BufferedReader(new FileReader(contextFile))){
             while ((line=reader.readLine()) != null) this.contextFile += line;
         }
-    }
+    }*/
 
 
     public void setFilesPerDir(int numberFilesPerDirectory) {
@@ -170,77 +149,13 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
 
     public void process(T obj) {
 
-        this.jsonldString = (String) obj;
-
         if (firstObject) {
-
             this.openOutFile();
             firstObject = false;
-
         } else {
-            String bdh = this.convertToRootNode(this.biboDocHeader, false);
-            String bd = this.convertToRootNode(this.biboDoc, true);
-            String brh = this.convertToRootNode(this.bibliographicResourceHeader, false);
-            String br = this.convertToRootNode(this.bibliographicResource, true);
-            this.writeText(bdh + bd + brh + br);
+            this.writeText((String) obj);
 
         }
-    }
-
-
-    private String convertToRootNode(Pattern ptr, Boolean ctx) {
-        Matcher m = ptr.matcher(this.jsonldString);
-        if (m.find()) {
-            if (ctx) {
-                return "{" + bracketsToList(m.group()) + "," + this.contextFile + "}\n";
-            } else {
-                return "{" + bracketsToList(m.group()) + "}\n";
-            }
-        } else {
-            return null;
-        }
-    }
-
-
-    private String bracketsToList(String text) {
-        this.jsonldSubstring = text;
-        Map<String, List<String>> doubleKeys = new HashMap<>();
-        Matcher m1 = this.bracketedValue.matcher(this.jsonldSubstring);
-
-        while (m1.find()) {
-            List<String> values = doubleKeys.get(m1.group(1));
-            if (values == null) {
-                values = new ArrayList<>();
-                doubleKeys.put(m1.group(1), values);
-            }
-            values.add(m1.group(2));
-        }
-        for (Map.Entry<String, List<String>> entry: doubleKeys.entrySet()) {
-            String output = "";
-            StringBuffer sb = new StringBuffer();
-            output += entry.getKey() + ":[";
-            Integer i = 0;
-            for (String element : entry.getValue()) {
-                if (i > 0) output += ",";
-                output += element;
-                i++;
-            }
-            output += "]";
-            // Todo: dc:contributor now hardcoded since for the moment we can't get rid of the closing
-            // apostrophe.
-            Matcher m2 = Pattern.compile("(\"dc:contributor\":\\[[\\{]?\".*?\")[\\}]?\\]").matcher(this.jsonldSubstring);
-            int j = 0;
-
-            while (m2.find()) {
-                if (j < 1) m2.appendReplacement(sb, output);
-                else m2.appendReplacement(sb, "");
-                j++;
-            }
-            m2.appendTail( sb );
-            this.jsonldSubstring = sb.toString();
-        }
-        this.jsonldSubstring = this.jsonldSubstring.replaceAll(",}", "}");
-        return this.jsonldSubstring;
     }
 
 
@@ -249,9 +164,9 @@ public class WriteJsonLd<T> implements ConfigurableObjectWriter<T> {
         try {
             if (this.fout != null) {
                 this.fout.write(text);
-                this.numberLinesWritten++;
-                if (this.numberLinesWritten >= this.fileSize) {
-                    this.numberLinesWritten = 0;
+                this.numberRecordsWritten++;
+                if (this.numberRecordsWritten >= this.fileSize) {
+                    this.numberRecordsWritten = 0;
                     this.closeOutFile();
                     this.openOutFile();
                 }
