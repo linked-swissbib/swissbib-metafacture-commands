@@ -31,15 +31,15 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 /**
- * Serialises an object as JSON. Records and entities are represented
- * as objects unless their name ends with []. If the name ends with [],
- * an array is created.
+ * Serialises an object as JSON-LD. Records and entities are represented
+ * as objects unless their name ends with [] (which will result in an array).
+ * To denote a blank node, use {} as suffix.
+ * This class is based on class JsonEncoder.
  *
- * @author Christoph Böhme
- * @author Michael Büchner
+ * @author Sebastian Schüpbach, project swissbib, Basel
  *
  */
-@Description("Serialises an object as JSON")
+@Description("Serialises an object as JSON-LD")
 @In(StreamReceiver.class)
 @Out(String.class)
 public final class ESBulkAPIEncoder extends
@@ -174,10 +174,7 @@ public final class ESBulkAPIEncoder extends
                 getJsonGenerator().writeString(value);
             }
 
-        } catch (final JsonGenerationException e) {
-            throw new MetafactureException(e);
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
             throw new MetafactureException(e);
         }
     }
@@ -226,10 +223,7 @@ public final class ESBulkAPIEncoder extends
 
             }
 
-        } catch (final JsonGenerationException e) {
-            throw new MetafactureException(e);
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
             throw new MetafactureException(e);
         }
     }
@@ -255,10 +249,7 @@ public final class ESBulkAPIEncoder extends
                 }
 
             }
-        } catch (final JsonGenerationException e) {
-            throw new MetafactureException(e);
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
             throw new MetafactureException(e);
         }
     }
