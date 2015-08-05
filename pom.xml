@@ -27,13 +27,18 @@
 			</roles>
 			<timezone>+1</timezone>
 		</developer>
-        <!--
-        <developer>
-
-            Hallo Sebastian:
-            bitte setze Deine Initialen
-        </developer>
-        -->
+		<developer>
+			<id>sschuepbach</id>
+			<name>Sebastian Schüpbach</name>
+			<email>sebastian.schuepbachr@unibas.ch</email>
+			<url>https://github.com/sschuepbach</url>
+			<organization>project swissbib</organization>
+			<organizationUrl>http://www.swissbib.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
 	</developers>
 
   	<scm>
