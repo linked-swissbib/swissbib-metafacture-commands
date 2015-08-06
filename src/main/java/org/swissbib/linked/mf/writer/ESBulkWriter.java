@@ -7,8 +7,6 @@ import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
 
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -24,7 +22,7 @@ import java.util.Date;
 @Description("Outputs an Elasticsearch Bulk API compliant file.")
 @In(Object.class)
 @Out(Void.class)
-public class ESBulkUpload<T> implements ConfigurableObjectWriter<T> {
+public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
     String header = DEFAULT_HEADER;
     String footer = DEFAULT_FOOTER;
@@ -35,50 +33,37 @@ public class ESBulkUpload<T> implements ConfigurableObjectWriter<T> {
 
     static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
 
-    String tmpDir = "/tmp";
+    String baseOutDir = "/tmp";
+    String outFilePrefix = "esbulk";
     String outputFormat;
-    int recordsPerUpload = 2000;
+    int fileSize = 2000;
     int numberFilesPerDirectory = 300;
+    int currentSubDir = 1;
+    int numberOpenedFiles = 0;
     int numberRecordsWritten = 0;
 
-    URLConnection conn;
-
+    FileCompression compression = FileCompression.AUTO;
     String encoding = "UTF-8";
 
     BufferedWriter fout = null;
 
-    public ESBulkUpload() {
 
-        try {
-            conn = new URL("http://sb-s2.swissbib.unibas.ch:8080/_bulk").openConnection();
-            conn.setDoOutput(true);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public void setBaseOutDir (final String outDir) {
+        this.baseOutDir = outDir;
     }
 
 
-    public void setTmpDir(final String outDir) {
-        this.tmpDir = outDir;
+    public void setOutFilePrefix (final String filePrefix) {
+        this.outFilePrefix = filePrefix;
     }
 
 
-    public void setRecordsPerUpload(final int recordsPerUpload) {
-        this.recordsPerUpload = recordsPerUpload;
+    public void setFileSize (final int fileSize) {
+        this.fileSize = fileSize;
     }
 
 
-/*    public void setContextFile (final String contextFile) throws IOException {
-        String line = "";
-        try (BufferedReader reader = new BufferedReader(new FileReader(contextFile))){
-            while ((line=reader.readLine()) != null) this.contextFile += line;
-        }
-    }*/
-
-
-    public void setFilesPerDir(int numberFilesPerDirectory) {
+    public void setFilesPerDir(final int numberFilesPerDirectory) {
         this.numberFilesPerDirectory = numberFilesPerDirectory;
     }
 
@@ -171,7 +156,7 @@ public class ESBulkUpload<T> implements ConfigurableObjectWriter<T> {
             if (this.fout != null) {
                 this.fout.write(text);
                 this.numberRecordsWritten++;
-                if (this.numberRecordsWritten >= this.recordsPerUpload) {
+                if (this.numberRecordsWritten >= this.fileSize) {
                     this.numberRecordsWritten = 0;
                     this.closeOutFile();
                     this.openOutFile();
@@ -205,7 +190,6 @@ public class ESBulkUpload<T> implements ConfigurableObjectWriter<T> {
                 this.fout.flush();
                 this.fout.close();
                 // Todo: Implement Bulk API upload command here
-
             } catch (IOException ioEx) {
                 System.out.println("io Exception while output file should be closed");
             }
@@ -218,20 +202,37 @@ public class ESBulkUpload<T> implements ConfigurableObjectWriter<T> {
         try {
 
             boolean subDirexists = true;
-            File subDir = new File(this.tmpDir);
+            File subDir = new File(this.baseOutDir + File.separator + this.currentSubDir);
             if (!subDir.exists()) {
+
                 subDirexists = subDir.mkdir();
+            } else if (this.numberFilesPerDirectory <= this.numberOpenedFiles) {
+                this.currentSubDir++;
+                subDir = new File(this.baseOutDir + File.separator + this.currentSubDir);
+                if (!subDir.exists()) {
+                    subDirexists = subDir.mkdir();
+                }
+                this.numberOpenedFiles = 0;
             }
 
             Date dNow = new Date( );
             SimpleDateFormat ft =  new SimpleDateFormat("yyyyMMdd_hhmmssS");
 
             if (subDirexists) {
-                String path = this.tmpDir + File.separator + ft.format(dNow) + ".jsonld";
+                String path = this.baseOutDir + File.separator + this.currentSubDir + File.separator +
+                        this.outFilePrefix + "_" + ft.format(dNow) + ".jsonld.gz";
                 final OutputStream file = new FileOutputStream(path);
-                this.fout = new BufferedWriter(new OutputStreamWriter(file,this.encoding));
+                OutputStream compressor = compression.createCompressor(file, path);
+
+                this.fout = new BufferedWriter(new OutputStreamWriter(compressor,this.encoding));
+
             } else {
                 this.fout = null;
+            }
+
+
+            if (this.fout != null) {
+                this.numberOpenedFiles++;
             }
 
             //Todo: GH: Look up Exception Handlng in Metafacture Framework

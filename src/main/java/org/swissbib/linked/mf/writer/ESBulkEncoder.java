@@ -42,7 +42,7 @@ import java.io.StringWriter;
 @Description("Serialises an object as JSON-LD")
 @In(StreamReceiver.class)
 @Out(String.class)
-public final class ESBulkAPIEncoder extends
+public final class ESBulkEncoder extends
         DefaultStreamPipe<ObjectReceiver<String>> {
 
     public static final String ARRAY_MARKER = "[]";
@@ -55,7 +55,7 @@ public final class ESBulkAPIEncoder extends
     private JsonGenerator arrayReservoir;
     private final StringWriter resWriter = new StringWriter();
 
-    public ESBulkAPIEncoder() {
+    public ESBulkEncoder() {
         try {
             jsonGenerator = new JsonFactory().createGenerator(writer);
             jsonGenerator.setRootValueSeparator(null);
