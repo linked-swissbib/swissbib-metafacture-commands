@@ -3,11 +3,16 @@ package org.swissbib.linked.mf.writer;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
+import org.culturegraph.mf.framework.annotations.ReturnsAvailableArguments;
 import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -38,12 +43,11 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
 
     // Todo: FLUX parameters are not recognised. If we do not define default values for these arguments, the instantiation of the class fails. Why?
-    String esNode = "localhost";
-    int esPort = 9300;
+    String[] esNodes = {"localhost:9300"};
     String esClustername = "linked-swissbib";
     int recordsPerUpload = 2000;
 
-    Client esClient;
+    TransportClient esClient;
     BulkProcessor bulkProcessor;
 
 
@@ -53,9 +57,11 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
                 .put("cluster.name", this.esClustername)
                 .build();
 
-        // Todo: We should find a way to add more nodes by means of FLUX parameters
-        this.esClient = new TransportClient(settings)
-                .addTransportAddress(new InetSocketTransportAddress(this.esNode, this.esPort));
+        this.esClient = new TransportClient(settings);
+        for (String elem: this.esNodes) {
+            String[] node = elem.split(":");
+            this.esClient.addTransportAddress(new InetSocketTransportAddress(node[0], Integer.parseInt(node[1])));
+        }
 
         this.bulkProcessor = BulkProcessor.builder(this.esClient, new BulkProcessor.Listener() {
 
@@ -85,18 +91,13 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     }
 
 
-    public void setRecordsPerUpload(final int recordsPerUpload) {
-        this.recordsPerUpload = recordsPerUpload;
+    public void setRecordsPerUpload(final String recordsPerUpload) {
+        this.recordsPerUpload = Integer.parseInt(recordsPerUpload);
     }
 
 
-    public void setEsNode(final String esNode) {
-        this.esNode = esNode;
-    }
-
-
-    public void setEsPort(final int esPort) {
-        this.esPort = esPort;
+    public void setEsNodes(final String esNode) {
+        this.esNodes = esNode.split("#");
     }
 
 
