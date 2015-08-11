@@ -42,48 +42,14 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
     static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
 
-    // Todo: FLUX parameters are not recognised. If we do not define default values for these arguments, the instantiation of the class fails. Why?
     String[] esNodes = {"localhost:9300"};
     String esClustername = "linked-swissbib";
     int recordsPerUpload = 2000;
 
+    Boolean connEstablished = false;
+
     TransportClient esClient;
     BulkProcessor bulkProcessor;
-
-
-    public ESBulkIndexer() {
-
-        Settings settings = ImmutableSettings.settingsBuilder()
-                .put("cluster.name", this.esClustername)
-                .build();
-
-        this.esClient = new TransportClient(settings);
-        for (String elem: this.esNodes) {
-            String[] node = elem.split(":");
-            this.esClient.addTransportAddress(new InetSocketTransportAddress(node[0], Integer.parseInt(node[1])));
-        }
-
-        this.bulkProcessor = BulkProcessor.builder(this.esClient, new BulkProcessor.Listener() {
-
-            @Override
-            public void beforeBulk(long l, BulkRequest bulkRequest) {
-                System.out.println("Bulk requests to be processed: " + bulkRequest.numberOfActions());
-            }
-
-            @Override
-            public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-                System.out.println("Indexing took " + bulkResponse.getTookInMillis() + " ms");
-            }
-
-            @Override
-            public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
-                System.out.println("Some errors were reported: " + throwable.getMessage());
-            }
-        })
-                .setBulkActions(this.recordsPerUpload)
-                .setConcurrentRequests(1)
-                .build();
-    }
 
 
     public void setEsClustername(final String esClustername) {
@@ -91,8 +57,8 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     }
 
 
-    public void setRecordsPerUpload(final String recordsPerUpload) {
-        this.recordsPerUpload = Integer.parseInt(recordsPerUpload);
+    public void setRecordsPerUpload(final int recordsPerUpload) {
+        this.recordsPerUpload = recordsPerUpload;
     }
 
 
@@ -167,7 +133,46 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     }
 
 
+    protected void establishConn() {
+        Settings settings = ImmutableSettings.settingsBuilder()
+                .put("cluster.name", this.esClustername)
+                .build();
+
+        this.esClient = new TransportClient(settings);
+        for (String elem: this.esNodes) {
+            String[] node = elem.split(":");
+            this.esClient.addTransportAddress(new InetSocketTransportAddress(node[0], Integer.parseInt(node[1])));
+        }
+
+        this.bulkProcessor = BulkProcessor.builder(this.esClient, new BulkProcessor.Listener() {
+
+            @Override
+            public void beforeBulk(long l, BulkRequest bulkRequest) {
+                System.out.println("Bulk requests to be processed: " + bulkRequest.numberOfActions());
+            }
+
+            @Override
+            public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
+                System.out.println("Indexing took " + bulkResponse.getTookInMillis() + " ms");
+            }
+
+            @Override
+            public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
+                System.out.println("Some errors were reported: " + throwable.getMessage());
+            }
+        })
+                .setBulkActions(this.recordsPerUpload)
+                .setConcurrentRequests(1)
+                .build();
+    }
+
+
     public void process(T obj) {
+
+        if (!this.connEstablished) {
+            this.establishConn();
+            this.connEstablished = true;
+        }
 
         BytesArray ba = new BytesArray((String) obj);
         try {
