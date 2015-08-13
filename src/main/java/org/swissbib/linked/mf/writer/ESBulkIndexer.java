@@ -161,7 +161,8 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
                 System.out.println("Some errors were reported: " + throwable.getMessage());
             }
         })
-                .setBulkActions(this.recordsPerUpload)
+                // Header and body line
+                .setBulkActions(this.recordsPerUpload * 2)
                 .setConcurrentRequests(1)
                 .build();
     }
