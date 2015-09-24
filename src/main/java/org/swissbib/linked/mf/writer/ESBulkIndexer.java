@@ -175,11 +175,13 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
             this.connEstablished = true;
         }
 
-        BytesArray ba = new BytesArray((String) obj);
-        try {
-            this.bulkProcessor.add(ba, false, "testsb", "bibliographicResource");
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!obj.equals("{}\n")) {
+            BytesArray ba = new BytesArray((String) obj);
+            try {
+                this.bulkProcessor.add(ba, false, "testsb", "bibliographicResource");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

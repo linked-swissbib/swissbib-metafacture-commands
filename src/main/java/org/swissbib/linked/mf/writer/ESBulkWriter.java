@@ -154,7 +154,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
         try {
             if (this.fout != null) {
-                this.fout.write(text);
+                if (!text.equals("{}\n")) this.fout.write(text);
                 this.numberRecordsWritten++;
                 if (this.numberRecordsWritten >= this.fileSize) {
                     this.numberRecordsWritten = 0;
