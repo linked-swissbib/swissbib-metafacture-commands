@@ -47,6 +47,8 @@ public final class ESBulkEncoder extends
 
     public static final String ARRAY_MARKER = "[]";
     public static final String BNODE_MARKER = "{}";
+    public static final String SKIP_MARKER = "--";
+    private Boolean IN_NOKEY = false;
     private Boolean IN_ARRAY = false;
     public static final String ROOT_ELEMENT_SEPARATOR = "\n";
 
@@ -163,6 +165,10 @@ public final class ESBulkEncoder extends
                     getJsonGenerator().writeFieldName(name);
                 }
             } else {
+                if (ctx.inRoot()) {
+                    getJsonGenerator().writeStartObject();
+                    ctx = getJsonGenerator().getOutputContext();
+                }
                 if (ctx.inObject()) {
                     getJsonGenerator().writeFieldName(name);
                 }
@@ -188,39 +194,44 @@ public final class ESBulkEncoder extends
 
             JsonStreamContext ctx = getJsonGenerator().getOutputContext();
 
-            if (IN_ARRAY) {
+            if (!name.endsWith(SKIP_MARKER)) {
 
-                if (!name.endsWith(ARRAY_MARKER)
-                        && !name.endsWith(BNODE_MARKER)) {
-                    getJsonGenerator().writeFieldName(name);
-                }
+                if (IN_ARRAY) {
 
-                getJsonGenerator().writeStartObject();
-
-            } else {
-
-                if (ctx.inRoot() && !name.equals("")) {
-                    getJsonGenerator().writeStartObject();
-                }
-
-                ctx = getJsonGenerator().getOutputContext();
-
-                // If a new explicit array begins, remove array marker and open array bracket
-                if (name.endsWith(ARRAY_MARKER)) {
-                    IN_ARRAY = true;
-                    ctx = getJsonGenerator().getOutputContext();
-                    if(!ctx.inArray()) {
-                        getJsonGenerator().writeFieldName(name.substring(0, name.length() - ARRAY_MARKER.length()));
-                        getJsonGenerator().writeRaw(":");
-                        getJsonGenerator().writeStartArray();
-                    }
-                } else {
-                    if (ctx.inObject() || (ctx.inRoot() && !name.equals(""))) {
+                    if (!name.endsWith(ARRAY_MARKER)
+                            && !name.endsWith(BNODE_MARKER)) {
                         getJsonGenerator().writeFieldName(name);
                     }
-                    getJsonGenerator().writeStartObject();
-                }
 
+                    getJsonGenerator().writeStartObject();
+
+                } else {
+
+                    if (ctx.inRoot() && !name.equals("")) {
+                        getJsonGenerator().writeStartObject();
+                    }
+
+                    ctx = getJsonGenerator().getOutputContext();
+
+                    // If a new explicit array begins, remove array marker and open array bracket
+                    if (name.endsWith(ARRAY_MARKER)) {
+                        IN_ARRAY = true;
+                        ctx = getJsonGenerator().getOutputContext();
+                        if(!ctx.inArray()) {
+                            getJsonGenerator().writeFieldName(name.substring(0, name.length() - ARRAY_MARKER.length()));
+                            getJsonGenerator().writeRaw(":");
+                            getJsonGenerator().writeStartArray();
+                        }
+                    } else {
+                        if (ctx.inObject() || (ctx.inRoot() && !name.equals(""))) {
+                            getJsonGenerator().writeFieldName(name);
+                        }
+                        getJsonGenerator().writeStartObject();
+                    }
+
+                }
+            } else {
+                IN_NOKEY = true;
             }
 
         } catch (final IOException e) {
@@ -232,10 +243,14 @@ public final class ESBulkEncoder extends
         try {
             JsonStreamContext ctx = getJsonGenerator().getOutputContext();
             if (ctx.inObject()) {
-                if (!IN_ARRAY && ctx.getParent().getParent().inRoot()) {
+                if (ctx.toString().equals("{?}") || !IN_NOKEY && !IN_ARRAY && ctx.getParent().getParent().inRoot()) {
                     closeRootObject();
                 } else {
-                    getJsonGenerator().writeEndObject();
+                    if (IN_NOKEY && !IN_ARRAY && ctx.getParent().inRoot()) {
+                        closeRootObject();
+                    } else {
+                        getJsonGenerator().writeEndObject();
+                    }
                 }
             } else if (ctx.inArray()) {
                 //
@@ -267,7 +282,9 @@ public final class ESBulkEncoder extends
             resWriter.getBuffer().setLength(0);
         }
         jsonGenerator.writeEndObject();
-        jsonGenerator.writeEndObject();
+        JsonStreamContext ctx = getJsonGenerator().getOutputContext();
+        if (!ctx.inRoot()) jsonGenerator.writeEndObject();
+        IN_NOKEY = false;
         jsonGenerator.writeRaw(ROOT_ELEMENT_SEPARATOR);
     }
 
