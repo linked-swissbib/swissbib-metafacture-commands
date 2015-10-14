@@ -143,10 +143,9 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
         if (firstObject) {
             this.openOutFile();
             firstObject = false;
-        } else {
-            this.writeText((String) obj);
-
         }
+        this.writeText((String) obj);
+
     }
 
 
