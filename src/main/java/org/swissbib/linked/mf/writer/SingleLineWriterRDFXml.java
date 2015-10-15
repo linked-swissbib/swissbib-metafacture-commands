@@ -59,13 +59,15 @@ public class SingleLineWriterRDFXml<T> extends RdfXmlWriter<T> {
         try {
 
             boolean subDirexists = true;
-            File subDir = new File(this.baseOutDir + File.separator + this.currentSubDir);
+            File subDir = this.useSubdir ? new File(this.baseOutDir + File.separator + this.currentSubDir) :
+                    new File(this.baseOutDir);
             if (!subDir.exists()) {
 
                  subDirexists = subDir.mkdir();
             } else if (this.numberFilesPerDirectory <= this.numberOpenedFiles) {
                 this.currentSubDir++;
-                subDir = new File(this.baseOutDir + File.separator + this.currentSubDir);
+                subDir = this.useSubdir ? new File(this.baseOutDir + File.separator + this.currentSubDir) :
+                        new File(this.baseOutDir);
                 if (!subDir.exists()) {
                     subDirexists = subDir.mkdir();
                 }
@@ -76,7 +78,10 @@ public class SingleLineWriterRDFXml<T> extends RdfXmlWriter<T> {
             SimpleDateFormat ft =  new SimpleDateFormat("yyyyMMdd_hhmmssS");
 
             if (subDirexists) {
-                String path = this.baseOutDir + File.separator + this.currentSubDir + File.separator + this.outFilePrefix + "_" + ft.format(dNow) + ".xml.gz";
+                String conceptName = this.concept != null ? this.concept.getName() : "noConceptInUse";
+                String filename = this.outFilePrefix + "_" +  ft.format(dNow) +  "_" + conceptName + ".xml.gz";
+                String path = this.useSubdir ? this.baseOutDir + File.separator + this.currentSubDir + File.separator +
+                        filename : this.baseOutDir + File.separator + filename;
                 final OutputStream file = new FileOutputStream(path);
                 OutputStream compressor = compression.createCompressor(file, path);
 

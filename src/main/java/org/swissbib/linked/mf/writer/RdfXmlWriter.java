@@ -1,5 +1,6 @@
 package org.swissbib.linked.mf.writer;
 
+import org.culturegraph.mf.exceptions.MetafactureException;
 import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
 
@@ -18,20 +19,26 @@ import java.util.regex.Pattern;
  */
 public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
 
-    String header =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<rdf:RDF " +
-                    "xmlns:rdau=\"http://rdaregistry.info/Elements/u/\" " +
-                    "xmlns:void=\"http://rdfs.org/ns/void#\" " +
-                    "xmlns:dbp=\"http://dbpedia.org/ontology/\" " +
-                    "xmlns:dct=\"http://purl.org/dc/terms/\" " +
-                    "xmlns:owl=\"http://www.w3.org/2004/02/skos/core#\" " +
-                    "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" " +
-                    "xmlns:skos=\"http://www.w3.org/2004/02/skos/core#\" " +
-                    "xmlns:bibo=\"http://purl.org/ontology/bibo/\" " +
-                    "xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\" " +
-                    "xmlns:foaf=\"http://xmlns.com/foaf/0.1/\" " +
-                    "xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n " +
-                    "<collection>\n";
+
+    protected static enum Concept {
+        BIBLIOGRAPHICRESOURCE("BIBLIOGRAPHICRESOURCE"),
+        ITEM("ITEM"), ORGANIZATION("ORGANIZATION"),
+        PERSON("PERSON"), WORK("WORK");
+
+        private final String name;
+
+        Concept(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+
+    String header = "";
+
     String footer = "</collection>\n</rdf:RDF>\n";
     String separator = DEFAULT_SEPARATOR;
 
@@ -50,6 +57,7 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
     Pattern work;
     Pattern person;
     Pattern organization;
+    Pattern containsContributor;
 
     String baseOutDir = "/tmp";
     String outFilePrefix = "rdfxml1Line";
@@ -61,6 +69,10 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
 
     BufferedWriter fout = null;
 
+    protected Concept concept = null;
+    protected boolean useSubdir = false;
+    protected boolean useContributor = false;
+
 
     public RdfXmlWriter()
     {
@@ -71,6 +83,7 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
         this.work = Pattern.compile("<bf:Work.*?</bf:Work>", Pattern.MULTILINE | Pattern.DOTALL);
         this.person = Pattern.compile("<foaf:Person.*?</foaf:Person>", Pattern.MULTILINE | Pattern.DOTALL);
         this.organization = Pattern.compile("<foaf:Organization.*?</foaf:Organization>", Pattern.MULTILINE | Pattern.DOTALL);
+        this.containsContributor = Pattern.compile("<dct:contributor.*?</dct:contributor>", Pattern.MULTILINE | Pattern.DOTALL);
 
     }
 
@@ -146,6 +159,25 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
         this.rootTag = rootTag;
     }
 
+    public void setConcept (Concept concept) {
+        //try {
+        //    this.concept = Concept.valueOf(concept);
+        //} catch (Exception ex) {
+        //    throw new MetafactureException("value  '" + concept + "' is not allowed for attribute concept");
+
+        //}
+        this.concept = concept;
+    }
+
+    public void setSubdir (boolean useSubdir) {
+        this.useSubdir = useSubdir;
+    }
+
+    public void setUsecontributor (boolean contributor) {
+        this.useContributor = contributor;
+    }
+
+
     @Override
     public void resetStream() {
         firstObject = true;
@@ -173,8 +205,14 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
             m = this.work.matcher((String) obj);
             if (m.find()) { trimmer(m); }
 
-            m = this.person.matcher((String) obj);
-            if (m.find()) { trimmer(m); }
+            if (this.useContributor) {
+                m = this.person.matcher((String) obj);
+                if (m.find()) { trimmer(m); }
+            } else {
+                m = this.person.matcher((String) obj);
+                Matcher m1 = this.containsContributor.matcher((String) obj);
+                if (m.find() && ! m1.find()) { trimmer(m); }
+            }
 
             m = this.item.matcher((String) obj);
             if (m.find()) { trimmer(m); }

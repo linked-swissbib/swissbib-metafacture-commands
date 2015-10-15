@@ -122,6 +122,10 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
 
         p = Pattern.compile("\\(CHARCH\\)(.*?)(!!|$)",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE|Pattern.DOTALL);
         this.systemNumberPattern.put("CHARCH", p);
+
+        p = Pattern.compile("\\(LIBIB\\)(.*?)(!!|$)",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE|Pattern.DOTALL);
+        this.systemNumberPattern.put("LIBIB", p);
+
     }
 
     @Override
@@ -216,6 +220,17 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
             case "CCSA":
                 break;
             case "RERO":
+                if (subLibraryCode != null) {
+                    int RERO_network_code = Integer.valueOf(subLibraryCode.substring(2, 4));
+                    bibSysNumber = m.group(1);
+                    String sub_library_code_rero  = subLibraryCode.replaceAll("[\\D]","");
+                    url = String.format(this.urlTemplates.get(valueParts[0]).urlTemplate,"en",RERO_network_code,bibSysNumber,sub_library_code_rero);
+                }
+                break;
+            case "SNL":
+                bibSysNumber = m.group(1);
+                String bibSysNumber_snl = bibSysNumber.replaceAll("^vtls0*","");
+                url = String.format(this.urlTemplates.get(valueParts[0]).urlTemplate,bibSysNumber_snl);
                 break;
             default:
                 break;
