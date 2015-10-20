@@ -152,14 +152,13 @@
             <artifactId>elasticsearch</artifactId>
             <version>1.4.2</version>
         </dependency>
-		<!--
-       <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>apache-jena-libs</artifactId>
-            <type>pom</type>
-            <version>2.12.1</version>
-        </dependency>
-        -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
