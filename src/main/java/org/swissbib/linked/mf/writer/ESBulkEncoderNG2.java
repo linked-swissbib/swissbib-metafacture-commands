@@ -11,11 +11,8 @@ import org.culturegraph.mf.framework.annotations.Out;
 
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * TODO 2) Add support for bulk header (print header yes/no)
- * TODO 3) Add support for ignoring node levels
- */
+//import java.util.regex.Matcher;
+//import java.util.regex.Pattern;
 
 /**
  * Serialises an object as JSON-LD.
@@ -28,22 +25,25 @@ import java.util.List;
 @Out(String.class)
 public final class ESBulkEncoderNG2 extends DefaultStreamPipe<ObjectReceiver<String>> {
 
-    protected static final char COMMA 	    = ',';  // Comma transition (e.g. between value and parent)
-    protected static final String NONE 	    = "";	// No transition
-    protected static final byte ROOT_NODE   = 0;	// Root node
+    protected static final char COMMA 	    = ',';      // Comma transition (e.g. between value and parent)
+    protected static final String NONE 	    = "";	    // No transition
+    protected static final byte ROOT_NODE   = 0;	    // Root node
     protected static final byte OBJECT      = 1;
     protected static final byte ARRAY       = 2;
-    protected static final byte KEY 	    = 3;	// Equals literal ""<Name>""
-    protected static final byte VALUE 	    = 4;	// Equals literal ""<Name>""
+    protected static final byte KEY 	    = 3;	    // Equals literal ""<Name>""
+    protected static final byte VALUE 	    = 4;	    // Equals literal ""<Name>""
 
-    Multimap<JsonToken, JsonToken> ctxRegistry;     // Registers root parent of every parent
-    boolean makeChildNode;                          // Set next key as child node of current node
-    JsonToken node;                                 // Current node
-    JsonToken rootNode;                             // Current root node
-    String id;                                      // Id of record
-    String idRegEx;                                 // Pattern to extract id from string
-    String type;                                    // Type of record
-    String index;                                   // Index of record
+    Multimap<JsonToken, JsonToken> ctxRegistry;         // Registers root parent of every parent
+    boolean makeChildNode;                              // Set next key as child node of current node
+    JsonToken node;                                     // Current node
+    JsonToken rootNode;                                 // Current root node
+
+    boolean multipleObjects                 = false;    // Multiple objects in one record
+    boolean header                          = true;     // Should bulk-header be printed?
+    String id;                                          // Id of record
+    //String idKeyName;                                   // Name of id key
+    String type;                                        // Type of record
+    String index;                                       // Index of record
 
 
     /**
@@ -142,6 +142,22 @@ public final class ESBulkEncoderNG2 extends DefaultStreamPipe<ObjectReceiver<Str
     }
 
     /**
+     * Are there more than one possible objects in one record?
+     * @param multipleObjects true, false
+     */
+    public void setMultipleObjects(String multipleObjects) {
+        this.multipleObjects = Boolean.parseBoolean(multipleObjects);
+    }
+
+    /**
+     * Should header be created?
+     * @param header true, false
+     */
+    public void setHeader(String header) {
+        this.header = Boolean.parseBoolean(header);
+    }
+
+    /**
      * Sets index of record
      * @param index Index of record
      */
@@ -150,7 +166,7 @@ public final class ESBulkEncoderNG2 extends DefaultStreamPipe<ObjectReceiver<Str
     }
 
     /**
-     * Set type of record
+     * Sets type of record
      * @param type Type of record
      */
     public void setType(String type) {
@@ -158,12 +174,12 @@ public final class ESBulkEncoderNG2 extends DefaultStreamPipe<ObjectReceiver<Str
     }
 
     /**
-     * Sets pattern for extracting id from string
-     * @param idRegEx Pattern
+     * Sets id key name
+     * //@param idKeyName Name of key where value is stored
      */
-    public void setIdRegEx(String idRegEx) {
-        this.idRegEx = idRegEx;
-    }
+/*    public void setIdKeyName(String idKeyName) {
+        this.idKeyName = idKeyName;
+    }*/
 
     @Override
     public void startRecord(String identifier) {
@@ -171,11 +187,12 @@ public final class ESBulkEncoderNG2 extends DefaultStreamPipe<ObjectReceiver<Str
         node = new JsonToken(ROOT_NODE, null, null);
         rootNode = node;
         makeChildNode = true;
+        id = identifier;
     }
 
     @Override
     public void endRecord() {
-        getReceiver().process(buildJsonString((byte) -1, rootNode));
+        if (!multipleObjects) flushObject();
     }
 
     @Override
@@ -187,12 +204,17 @@ public final class ESBulkEncoderNG2 extends DefaultStreamPipe<ObjectReceiver<Str
     @Override
     public void endEntity() {
         node = node.getParent();
+        if (multipleObjects && node.getParent().getType() == ROOT_NODE) {
+            flushObject();
+            startRecord(null);
+        }
     }
 
     @Override
     public void literal(String name, String value) {
         buildKey(name);
         new JsonToken(VALUE, value, node);
+        // setId(node.getParent(), name, value);
     }
 
     /**
@@ -238,14 +260,16 @@ public final class ESBulkEncoderNG2 extends DefaultStreamPipe<ObjectReceiver<Str
      */
     String buildJsonString(byte lastTokenType, JsonToken jt) {
         StringBuilder stringBuilder = new StringBuilder();
+        if (jt.getType() == ROOT_NODE) {
+            stringBuilder.append(generateHeader());
+            stringBuilder.append("{");
+        }
         for (JsonToken child: jt.getChildren()) {
             // Set prefixes if required
             if (lastTokenType == OBJECT || lastTokenType == ARRAY) {
                 stringBuilder.append((child.getType() == KEY) ? COMMA : NONE);
             } else if (lastTokenType == VALUE) {
                 stringBuilder.append((child.getType() == KEY || child.getType() == VALUE) ? COMMA : NONE);
-            } else if (lastTokenType == -1) {
-                stringBuilder.append("{");
             }
             // Set name of key / value
             stringBuilder.append(child.toString());
@@ -273,27 +297,38 @@ public final class ESBulkEncoderNG2 extends DefaultStreamPipe<ObjectReceiver<Str
             } else {
                 lastTokenType = VALUE;
             }
-            if (child.getParent().getType() == ROOT_NODE) stringBuilder.append("}");
         }
+        if (jt.getType() == ROOT_NODE) stringBuilder.append("}\n");
         return stringBuilder.toString();
     }
 
-    void setId(JsonToken parentNode, String name, String value) {
+    /**
+     * Extracts id from indicated value
+     * @param parentNode Parent node of current node
+     * @param name Name of key
+     * @param value Name of value
+     */
+/*    void setId(JsonToken parentNode, String name, String value) {
+        if (name.equals(idKeyName) && parentNode.getParent().getType() == ROOT_NODE) {
+           id = value;
+        }
+    }*/
 
-    }
-
+    /**
+     * Generates header line if header == true
+     * @return Header line
+     */
     String generateHeader() {
-        StringBuilder stringBuilder = new StringBuilder();
+        return (header) ?
+                "{\"index\":{\"_type\":\"" + type + "\",\"_index\":\"" + index + "\",\"_id\":\"" + id + "\"}}\n" :
+                "";
+    }
 
-        stringBuilder.append("{\"index\":{\"_type\":\"");
-        stringBuilder.append(this.type);
-        stringBuilder.append("\",\"_index\":\"");
-        stringBuilder.append(this.index);
-        stringBuilder.append("\",\"_id\":\"");
-        stringBuilder.append(id);
-        stringBuilder.append("\"}}\n");
-
-        return stringBuilder.toString();
+    /**
+     * Flushes content to receiver
+     */
+    void flushObject() {
+        getReceiver().process(buildJsonString((byte) -1, rootNode));
     }
 
 }
