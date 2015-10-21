@@ -11,7 +11,8 @@ import org.culturegraph.mf.framework.annotations.Out;
 
 import java.util.ArrayList;
 import java.util.List;
-
+//import java.util.regex.Matcher;
+//import java.util.regex.Pattern;
 
 /**
  * Serialises an object as JSON-LD.
@@ -24,24 +25,25 @@ import java.util.List;
 @Out(String.class)
 public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<String>> {
 
-    protected static final char COLON 	     = ':'; // Colon transition (e.g. between parent and value)
-    protected static final char COMMA 	     = ','; // Comma transition (e.g. between value and parent)
-    protected static final String NONE 	     = "";	// No transition
-    protected static final byte ROOT_OBJECT	 = 0;	// Dummy "parent" for root object
-    protected static final byte START_OBJECT = 1;	// Equals literal '{'
-    protected static final byte START_ARRAY  = 2;	// Equals literal '['
-    protected static final byte END_OBJECT 	 = 3;	// Equals literal '}'
-    protected static final byte END_ARRAY 	 = 4;	// Equals literal ']'
-    protected static final byte KEY 	     = 5;	// Equals literal ""<Name>""
-    protected static final byte VALUE 	     = 6;	// Equals literal ""<Name""
+    protected static final char COMMA 	    = ',';      // Comma transition (e.g. between value and parent)
+    protected static final String NONE 	    = "";	    // No transition
+    protected static final byte ROOT_NODE   = 0;	    // Root node
+    protected static final byte OBJECT      = 1;
+    protected static final byte ARRAY       = 2;
+    protected static final byte KEY 	    = 3;	    // Equals literal ""<Name>""
+    protected static final byte VALUE 	    = 4;	    // Equals literal ""<Name>""
 
-    List<JsonToken> ctx; 		// List of keys to which content to be working on is attributed (Problem of two concurrent merging processes, of which one is embedded in the other
-    Multimap<JsonToken, JsonToken> ctxRegistry;	// Registers root parent of every parent
-    List<JsonToken> jsonList;	// Sequential list of json-tokens
-    int curIndex;   // Current index in jsonList
-    int id;         // Id for the next built JsonToken object
-    boolean skipToken;  // Should the following token (i.e. object or array) be skipped?
-    boolean higherCtx;  // Next parent adds itself as new element in List ctx (i.e. no replacement of last registered parent)
+    Multimap<JsonToken, JsonToken> ctxRegistry;         // Registers root parent of every parent
+    boolean makeChildNode;                              // Set next key as child node of current node
+    JsonToken node;                                     // Current node
+    JsonToken rootNode;                                 // Current root node
+
+    boolean multipleObjects                 = false;    // Multiple objects in one record
+    boolean header                          = true;     // Should bulk-header be printed?
+    String id;                                          // Id of record
+    //String idKeyName;                                   // Name of id key
+    String type;                                        // Type of record
+    String index;                                       // Index of record
 
 
     /**
@@ -51,25 +53,22 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
 
         byte type;		    // Type of the token
         String name;		// Name (only if type == parent / value, else null)
-        JsonToken lastElem;	// Last element belonging to the parent (parent only, else null)
-        JsonToken key;		// Key which token belongs to (for parent: root parent)
-        int id;             // Id of the token
+        List<JsonToken> children = new ArrayList<>();	// Last element belonging to the parent (parent only, else null)
+        JsonToken parent;		// Key which token belongs to (for parent: root parent)
+        byte parentheses = -1;  // Parentheses which surrounds descendants (none, brackets or braces)
 
 
         /**
          * Constructor for class JsonToken
-         * @param id Id of token
          * @param type Type of token (one of ROOT_NODE, OBJECT, ARRAY, END_OBJECT, END_ARRAY, KEY, VALUE)
          * @param name Name of token (only if type == KEY or VALUE, else null)
-         * @param lastElem Last element belonging to a parent (for keys only, else null)
-         * @param key Refers to parent id of which a token belongs to (parent refer to their root parent)
+         * @param parent Refers to parent id of which a token belongs to (parent refer to their root parent)
          */
-        JsonToken(int id, byte type, String name, JsonToken lastElem, JsonToken key) {
-            this.id = id;
+        JsonToken(byte type, String name, JsonToken parent) {
             this.type = type;
             this.name = name;
-            this.lastElem = lastElem;
-            this.key = key;
+            this.parent = parent;
+            if (parent != null) parent.setChildren(this);
         }
 
         /**
@@ -79,16 +78,8 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         @Override
         public String toString() {
             switch (this.getType()) {
-                case ROOT_OBJECT:
+                case ROOT_NODE:
                     return NONE;
-                case START_OBJECT:
-                    return "{";
-                case START_ARRAY:
-                    return "[";
-                case END_OBJECT:
-                    return "}";
-                case END_ARRAY:
-                    return "]";
                 case KEY:
                     return "\"" + this.getName() + "\"";
                 case VALUE:
@@ -99,29 +90,6 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         }
 
         /**
-         * Gets index of this instance of JsonToken in list jsonList
-         * @return index
-         */
-        int getIndex() {
-            int index = 0;
-            for (int i = 0; i < jsonList.size(); i++) {
-                if (jsonList.get(i).getId() == id) {
-                    index = i;
-                    break;
-                }
-            }
-            return index;
-        }
-
-        /**
-         * Gets id of this JSON token
-         * @return id
-         */
-        int getId() {
-            return id;
-        }
-
-        /**
          * Gets name of this JSON token
          */
         String getName() {
@@ -129,134 +97,124 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         }
 
         /**
-         * Gets last element which still belongs to parent
+         * Gets descendants of node
          * @return Last element
          */
-        JsonToken getLastElem() {
-            return lastElem;
+        List<JsonToken> getChildren() {
+            return children;
         }
 
         /**
-         * Get root parent
-         * @return Root parent
+         * Gets parent node
+         * @return Parent node
          */
-        JsonToken getKey() {
-            return key;
+        JsonToken getParent() {
+            return parent;
         }
 
         /**
-         * Sets last element which still belongs to parent
+         * Adds a new descendant to node and probably sets new value for variable parentheses
          * @param jt Respective JSON token
          */
-        void setLastElem(JsonToken jt) {
-            lastElem = jt;
+        void setChildren(JsonToken jt) {
+            if (jt.getType() == KEY) parentheses = OBJECT;
+            if (parentheses == 0 && jt.getType() == VALUE) parentheses = ARRAY;
+            if (parentheses == -1 && jt.getType() == VALUE) parentheses = 0;
+            children.add(jt);
         }
 
         /**
-         * Set this Json token as last element of root parent
-         */
-        void setAsLastElem() {
-            if (key != null) key.setLastElem(this);
-        }
-
-        /**
-         * Gets type of JSON token
+         * Gets type of JSON token (ROOT_NODE, KEY, VALUE)
          * @return Type of JSON token
          */
         byte getType() {
             return type;
         }
 
+        /**
+         * Gets parentheses category (none, brackets or braces)
+         * @return Parantheses type (in byte)
+         */
+        public byte getParentheses() {
+            return parentheses;
+        }
+
     }
 
+    /**
+     * Are there more than one possible objects in one record?
+     * @param multipleObjects true, false
+     */
+    public void setMultipleObjects(String multipleObjects) {
+        this.multipleObjects = Boolean.parseBoolean(multipleObjects);
+    }
+
+    /**
+     * Should header be created?
+     * @param header true, false
+     */
+    public void setHeader(String header) {
+        this.header = Boolean.parseBoolean(header);
+    }
+
+    /**
+     * Sets index of record
+     * @param index Index of record
+     */
+    public void setIndex(String index) {
+        this.index = index;
+    }
+
+    /**
+     * Sets type of record
+     * @param type Type of record
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
+     * Sets id key name
+     * //@param idKeyName Name of key where value is stored
+     */
+/*    public void setIdKeyName(String idKeyName) {
+        this.idKeyName = idKeyName;
+    }*/
 
     @Override
     public void startRecord(String identifier) {
-        //(Re)set global variables
-        ctx = new ArrayList<>();
         ctxRegistry = HashMultimap.create();
-        jsonList = new ArrayList<>();
-        curIndex = 0;
-        id = 0;
-        skipToken = false;
-        higherCtx = false;
-
-        buildRootObject();
-        buildStartObject();
-        //startEntity(identifier);
+        node = new JsonToken(ROOT_NODE, null, null);
+        rootNode = node;
+        makeChildNode = true;
+        id = identifier;
     }
 
     @Override
     public void endRecord() {
-        buildEndObject();
-        getReceiver().process(buildJsonString());
+        if (!multipleObjects) flushObject();
     }
 
     @Override
     public void startEntity(String name) {
         buildKey(name);
-        buildStartObject();
+        makeChildNode = true;
     }
 
     @Override
     public void endEntity() {
-        buildEndObject();
+        node = node.getParent();
+        if (multipleObjects && node.getParent().getType() == ROOT_NODE) {
+            flushObject();
+            startRecord(null);
+        }
     }
 
     @Override
     public void literal(String name, String value) {
         buildKey(name);
-        buildValue(value);
-    }
-
-    /**
-     * Creates a new object token
-     */
-    void buildStartObject() {
-        if (!skipToken) {
-            JsonToken jt = new JsonToken(++id, START_OBJECT, null, null, ctx.get(ctx.size() - 1));
-            jsonList.add(curIndex, jt);
-            higherCtx = true;
-            jt.setAsLastElem();
-            curIndex++;
-        }
-    }
-
-    /**
-     * Creates a new array token
-     */
-    void buildStartArray() {
-        JsonToken jt = new JsonToken(++id, START_ARRAY, null, null, ctx.get(ctx.size() - 1));
-        jsonList.add(curIndex, jt);
-        curIndex++;
-    }
-
-    /**
-     * Closes an object token
-     */
-    void buildEndObject() {
-        if (skipToken) {
-            skipToken = false;
-        } else {
-            JsonToken jt = (ctx.size() > 1) ?
-                    new JsonToken(++id, END_OBJECT, null, null, ctx.get(ctx.size() - 2)) :
-                    new JsonToken(++id, END_OBJECT, null, null, ctx.get(ctx.size() - 1));
-            jsonList.add(curIndex, jt);
-            jt.setAsLastElem();
-            curIndex++;
-        }
-        ctx.remove(ctx.size() -1);
-    }
-
-    /**
-     * Closes an array token
-     */
-    void buildEndArray() {
-        skipToken = false;
-        JsonToken jt = new JsonToken(++id, END_ARRAY, null, null, ctx.get(ctx.size() - 1));
-        jsonList.add(curIndex, jt);
-        jt.setAsLastElem();
-        curIndex++;
+        new JsonToken(VALUE, value, node);
+        // setId(node.getParent(), name, value);
     }
 
     /**
@@ -264,84 +222,12 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      * @param name Name of parent
      */
     void buildKey(String name) {
-        skipToken = false;
-        // If new (i.e. higher) context, get last parent token in ctx else second last
-        JsonToken identicalKey = higherCtx ?
-                checkKeyExists(ctx.get(ctx.size() - 1), name) :
-                checkKeyExists(ctx.get(ctx.size() - 2), name);
-        if (identicalKey != null) {
-            // TODO Check if index is correct!
-            if (higherCtx) {
-                ctx.add(identicalKey);
-                higherCtx = false;
-            } else {
-                ctx.set(ctx.size() - 1, identicalKey);
-            }
-            // Depending on what the identical parent refers to (value, array or object),
-            // additional steps are required (e.g. create new array or skip the following opening curly brace)
-            switch (identicalKey.getLastElem().getType()) {
-                // Merging of two objects
-                case END_OBJECT:
-                    curIndex = identicalKey.getLastElem().getIndex();
-                    skipToken = true;
-                    higherCtx = true;
-                    break;
-                // Add value to existing array
-                case END_ARRAY:
-                    curIndex = identicalKey.getLastElem().getIndex();
-                    break;
-                // Merge two parent-value-pairs to an array
-                case VALUE:
-                    // Set start array token
-                    curIndex = identicalKey.getIndex() + 1;
-                    buildStartArray();
-                    // Set end array token
-                    curIndex = identicalKey.getLastElem().getIndex() + 1;
-                    buildEndArray();
-                    curIndex--;
-                    break;
-            }
-            skipToken = true;
-        } else {
-            JsonToken jt = higherCtx ?
-                    new JsonToken(++id, KEY, name, null, ctx.get(ctx.size() - 1)) :
-                    new JsonToken(++id, KEY, name, null, ctx.get(ctx.size() - 2));
-            if (higherCtx) {
-                ctx.add(jt);
-                higherCtx = false;
-            } else {
-                // TODO Check if index is correct!
-                ctx.set(ctx.size() - 1, jt);
-            }
-            jsonList.add(curIndex, jt);
-            ctxRegistry.put(jt.getKey(), jt);
-            jt.setAsLastElem();
-            curIndex++;
-        }
-    }
-
-    /**
-     * Creates a new value token
-     * @param name Name of value
-     */
-    void buildValue(String name) {
-        skipToken = false;
-        JsonToken jt = new JsonToken(++id, VALUE, name, null, ctx.get(ctx.size() - 1));
-        jsonList.add(curIndex, jt);
-        jt.setAsLastElem();
-        curIndex++;
-    }
-
-    /**
-     * Creates a root object token ("dummy parent")
-     */
-    void buildRootObject() {
-        JsonToken jt = new JsonToken(++id, ROOT_OBJECT, null, null, null);
-        ctx.add(jt);
-        jt.setLastElem(jt);
-        jsonList.add(curIndex, jt);
-        jt.setAsLastElem();
-        curIndex++;
+        JsonToken sameNode = checkKeyExists(getParentNode(), name);
+        node = (sameNode == null) ?
+                new JsonToken(KEY, name, getParentNode()) :
+                sameNode;
+        ctxRegistry.put(node.getParent(), node);
+        makeChildNode = false;
     }
 
     /**
@@ -361,26 +247,88 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
     }
 
     /**
+     * Gets parent node
+     * @return Parent node
+     */
+    JsonToken getParentNode() {
+        return makeChildNode ? node : node.getParent();
+    }
+
+    /**
      * Builds JSON string
      * @return JSON string
      */
-    String buildJsonString() {
+    String buildJsonString(byte lastTokenType, JsonToken jt) {
         StringBuilder stringBuilder = new StringBuilder();
-        byte lastTokenType = -1;
-        for (JsonToken jt: jsonList) {
-            if (lastTokenType == -1 || lastTokenType == ROOT_OBJECT ||
-                    lastTokenType == START_OBJECT || lastTokenType == START_ARRAY) {
-                stringBuilder.append(NONE);
-            } else if (lastTokenType == END_OBJECT || lastTokenType == END_ARRAY) {
-                stringBuilder.append((jt.getType() == KEY) ? COMMA : NONE);
-            } else if (lastTokenType == KEY) {
-                stringBuilder.append(COLON);
-            } else if (lastTokenType == VALUE) {
-                stringBuilder.append((jt.getType() == KEY || jt.getType() == VALUE) ? COMMA : NONE);
-            }
-            stringBuilder.append(jt.toString());
-            lastTokenType = jt.getType();
+        if (jt.getType() == ROOT_NODE) {
+            stringBuilder.append(generateHeader());
+            stringBuilder.append("{");
         }
+        for (JsonToken child: jt.getChildren()) {
+            // Set prefixes if required
+            if (lastTokenType == OBJECT || lastTokenType == ARRAY) {
+                stringBuilder.append((child.getType() == KEY) ? COMMA : NONE);
+            } else if (lastTokenType == VALUE) {
+                stringBuilder.append((child.getType() == KEY || child.getType() == VALUE) ? COMMA : NONE);
+            }
+            // Set name of key / value
+            stringBuilder.append(child.toString());
+            // Descend to child nodes if present
+            if (child.getType() == KEY) {
+                switch (child.getParentheses()) {
+                    case 0:
+                        stringBuilder.append(":");
+                        stringBuilder.append(buildJsonString((byte)0, child));
+                        lastTokenType = VALUE;
+                        break;
+                    case OBJECT:
+                        stringBuilder.append(":{");
+                        stringBuilder.append(buildJsonString((byte)0, child));
+                        stringBuilder.append("}");
+                        lastTokenType = OBJECT;
+                        break;
+                    case ARRAY:
+                        stringBuilder.append(":[");
+                        stringBuilder.append(buildJsonString((byte)0, child));
+                        stringBuilder.append("]");
+                        lastTokenType = ARRAY;
+                        break;
+                }
+            } else {
+                lastTokenType = VALUE;
+            }
+        }
+        if (jt.getType() == ROOT_NODE) stringBuilder.append("}\n");
         return stringBuilder.toString();
     }
+
+    /**
+     * Extracts id from indicated value
+     * @param parentNode Parent node of current node
+     * @param name Name of key
+     * @param value Name of value
+     */
+/*    void setId(JsonToken parentNode, String name, String value) {
+        if (name.equals(idKeyName) && parentNode.getParent().getType() == ROOT_NODE) {
+           id = value;
+        }
+    }*/
+
+    /**
+     * Generates header line if header == true
+     * @return Header line
+     */
+    String generateHeader() {
+        return (header) ?
+                "{\"index\":{\"_type\":\"" + type + "\",\"_index\":\"" + index + "\",\"_id\":\"" + id + "\"}}\n" :
+                "";
+    }
+
+    /**
+     * Flushes content to receiver
+     */
+    void flushObject() {
+        getReceiver().process(buildJsonString((byte) -1, rootNode));
+    }
+
 }
