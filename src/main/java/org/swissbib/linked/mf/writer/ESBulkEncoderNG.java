@@ -9,6 +9,7 @@ import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -23,10 +24,10 @@ import java.util.List;
 @Out(String.class)
 public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<String>> {
 
-    protected static final char COLON 	     = ':'; // Colon transition (e.g. between key and value)
-    protected static final char COMMA 	     = ','; // Comma transition (e.g. between value and key)
+    protected static final char COLON 	     = ':'; // Colon transition (e.g. between parent and value)
+    protected static final char COMMA 	     = ','; // Comma transition (e.g. between value and parent)
     protected static final String NONE 	     = "";	// No transition
-    protected static final byte ROOT_OBJECT	 = 0;	// Dummy "key" for root object
+    protected static final byte ROOT_OBJECT	 = 0;	// Dummy "parent" for root object
     protected static final byte START_OBJECT = 1;	// Equals literal '{'
     protected static final byte START_ARRAY  = 2;	// Equals literal '['
     protected static final byte END_OBJECT 	 = 3;	// Equals literal '}'
@@ -35,23 +36,34 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
     protected static final byte VALUE 	     = 6;	// Equals literal ""<Name""
 
     List<JsonToken> ctx; 		// List of keys to which content to be working on is attributed (Problem of two concurrent merging processes, of which one is embedded in the other
-    Multimap<JsonToken, JsonToken> ctxRegistry = HashMultimap.create();	// Registers root key of every key
+    Multimap<JsonToken, JsonToken> ctxRegistry;	// Registers root parent of every parent
     List<JsonToken> jsonList;	// Sequential list of json-tokens
-    int curIndex = 0;   // Current index in jsonList
-    int id = 0;
-    boolean skipToken = false;  // Should the following token (i.e. object or array) be skipped?
-    boolean higherCtx = false;  // Next key adds itself as new element in List ctx (i.e. no replacement of last registered key)
+    int curIndex;   // Current index in jsonList
+    int id;         // Id for the next built JsonToken object
+    boolean skipToken;  // Should the following token (i.e. object or array) be skipped?
+    boolean higherCtx;  // Next parent adds itself as new element in List ctx (i.e. no replacement of last registered parent)
 
 
+    /**
+     * Contains information on a Json token (e.g. parent) and methods to query, modify and serialize it.
+     */
     private class JsonToken {
 
         byte type;		    // Type of the token
-        String name;		// Name (only if type == key / value, else null)
-        JsonToken lastElem;	// Last element belonging to the key (key only, else null)
-        JsonToken key;		// Key which token belongs to (for key: root key)
-        int id;
+        String name;		// Name (only if type == parent / value, else null)
+        JsonToken lastElem;	// Last element belonging to the parent (parent only, else null)
+        JsonToken key;		// Key which token belongs to (for parent: root parent)
+        int id;             // Id of the token
 
 
+        /**
+         * Constructor for class JsonToken
+         * @param id Id of token
+         * @param type Type of token (one of ROOT_NODE, OBJECT, ARRAY, END_OBJECT, END_ARRAY, KEY, VALUE)
+         * @param name Name of token (only if type == KEY or VALUE, else null)
+         * @param lastElem Last element belonging to a parent (for keys only, else null)
+         * @param key Refers to parent id of which a token belongs to (parent refer to their root parent)
+         */
         JsonToken(int id, byte type, String name, JsonToken lastElem, JsonToken key) {
             this.id = id;
             this.type = type;
@@ -117,7 +129,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         }
 
         /**
-         * Gets last element which still belongs to key
+         * Gets last element which still belongs to parent
          * @return Last element
          */
         JsonToken getLastElem() {
@@ -125,11 +137,26 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         }
 
         /**
-         * Sets last element which still belongs to key
+         * Get root parent
+         * @return Root parent
+         */
+        JsonToken getKey() {
+            return key;
+        }
+
+        /**
+         * Sets last element which still belongs to parent
          * @param jt Respective JSON token
          */
         void setLastElem(JsonToken jt) {
             lastElem = jt;
+        }
+
+        /**
+         * Set this Json token as last element of root parent
+         */
+        void setAsLastElem() {
+            if (key != null) key.setLastElem(this);
         }
 
         /**
@@ -145,13 +172,24 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
 
     @Override
     public void startRecord(String identifier) {
+        //(Re)set global variables
+        ctx = new ArrayList<>();
+        ctxRegistry = HashMultimap.create();
+        jsonList = new ArrayList<>();
+        curIndex = 0;
+        id = 0;
+        skipToken = false;
+        higherCtx = false;
+
         buildRootObject();
-        startEntity(identifier);
+        buildStartObject();
+        //startEntity(identifier);
     }
 
     @Override
     public void endRecord() {
-        String jsonString = buildJsonString();
+        buildEndObject();
+        getReceiver().process(buildJsonString());
     }
 
     @Override
@@ -168,7 +206,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
     @Override
     public void literal(String name, String value) {
         buildKey(name);
-        buildValue(name);
+        buildValue(value);
     }
 
     /**
@@ -178,8 +216,8 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         if (!skipToken) {
             JsonToken jt = new JsonToken(++id, START_OBJECT, null, null, ctx.get(ctx.size() - 1));
             jsonList.add(curIndex, jt);
-            ctx.get(ctx.size() - 1).setLastElem(jt);
             higherCtx = true;
+            jt.setAsLastElem();
             curIndex++;
         }
     }
@@ -190,7 +228,6 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
     void buildStartArray() {
         JsonToken jt = new JsonToken(++id, START_ARRAY, null, null, ctx.get(ctx.size() - 1));
         jsonList.add(curIndex, jt);
-        ctx.get(ctx.size() - 1).setLastElem(jt);
         curIndex++;
     }
 
@@ -198,63 +235,87 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      * Closes an object token
      */
     void buildEndObject() {
-        // TODO: Do not write token if respective key has been merged
-        skipToken = false;
-        JsonToken jt = new JsonToken(++id, END_OBJECT, null, null, ctx.get(ctx.size() - 1));
-        jsonList.add(curIndex, jt);
-        ctx.get(ctx.size() - 1).setLastElem(jt);
-        curIndex++;
+        if (skipToken) {
+            skipToken = false;
+        } else {
+            JsonToken jt = (ctx.size() > 1) ?
+                    new JsonToken(++id, END_OBJECT, null, null, ctx.get(ctx.size() - 2)) :
+                    new JsonToken(++id, END_OBJECT, null, null, ctx.get(ctx.size() - 1));
+            jsonList.add(curIndex, jt);
+            jt.setAsLastElem();
+            curIndex++;
+        }
+        ctx.remove(ctx.size() -1);
     }
 
     /**
      * Closes an array token
      */
     void buildEndArray() {
-        // TODO: Write token if two key/value pairs have been merged
         skipToken = false;
         JsonToken jt = new JsonToken(++id, END_ARRAY, null, null, ctx.get(ctx.size() - 1));
         jsonList.add(curIndex, jt);
-        ctx.get(ctx.size() - 1).setLastElem(jt);
+        jt.setAsLastElem();
         curIndex++;
     }
 
     /**
-     * Creates a new key token
-     * @param name Name of key
+     * Creates a new parent token
+     * @param name Name of parent
      */
     void buildKey(String name) {
         skipToken = false;
-        JsonToken identicalKey = checkKeyExists(ctx.get(ctx.size() - 1), name);
+        // If new (i.e. higher) context, get last parent token in ctx else second last
+        JsonToken identicalKey = higherCtx ?
+                checkKeyExists(ctx.get(ctx.size() - 1), name) :
+                checkKeyExists(ctx.get(ctx.size() - 2), name);
         if (identicalKey != null) {
             // TODO Check if index is correct!
-            ctx.add(ctx.size() - 2, identicalKey);
-            // TODO Check if index is correct!
-            curIndex = identicalKey.getLastElem().getIndex();
-            // Depending on what the identical key refers to (value, array or object),
+            if (higherCtx) {
+                ctx.add(identicalKey);
+                higherCtx = false;
+            } else {
+                ctx.set(ctx.size() - 1, identicalKey);
+            }
+            // Depending on what the identical parent refers to (value, array or object),
             // additional steps are required (e.g. create new array or skip the following opening curly brace)
             switch (identicalKey.getLastElem().getType()) {
+                // Merging of two objects
                 case END_OBJECT:
-                    // TODO Merge two objects
+                    curIndex = identicalKey.getLastElem().getIndex();
+                    skipToken = true;
+                    higherCtx = true;
                     break;
+                // Add value to existing array
                 case END_ARRAY:
-                    // TODO Add value to existing array
+                    curIndex = identicalKey.getLastElem().getIndex();
                     break;
+                // Merge two parent-value-pairs to an array
                 case VALUE:
-                    // TODO Merge two values into array
+                    // Set start array token
+                    curIndex = identicalKey.getIndex() + 1;
+                    buildStartArray();
+                    // Set end array token
+                    curIndex = identicalKey.getLastElem().getIndex() + 1;
+                    buildEndArray();
+                    curIndex--;
                     break;
             }
             skipToken = true;
         } else {
-            JsonToken jt = new JsonToken(++id, KEY, name, null, ctx.get(ctx.size() - 1));
+            JsonToken jt = higherCtx ?
+                    new JsonToken(++id, KEY, name, null, ctx.get(ctx.size() - 1)) :
+                    new JsonToken(++id, KEY, name, null, ctx.get(ctx.size() - 2));
             if (higherCtx) {
                 ctx.add(jt);
                 higherCtx = false;
             } else {
                 // TODO Check if index is correct!
-                ctx.add(ctx.size() - 2, jt);
+                ctx.set(ctx.size() - 1, jt);
             }
             jsonList.add(curIndex, jt);
-            ctx.get(ctx.size() - 1).setLastElem(jt);
+            ctxRegistry.put(jt.getKey(), jt);
+            jt.setAsLastElem();
             curIndex++;
         }
     }
@@ -267,26 +328,27 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         skipToken = false;
         JsonToken jt = new JsonToken(++id, VALUE, name, null, ctx.get(ctx.size() - 1));
         jsonList.add(curIndex, jt);
-        ctx.get(ctx.size() - 1).setLastElem(jt);
+        jt.setAsLastElem();
         curIndex++;
     }
 
     /**
-     * Creates a root object token ("dummy key")
+     * Creates a root object token ("dummy parent")
      */
     void buildRootObject() {
-        // TODO Set ctx
         JsonToken jt = new JsonToken(++id, ROOT_OBJECT, null, null, null);
+        ctx.add(jt);
+        jt.setLastElem(jt);
         jsonList.add(curIndex, jt);
-        ctx.get(ctx.size() - 1).setLastElem(jt);
+        jt.setAsLastElem();
         curIndex++;
     }
 
     /**
-     * Checks if a key with same name and same root key (context) exists
-     * @param rootKey Reference to root key
-     * @param name Name of key
-     * @return JsonToken Root key, if a key has been found, otherwise null
+     * Checks if a parent with same name and same root parent (context) exists
+     * @param rootKey Reference to root parent
+     * @param name Name of parent
+     * @return JsonToken Root parent, if a parent has been found, otherwise null
      */
     JsonToken checkKeyExists(JsonToken rootKey, String name) {
         JsonToken foundKey = null;
