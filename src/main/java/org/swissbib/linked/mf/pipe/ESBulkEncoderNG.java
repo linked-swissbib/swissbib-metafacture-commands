@@ -1,4 +1,4 @@
-package org.swissbib.linked.mf.writer;
+package org.swissbib.linked.mf.pipe;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -11,8 +11,7 @@ import org.culturegraph.mf.framework.annotations.Out;
 
 import java.util.ArrayList;
 import java.util.List;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
+
 
 /**
  * Serialises an object as JSON-LD.
@@ -38,10 +37,9 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
     JsonToken node;                                     // Current node
     JsonToken rootNode;                                 // Current root node
 
-    boolean multipleObjects                 = false;    // Multiple objects in one record
     boolean header                          = true;     // Should bulk-header be printed?
+    boolean escapeChars                     = true;     // Should prohibited characters in JSON string be escaped?
     String id;                                          // Id of record
-    //String idKeyName;                                   // Name of id key
     String type;                                        // Type of record
     String index;                                       // Index of record
 
@@ -66,7 +64,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
          */
         JsonToken(byte type, String name, JsonToken parent) {
             this.type = type;
-            this.name = name;
+            this.name = (escapeChars && name != null && !(name.equals(""))) ? escChars(name) : name;
             this.parent = parent;
             if (parent != null) parent.setChildren(this);
         }
@@ -139,15 +137,50 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
             return parentheses;
         }
 
+        String escChars(String value) {
+            StringBuilder stringBuilder = new StringBuilder();
+            String t;
+            for (char c: value.toCharArray()) {
+                switch(c) {
+                    case '\\':
+                    case '"':
+                        stringBuilder.append('\\');
+                        stringBuilder.append(c);
+                        break;
+                    case '/':
+                        stringBuilder.append('\\');
+                        stringBuilder.append(c);
+                        break;
+                    case '\b':
+                        stringBuilder.append("\\b");
+                        break;
+                    case '\t':
+                        stringBuilder.append("\\t");
+                        break;
+                    case '\n':
+                        stringBuilder.append("\\n");
+                        break;
+                    case '\f':
+                        stringBuilder.append("\\f");
+                        break;
+                    case '\r':
+                        stringBuilder.append("\\r");
+                        break;
+                    default:
+                        if (c < ' ') {
+                            t = "000" + Integer.toHexString(c);
+                            stringBuilder.append("\\u");
+                            stringBuilder.append(t.substring(t.length() - 4));
+                        } else {
+                            stringBuilder.append(c);
+                        }
+                }
+            }
+            return stringBuilder.toString();
+        }
+
     }
 
-    /**
-     * Are there more than one possible objects in one record?
-     * @param multipleObjects true, false
-     */
-    public void setMultipleObjects(String multipleObjects) {
-        this.multipleObjects = Boolean.parseBoolean(multipleObjects);
-    }
 
     /**
      * Should header be created?
@@ -155,6 +188,14 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      */
     public void setHeader(String header) {
         this.header = Boolean.parseBoolean(header);
+    }
+
+    /**
+     * Escape prohibited characters in JSON strings
+     * @param escapeChars
+     */
+    public void setEscapeChars(String escapeChars) {
+        this.escapeChars = Boolean.parseBoolean(escapeChars);
     }
 
     /**
@@ -173,14 +214,6 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         this.type = type;
     }
 
-    /**
-     * Sets id key name
-     * //@param idKeyName Name of key where value is stored
-     */
-/*    public void setIdKeyName(String idKeyName) {
-        this.idKeyName = idKeyName;
-    }*/
-
     @Override
     public void startRecord(String identifier) {
         ctxRegistry = HashMultimap.create();
@@ -192,7 +225,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
 
     @Override
     public void endRecord() {
-        if (!multipleObjects) flushObject();
+        flushObject();
     }
 
     @Override
@@ -204,17 +237,12 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
     @Override
     public void endEntity() {
         node = node.getParent();
-        if (multipleObjects && node.getParent().getType() == ROOT_NODE) {
-            flushObject();
-            startRecord(null);
-        }
     }
 
     @Override
     public void literal(String name, String value) {
         buildKey(name);
         new JsonToken(VALUE, value, node);
-        // setId(node.getParent(), name, value);
     }
 
     /**
@@ -301,18 +329,6 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         if (jt.getType() == ROOT_NODE) stringBuilder.append("}\n");
         return stringBuilder.toString();
     }
-
-    /**
-     * Extracts id from indicated value
-     * @param parentNode Parent node of current node
-     * @param name Name of key
-     * @param value Name of value
-     */
-/*    void setId(JsonToken parentNode, String name, String value) {
-        if (name.equals(idKeyName) && parentNode.getParent().getType() == ROOT_NODE) {
-           id = value;
-        }
-    }*/
 
     /**
      * Generates header line if header == true
