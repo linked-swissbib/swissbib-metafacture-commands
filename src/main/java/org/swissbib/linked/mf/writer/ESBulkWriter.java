@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
 
 /**
@@ -46,6 +47,8 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
     String encoding = "UTF-8";
 
     BufferedWriter fout = null;
+
+    Random rng = new Random();
 
 
     public void setBaseOutDir (final String outDir) {
@@ -219,7 +222,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
             if (subDirexists) {
                 String path = this.baseOutDir + File.separator + this.currentSubDir + File.separator +
-                        this.outFilePrefix + "_" + ft.format(dNow) + ".jsonld.gz";
+                        this.outFilePrefix + "_" + ft.format(dNow) + "_" + generateRandomString() + ".jsonld.gz";
                 final OutputStream file = new FileOutputStream(path);
                 OutputStream compressor = compression.createCompressor(file, path);
 
@@ -243,6 +246,13 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
             System.out.println("UNsupportedEnding");
         }
 
+    }
+
+    String generateRandomString() {
+        char[] text = new char[2];
+        String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (int i = 0; i < 2; i++) text[i] = characters.charAt(rng.nextInt(characters.length()));
+        return new String(text);
     }
 
 }
