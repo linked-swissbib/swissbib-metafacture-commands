@@ -162,7 +162,7 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
             }
         })
                 // Header and body line
-                .setBulkActions(this.recordsPerUpload * 2)
+                .setBulkActions(this.recordsPerUpload)
                 .setConcurrentRequests(1)
                 .build();
     }
