@@ -191,7 +191,6 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
             try {
                 this.fout.flush();
                 this.fout.close();
-                // Todo: Implement Bulk API upload command here
             } catch (IOException ioEx) {
                 System.out.println("io Exception while output file should be closed");
             }
