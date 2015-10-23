@@ -26,7 +26,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
 
     protected static final char COMMA 	    = ',';      // Comma transition (e.g. between value and parent)
     protected static final String NONE 	    = "";	    // No transition
-    protected static final byte ROOT_NODE   = 0;	    // Root node
+    protected static final byte BNODE       = 0;	    // Node without key
     protected static final byte OBJECT      = 1;
     protected static final byte ARRAY       = 2;
     protected static final byte KEY 	    = 3;	    // Equals literal ""<Name>""
@@ -36,6 +36,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
     boolean makeChildNode;                              // Set next key as child node of current node
     JsonToken node;                                     // Current node
     JsonToken rootNode;                                 // Current root node
+    String outputString                     = "";
 
     boolean header                          = true;     // Should bulk-header be printed?
     boolean escapeChars                     = true;     // Should prohibited characters in JSON string be escaped?
@@ -64,9 +65,12 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
          */
         JsonToken(byte type, String name, JsonToken parent) {
             this.type = type;
-            this.name = (escapeChars && name != null && !(name.equals(""))) ? escChars(name) : name;
+            if (name == null) name = "";
+            if (name.endsWith("{}")) name = name.substring(0, name.length() - 2);
+            this.name = (escapeChars && !(name.equals(""))) ? escChars(name) : name;
             this.parent = parent;
             if (parent != null) parent.setChildren(this);
+            if (type == BNODE) this.parentheses = OBJECT;
         }
 
         /**
@@ -76,7 +80,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         @Override
         public String toString() {
             switch (this.getType()) {
-                case ROOT_NODE:
+                case BNODE:
                     return NONE;
                 case KEY:
                     return "\"" + this.getName() + "\"";
@@ -116,8 +120,8 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
          */
         void setChildren(JsonToken jt) {
             if (jt.getType() == KEY) parentheses = OBJECT;
-            if (parentheses == 0 && jt.getType() == VALUE) parentheses = ARRAY;
-            if (parentheses == -1 && jt.getType() == VALUE) parentheses = 0;
+            if ((parentheses == 0 && (jt.getType() == VALUE) | jt.getType() == BNODE)) parentheses = ARRAY;
+            if (parentheses == -1 && (jt.getType() == VALUE | jt.getType() == BNODE)) parentheses = 0;
             children.add(jt);
         }
 
@@ -144,10 +148,6 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
                 switch(c) {
                     case '\\':
                     case '"':
-                        stringBuilder.append('\\');
-                        stringBuilder.append(c);
-                        break;
-                    case '/':
                         stringBuilder.append('\\');
                         stringBuilder.append(c);
                         break;
@@ -192,7 +192,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
 
     /**
      * Escape prohibited characters in JSON strings
-     * @param escapeChars
+     * @param escapeChars true, false
      */
     public void setEscapeChars(String escapeChars) {
         this.escapeChars = Boolean.parseBoolean(escapeChars);
@@ -215,28 +215,33 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
     }
 
     @Override
-    public void startRecord(String identifier) {
+    public void startRecord(String id) {
         ctxRegistry = HashMultimap.create();
-        node = new JsonToken(ROOT_NODE, null, null);
+        node = new JsonToken(BNODE, null, null);
         rootNode = node;
         makeChildNode = true;
-        id = identifier;
+        outputString = (header) ? "{\"index\":{\"_type\":\"" + type + "\",\"_index\":\"" +
+                index + "\",\"_id\":\"" + id + "\"}}\n" :
+                "";
     }
 
     @Override
     public void endRecord() {
-        flushObject();
+        outputString += "{" + buildJsonString((byte) -1, rootNode) + "}\n";
+        getReceiver().process(outputString);
     }
 
     @Override
     public void startEntity(String name) {
         buildKey(name);
         makeChildNode = true;
+        if (name.endsWith("{}")) node = new JsonToken(BNODE, null, getParentNode());
     }
 
     @Override
     public void endEntity() {
         node = node.getParent();
+        if (node.getType() == BNODE) node = node.getParent();
     }
 
     @Override
@@ -265,6 +270,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      * @return JsonToken Root parent, if a parent has been found, otherwise null
      */
     JsonToken checkKeyExists(JsonToken rootKey, String name) {
+        if (name.endsWith("{}")) name = name.substring(0, name.length() - 2);
         JsonToken foundKey = null;
         if (ctxRegistry.containsKey(rootKey)) {
             for (JsonToken jt: ctxRegistry.get(rootKey)) {
@@ -288,21 +294,17 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      */
     String buildJsonString(byte lastTokenType, JsonToken jt) {
         StringBuilder stringBuilder = new StringBuilder();
-        if (jt.getType() == ROOT_NODE) {
-            stringBuilder.append(generateHeader());
-            stringBuilder.append("{");
-        }
         for (JsonToken child: jt.getChildren()) {
             // Set prefixes if required
             if (lastTokenType == OBJECT || lastTokenType == ARRAY) {
-                stringBuilder.append((child.getType() == KEY) ? COMMA : NONE);
+                stringBuilder.append((child.getType() == KEY || child.getType() == BNODE) ? COMMA : NONE);
             } else if (lastTokenType == VALUE) {
                 stringBuilder.append((child.getType() == KEY || child.getType() == VALUE) ? COMMA : NONE);
             }
             // Set name of key / value
             stringBuilder.append(child.toString());
             // Descend to child nodes if present
-            if (child.getType() == KEY) {
+            if (child.getType() == KEY || child.getType() == BNODE) {
                 switch (child.getParentheses()) {
                     case 0:
                         stringBuilder.append(":");
@@ -310,7 +312,8 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
                         lastTokenType = VALUE;
                         break;
                     case OBJECT:
-                        stringBuilder.append(":{");
+                        if (child.getType() != BNODE) stringBuilder.append(":");
+                        stringBuilder.append("{");
                         stringBuilder.append(buildJsonString((byte)0, child));
                         stringBuilder.append("}");
                         lastTokenType = OBJECT;
@@ -326,25 +329,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
                 lastTokenType = VALUE;
             }
         }
-        if (jt.getType() == ROOT_NODE) stringBuilder.append("}\n");
         return stringBuilder.toString();
-    }
-
-    /**
-     * Generates header line if header == true
-     * @return Header line
-     */
-    String generateHeader() {
-        return (header) ?
-                "{\"index\":{\"_type\":\"" + type + "\",\"_index\":\"" + index + "\",\"_id\":\"" + id + "\"}}\n" :
-                "";
-    }
-
-    /**
-     * Flushes content to receiver
-     */
-    void flushObject() {
-        getReceiver().process(buildJsonString((byte) -1, rootNode));
     }
 
 }
