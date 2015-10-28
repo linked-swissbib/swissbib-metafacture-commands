@@ -36,7 +36,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
     String baseOutDir = "/tmp";
     String outFilePrefix = "esbulk";
-    String outputFormat;
+    Boolean jsonCompliant = false;
     int fileSize = 2000;
     int numberFilesPerDirectory = 300;
     int currentSubDir = 1;
@@ -70,8 +70,8 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
         this.numberFilesPerDirectory = numberFilesPerDirectory;
     }
 
-    public void setOutputFormat (final String outputFormat) {
-        this.outputFormat = outputFormat;
+    public void setJsonCompliant(final String jsonCompliant) {
+        this.jsonCompliant = Boolean.parseBoolean(jsonCompliant);
     }
 
 
@@ -156,12 +156,15 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
         try {
             if (this.fout != null) {
+                if (jsonCompliant) text = text.substring(0, text.length() - 1);
                 if (!text.equals("{}\n")) this.fout.write(text);
                 this.numberRecordsWritten++;
                 if (this.numberRecordsWritten >= this.fileSize) {
                     this.numberRecordsWritten = 0;
                     this.closeOutFile();
                     this.openOutFile();
+                } else {
+                    if (jsonCompliant) this.fout.write(",\n");
                 }
             }
         } catch (IOException ioExc) {
@@ -189,6 +192,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
         if (this.fout != null) {
             try {
+                if (jsonCompliant) this.fout.write("\n]");
                 this.fout.flush();
                 this.fout.close();
             } catch (IOException ioEx) {
@@ -226,6 +230,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
                 OutputStream compressor = compression.createCompressor(file, path);
 
                 this.fout = new BufferedWriter(new OutputStreamWriter(compressor,this.encoding));
+                if (jsonCompliant) this.fout.write("[\n");
 
             } else {
                 this.fout = null;
@@ -243,6 +248,8 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
         } catch (UnsupportedEncodingException usEnc) {
             System.out.println("UNsupportedEnding");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
