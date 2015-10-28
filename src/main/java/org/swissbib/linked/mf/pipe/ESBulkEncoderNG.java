@@ -40,7 +40,6 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
 
     boolean header                          = true;     // Should bulk-header be printed?
     boolean escapeChars                     = true;     // Should prohibited characters in JSON string be escaped?
-    String id;                                          // Id of record
     String type;                                        // Type of record
     String index;                                       // Index of record
 
