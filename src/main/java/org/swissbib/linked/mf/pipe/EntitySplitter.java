@@ -20,7 +20,6 @@ import org.culturegraph.mf.framework.annotations.Out;
 public class EntitySplitter extends DefaultStreamPipe<StreamReceiver> {
 
     int nodeLevel = 0;
-    String id;
     int entityBoundary = 0;
 
 
@@ -31,7 +30,6 @@ public class EntitySplitter extends DefaultStreamPipe<StreamReceiver> {
     @Override
     public void startRecord(String identifier) {
         assert !this.isClosed();
-        id = identifier;
     }
 
     @Override
@@ -43,7 +41,7 @@ public class EntitySplitter extends DefaultStreamPipe<StreamReceiver> {
     public void startEntity(String name) {
         assert !this.isClosed();
         if (nodeLevel == entityBoundary) {
-            getReceiver().startRecord(id);
+            getReceiver().startRecord("");
         } else {
             getReceiver().startEntity(name);
         }
