@@ -5,6 +5,8 @@ import org.culturegraph.mf.framework.StreamReceiver;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extracts entities of a record on a certain level (default 0) and forwards them as individual records. Set level with
@@ -19,16 +21,20 @@ import org.culturegraph.mf.framework.annotations.Out;
 @Out(StreamReceiver.class)
 public class EntitySplitter extends DefaultStreamPipe<StreamReceiver> {
 
+    private final static Logger LOG = LoggerFactory.getLogger(EntitySplitter.class);
+
     int nodeLevel = 0;
     int entityBoundary = 0;
 
 
     public void setEntityBoundary(String entityBoundary) {
         this.entityBoundary = Integer.parseInt(entityBoundary);
+        LOG.debug("Settings - Set node level for entity splitting: {}", entityBoundary);
     }
 
     @Override
     public void startRecord(String identifier) {
+        LOG.debug("Processing record {}", identifier);
         assert !this.isClosed();
     }
 
@@ -41,6 +47,7 @@ public class EntitySplitter extends DefaultStreamPipe<StreamReceiver> {
     public void startEntity(String name) {
         assert !this.isClosed();
         if (nodeLevel == entityBoundary) {
+            LOG.trace("Splitting record on node level {}", nodeLevel);
             getReceiver().startRecord("");
         } else {
             getReceiver().startEntity(name);

@@ -8,6 +8,9 @@ import org.culturegraph.mf.framework.StreamReceiver;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.swissbib.linked.mf.writer.ESBulkEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,8 @@ import java.util.List;
 @In(StreamReceiver.class)
 @Out(String.class)
 public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<String>> {
+
+    private final static Logger LOG = LoggerFactory.getLogger(ESBulkEncoder.class);
 
     protected static final char COMMA 	    = ',';      // Comma transition (e.g. between value and parent)
     protected static final String NONE 	    = "";	    // No transition
@@ -187,6 +192,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      */
     public void setHeader(String header) {
         this.header = Boolean.parseBoolean(header);
+        LOG.debug("Settings - Write header: {}", header);
     }
 
     /**
@@ -195,6 +201,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      */
     public void setEscapeChars(String escapeChars) {
         this.escapeChars = Boolean.parseBoolean(escapeChars);
+        LOG.debug("Settings - Escape problematic characters: {}", escapeChars);
     }
 
     /**
@@ -203,6 +210,7 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      */
     public void setIndex(String index) {
         this.index = index;
+        LOG.debug("Settings - Set index name: {}", index);
     }
 
     /**
@@ -211,10 +219,12 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
      */
     public void setType(String type) {
         this.type = type;
+        LOG.debug("Settings - Set type: {}", type);
     }
 
     @Override
     public void startRecord(String id) {
+        LOG.info("Parsing record {}", id);
         ctxRegistry = HashMultimap.create();
         node = new JsonToken(BNODE, null, null);
         rootNode = node;
@@ -226,7 +236,9 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
 
     @Override
     public void endRecord() {
+        LOG.debug("Serializing record to JSON-LD");
         outputString += "{" + buildJsonString((byte) -1, rootNode) + "}\n";
+        LOG.trace("Sending record to {}", getReceiver().getClass());
         getReceiver().process(outputString);
     }
 
@@ -273,7 +285,10 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
         JsonToken foundKey = null;
         if (ctxRegistry.containsKey(rootKey)) {
             for (JsonToken jt: ctxRegistry.get(rootKey)) {
-                if (jt.getName().equals(name)) foundKey = jt;
+                if (jt.getName().equals(name)) {
+                    LOG.trace("Merging key {}", name);
+                    foundKey = jt;
+                }
             }
         }
         return foundKey;

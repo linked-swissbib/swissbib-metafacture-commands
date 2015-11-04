@@ -5,6 +5,8 @@ import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
 import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -24,6 +26,8 @@ import java.util.Random;
 @In(Object.class)
 @Out(Void.class)
 public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
+
+    private final static Logger LOG = LoggerFactory.getLogger(ESBulkWriter.class);
 
     String header = DEFAULT_HEADER;
     String footer = DEFAULT_FOOTER;
@@ -53,25 +57,30 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
     public void setBaseOutDir (final String outDir) {
         this.baseOutDir = outDir;
+        LOG.debug("Settings - Set output directory: {}", outDir);
     }
 
 
     public void setOutFilePrefix (final String filePrefix) {
         this.outFilePrefix = filePrefix;
+        LOG.debug("Settings - Set output file prefix: {}", filePrefix);
     }
 
 
     public void setFileSize (final int fileSize) {
         this.fileSize = fileSize;
+        LOG.debug("Settings - Set number of records in one file: {}", fileSize);
     }
 
 
     public void setFilesPerDir(final int numberFilesPerDirectory) {
         this.numberFilesPerDirectory = numberFilesPerDirectory;
+        LOG.debug("Settings - Set number of files in one subdirectory: {}", numberFilesPerDirectory);
     }
 
     public void setJsonCompliant(final String jsonCompliant) {
         this.jsonCompliant = Boolean.parseBoolean(jsonCompliant);
+        LOG.debug("Settings - Is output valid JSON? {}", this.jsonCompliant);
     }
 
 
@@ -156,6 +165,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
         try {
             if (this.fout != null) {
+                LOG.debug("Writing record {} in file", numberRecordsWritten);
                 if (jsonCompliant) text = text.substring(0, text.length() - 1);
                 if (!text.equals("{}\n")) this.fout.write(text);
                 this.numberRecordsWritten++;
@@ -168,7 +178,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
                 }
             }
         } catch (IOException ioExc) {
-            System.out.println(ioExc.getMessage());
+            LOG.error(ioExc.getMessage());
         }
     }
 
@@ -181,22 +191,19 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
 
     @Override
     public void closeStream() {
-
         this.closeOutFile();
         closed = true;
-
     }
 
 
     void closeOutFile () {
-
         if (this.fout != null) {
             try {
                 if (jsonCompliant) this.fout.write("\n]");
                 this.fout.flush();
                 this.fout.close();
             } catch (IOException ioEx) {
-                System.out.println("io Exception while output file should be closed");
+                LOG.error("IO exception while output file should be closed: {}", ioEx);
             }
         }
     }
@@ -209,7 +216,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
             boolean subDirexists = true;
             File subDir = new File(this.baseOutDir + File.separator + this.currentSubDir);
             if (!subDir.exists()) {
-
+                LOG.debug("Creating new subdirectory {}", subDir);
                 subDirexists = subDir.mkdir();
             } else if (this.numberFilesPerDirectory <= this.numberOpenedFiles) {
                 this.currentSubDir++;
@@ -226,6 +233,7 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
             if (subDirexists) {
                 String path = this.baseOutDir + File.separator + this.currentSubDir + File.separator +
                         this.outFilePrefix + "_" + ft.format(dNow) + "_" + generateRandomString() + ".jsonld.gz";
+                LOG.debug("Creating new file {}", path);
                 final OutputStream file = new FileOutputStream(path);
                 OutputStream compressor = compression.createCompressor(file, path);
 
@@ -244,12 +252,12 @@ public class ESBulkWriter<T> implements ConfigurableObjectWriter<T> {
             //Todo: GH: Look up Exception Handlng in Metafacture Framework
             //hint: implementation of File opener in MF
         } catch (FileNotFoundException fnfEx) {
-            System.out.println("file not Found");
+            LOG.error("File not found: {}", fnfEx.getMessage());
 
         } catch (UnsupportedEncodingException usEnc) {
-            System.out.println("UNsupportedEnding");
+            LOG.error("Unsupported encoding: {}", usEnc.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("IO exception: {}", e.getMessage());
         }
 
     }

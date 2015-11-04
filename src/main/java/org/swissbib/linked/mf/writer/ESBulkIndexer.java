@@ -23,6 +23,8 @@ import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -35,6 +37,8 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 @In(Object.class)
 @Out(Void.class)
 public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
+
+    private final static Logger LOG = LoggerFactory.getLogger(ESBulkIndexer.class);
 
     String header = DEFAULT_HEADER;
     String footer = DEFAULT_FOOTER;
@@ -54,16 +58,19 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
     public void setEsClustername(final String esClustername) {
         this.esClustername = esClustername;
+        LOG.debug("Settings - Set cluster name for Elasticsearch: {}", esClustername);
     }
 
 
     public void setRecordsPerUpload(final int recordsPerUpload) {
         this.recordsPerUpload = recordsPerUpload;
+        LOG.debug("Settings - Set number of records per bulk upload: {}", recordsPerUpload);
     }
 
 
     public void setEsNodes(final String esNode) {
         this.esNodes = esNode.split("#");
+        LOG.debug("Settings - Set addresses of Elasticsearch nodes: {} (# is a delimiter)", esNode);
     }
 
 
@@ -134,6 +141,7 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
 
     protected void establishConn() {
+        LOG.info("Connecting to Elasticsearch nodes");
         Settings settings = ImmutableSettings.settingsBuilder()
                 .put("cluster.name", this.esClustername)
                 .build();
@@ -148,17 +156,17 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
             @Override
             public void beforeBulk(long l, BulkRequest bulkRequest) {
-                System.out.println("Bulk requests to be processed: " + bulkRequest.numberOfActions());
+                LOG.debug("Bulk requests to be processed: {}", bulkRequest.numberOfActions());
             }
 
             @Override
             public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-                System.out.println("Indexing took " + bulkResponse.getTookInMillis() + " ms");
+                LOG.debug("Indexing took {} ms", bulkResponse.getTookInMillis());
             }
 
             @Override
             public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
-                System.out.println("Some errors were reported: " + throwable.getMessage());
+                LOG.error("Some errors were reported: {}", throwable.getMessage());
             }
         })
                 // Header and body line
@@ -170,6 +178,7 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
     public void process(T obj) {
 
+        LOG.trace("Preparing record for bulk uploading");
         if (!this.connEstablished) {
             this.establishConn();
             this.connEstablished = true;
@@ -194,6 +203,7 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
     @Override
     public void closeStream() {
+        LOG.info("Closing connection to Elasticsearch nodes");
         this.bulkProcessor.flush();
         this.bulkProcessor.close();
         this.esClient.close();
