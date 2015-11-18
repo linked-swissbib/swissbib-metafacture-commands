@@ -3,21 +3,14 @@ package org.swissbib.linked.mf.writer;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.annotations.ReturnsAvailableArguments;
 import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
 
-import java.io.*;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.settings.ImmutableSettings;
