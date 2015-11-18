@@ -25,7 +25,7 @@ import java.util.List;
 @Description("Serialises an object as JSON-LD")
 @In(StreamReceiver.class)
 @Out(String.class)
-public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<String>> {
+public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
 
     private final static Logger LOG = LoggerFactory.getLogger(ESBulkEncoder.class);
 
@@ -236,10 +236,12 @@ public final class ESBulkEncoderNG extends DefaultStreamPipe<ObjectReceiver<Stri
 
     @Override
     public void endRecord() {
-        LOG.debug("Serializing record to JSON-LD");
-        outputString += "{" + buildJsonString((byte) -1, rootNode) + "}\n";
-        LOG.trace("Sending record to {}", getReceiver().getClass());
-        getReceiver().process(outputString);
+        if (rootNode != null) {
+            LOG.debug("Serializing record to JSON-LD");
+            outputString += "{" + buildJsonString((byte) -1, rootNode) + "}\n";
+            LOG.trace("Sending record to {}", getReceiver().getClass());
+            getReceiver().process(outputString);
+        }
     }
 
     @Override
