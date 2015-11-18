@@ -10,7 +10,6 @@ import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.swissbib.linked.mf.writer.ESBulkEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
