@@ -15,10 +15,11 @@ import org.culturegraph.mf.framework.annotations.Out;
 
 
 /**
+ * Decodes data in N-triple format to Formeta
+ *
  * @author Sebastian Schüpbach
- * @version 0.1
- *          <p>
- *          Created on 12.11.15
+ * @version 1.0
+ * Created on 12.11.15
  */
 @Description("Decodes lines of N-Triple files.")
 @In(Reader.class)
@@ -27,20 +28,8 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
     private String resource;
     private Boolean startDocument = true;
 
+    @Override
     public void process(Reader reader) {
-
-/*      Each line of the file has either the form of a comment or of a statement:
-        A statement consists of three parts, separated by whitespace: the subject, the predicate and the object,
-        and is terminated with a full stop.
-        Subjects may take the form of a URI or a Blank node;
-        predicates must be a URI;
-        objects may be a URI, blank node or a literal.
-        URIs are delimited with angle brackets.
-        Blank nodes are represented by an alphanumeric string, prefixed with an underscore and colon (_:).
-        Literals are represented as printable ASCII strings (with backslash escapes),delimited with double-quote characters,
-        and optionally suffixed with a language or datatype indicator.
-        Language indicators are an at sign followed by an RFC 3066 language tag;
-        datatype indicators are a double-caret followed by a URI. Comments consist of a line beginning with a hash sign. */
 
         BufferedReader lineReader = new BufferedReader(reader, 16777216);
 
@@ -76,6 +65,11 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
 
     }
 
+    /**
+     * Parses a N-triples statement and returns elements (subject, predicate, object) as three-part ArrayList
+     * @param string Statement to be parsed
+     * @return List with subject, predicate and object
+     */
     List<String> parseLine(String string) {
 
         List<String> statement = new ArrayList<>();
@@ -95,7 +89,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                 inURI = false;
                 statement.add(elem.toString());
                 elem.setLength(0);
-            } else if (c == '\"' && !ignoreEndLiteral) {                                     // Start / end of a literal
+            } else if (c == '\"' && !ignoreEndLiteral) {                // Start / end of a literal
                 if (inLiteral) {
                     elem.append(c);
                     endLiteralChar = true;
@@ -104,7 +98,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                     inLiteral = true;
                 }
                 ignoreEndLiteral = false;
-            } else if (c == ' ' && endLiteralChar) {
+            } else if (c == ' ' && endLiteralChar) {                    // Whitespace after the end of a literal
                 endLiteralChar = false;
                 inLiteral = false;
                 statement.add(elem.toString());
@@ -117,11 +111,11 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                 elem.setLength(0);
             } else if (c == '.' && !inLiteral && !inURI && !inBnode) {  // End of statement
                 break;
-            } else if (c == '\\' && inLiteral) {
+            } else if (c == '\\' && inLiteral) {                        // Don't recognize an escaped " as end of literal
                 ignoreEndLiteral = true;
                 elem.append(c);
             }
-            else {                                                    // Record content
+            else {                                                      // Record content
                 if (inURI || inLiteral || inBnode) elem.append(c);
                 ignoreEndLiteral = false;
             }
