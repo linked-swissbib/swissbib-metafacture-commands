@@ -47,7 +47,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
 
                     String subject = statement.get(0);
                     String predicate = statement.get(1);
-                    String object = toutf8(statement.get(2));
+                    String object = unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2);
 
                     if (subject.equals(resource)) {
                         // this.getReceiver().startEntity(predicate);
