@@ -25,8 +25,15 @@ import org.culturegraph.mf.framework.annotations.Out;
 @In(Reader.class)
 @Out(StreamReceiver.class)
 public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamReceiver> {
+
     private String resource;
     private Boolean startDocument = true;
+    public Boolean unicodeEscapeSeq = true;
+
+
+    public void setUnicodeEscapeSeq(String unicodeEscapeSeq) {
+        this.unicodeEscapeSeq = Boolean.valueOf(unicodeEscapeSeq);
+    }
 
     @Override
     public void process(Reader reader) {
@@ -40,7 +47,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
 
                     String subject = statement.get(0);
                     String predicate = statement.get(1);
-                    String object = statement.get(2);
+                    String object = toutf8(statement.get(2));
 
                     if (subject.equals(resource)) {
                         // this.getReceiver().startEntity(predicate);
@@ -126,6 +133,46 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
             throw(new MetafactureException("Statement must have exactly three elements: " + string));
 
         return statement;
+    }
+
+    /**
+     * Converts Unicode escape sequences in strings to regular UTF-8 encoded characters
+     * @param literal String to be checked for Unicode escape sequences
+     * @return String with converted Unicode escape sequences
+     */
+    static String toutf8(String literal) {
+        StringBuilder utf8String = new StringBuilder();
+        StringBuilder tempString = new StringBuilder();
+        char lastArtifact = ' ';
+        char secondLastArtifact = ' ';
+        int i = 0;
+        int stringLength = literal.length();
+        boolean unicodeChar = false;
+        while (i < stringLength) {
+            char c = literal.charAt(i);
+            if (unicodeChar) {
+                tempString.append(c);
+                if (tempString.length() >= 4) {
+                    // Converts hexadecimal code represented as String to integer and casts it afterwards to char
+                    c = (char)(int)Integer.valueOf(tempString.toString(), 16);
+                    tempString.setLength(0);
+                    unicodeChar = false;
+                }
+            } else {
+                // Unicode escape sequences begin are initialized with \\u. So we have to check for such a tuple,
+                // but at the same time have to make sure that this tuple is not escaped either (i.e. a literal \\u).
+                if (secondLastArtifact != '\\' && lastArtifact == '\\' && c == 'u') {
+                    unicodeChar = true;
+                } else {
+                    utf8String.append(lastArtifact);
+                }
+            }
+            secondLastArtifact = lastArtifact;
+            lastArtifact = c;
+            i++;
+            if (i == stringLength) utf8String.append(c);
+        }
+        return utf8String.toString().substring(1);
     }
 
 }
