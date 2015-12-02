@@ -26,8 +26,6 @@ import org.culturegraph.mf.framework.annotations.Out;
 @Out(StreamReceiver.class)
 public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamReceiver> {
 
-    private String resource;
-    private Boolean startDocument = true;
     public Boolean unicodeEscapeSeq = true;
 
 
@@ -44,31 +42,16 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
             for(String e = lineReader.readLine(); e != null; e = lineReader.readLine()) {
                 if (!e.startsWith("#")) {
                     List<String> statement = parseLine(e);
-
-                    String subject = statement.get(0);
-                    String predicate = statement.get(1);
-                    String object = unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2);
-
-                    if (subject.equals(resource)) {
-                        // this.getReceiver().startEntity(predicate);
-                        this.getReceiver().literal(predicate, object);
-                        // this.getReceiver().endEntity();
-                    } else {
-                        if (!startDocument) {
-                            this.getReceiver().endRecord();
-                        } else {
-                            startDocument = false;
-                        }
-                        resource = subject;
-                        this.getReceiver().startRecord(subject);
-                    }
+                    this.getReceiver().startRecord(statement.get(0));
+                    this.getReceiver().literal(statement.get(1),
+                            unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2));
+                    this.getReceiver().endRecord();
                 }
             }
 
         } catch (IOException var4) {
             throw new MetafactureException(var4);
         }
-        this.getReceiver().endRecord();
 
     }
 
