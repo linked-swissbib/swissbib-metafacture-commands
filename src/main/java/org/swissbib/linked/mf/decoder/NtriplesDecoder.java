@@ -15,32 +15,26 @@ import org.culturegraph.mf.framework.annotations.Out;
 
 
 /**
+ * Decodes data in N-triple format to Formeta
+ *
  * @author Sebastian Schüpbach
- * @version 0.1
- *          <p>
- *          Created on 12.11.15
+ * @version 1.0
+ * Created on 12.11.15
  */
 @Description("Decodes lines of N-Triple files.")
 @In(Reader.class)
 @Out(StreamReceiver.class)
 public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamReceiver> {
-    private String resource;
-    private Boolean startDocument = true;
 
+    public Boolean unicodeEscapeSeq = true;
+
+
+    public void setUnicodeEscapeSeq(String unicodeEscapeSeq) {
+        this.unicodeEscapeSeq = Boolean.valueOf(unicodeEscapeSeq);
+    }
+
+    @Override
     public void process(Reader reader) {
-
-/*      Each line of the file has either the form of a comment or of a statement:
-        A statement consists of three parts, separated by whitespace: the subject, the predicate and the object,
-        and is terminated with a full stop.
-        Subjects may take the form of a URI or a Blank node;
-        predicates must be a URI;
-        objects may be a URI, blank node or a literal.
-        URIs are delimited with angle brackets.
-        Blank nodes are represented by an alphanumeric string, prefixed with an underscore and colon (_:).
-        Literals are represented as printable ASCII strings (with backslash escapes),delimited with double-quote characters,
-        and optionally suffixed with a language or datatype indicator.
-        Language indicators are an at sign followed by an RFC 3066 language tag;
-        datatype indicators are a double-caret followed by a URI. Comments consist of a line beginning with a hash sign. */
 
         BufferedReader lineReader = new BufferedReader(reader, 16777216);
 
@@ -48,34 +42,24 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
             for(String e = lineReader.readLine(); e != null; e = lineReader.readLine()) {
                 if (!e.startsWith("#")) {
                     List<String> statement = parseLine(e);
-
-                    String subject = statement.get(0);
-                    String predicate = statement.get(1);
-                    String object = statement.get(2);
-
-                    if (subject.equals(resource)) {
-                        // this.getReceiver().startEntity(predicate);
-                        this.getReceiver().literal(predicate, object);
-                        // this.getReceiver().endEntity();
-                    } else {
-                        if (!startDocument) {
-                            this.getReceiver().endRecord();
-                        } else {
-                            startDocument = false;
-                        }
-                        resource = subject;
-                        this.getReceiver().startRecord(subject);
-                    }
+                    this.getReceiver().startRecord(statement.get(0));
+                    this.getReceiver().literal(statement.get(1),
+                            unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2));
+                    this.getReceiver().endRecord();
                 }
             }
 
         } catch (IOException var4) {
             throw new MetafactureException(var4);
         }
-        this.getReceiver().endRecord();
 
     }
 
+    /**
+     * Parses a N-triples statement and returns elements (subject, predicate, object) as three-part ArrayList
+     * @param string Statement to be parsed
+     * @return List with subject, predicate and object
+     */
     List<String> parseLine(String string) {
 
         List<String> statement = new ArrayList<>();
@@ -95,7 +79,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                 inURI = false;
                 statement.add(elem.toString());
                 elem.setLength(0);
-            } else if (c == '\"' && !ignoreEndLiteral) {                                     // Start / end of a literal
+            } else if (c == '\"' && !ignoreEndLiteral) {                // Start / end of a literal
                 if (inLiteral) {
                     elem.append(c);
                     endLiteralChar = true;
@@ -104,7 +88,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                     inLiteral = true;
                 }
                 ignoreEndLiteral = false;
-            } else if (c == ' ' && endLiteralChar) {
+            } else if (c == ' ' && endLiteralChar) {                    // Whitespace after the end of a literal
                 endLiteralChar = false;
                 inLiteral = false;
                 statement.add(elem.toString());
@@ -117,11 +101,11 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                 elem.setLength(0);
             } else if (c == '.' && !inLiteral && !inURI && !inBnode) {  // End of statement
                 break;
-            } else if (c == '\\' && inLiteral) {
+            } else if (c == '\\' && inLiteral) {                        // Don't recognize an escaped " as end of literal
                 ignoreEndLiteral = true;
                 elem.append(c);
             }
-            else {                                                    // Record content
+            else {                                                      // Record content
                 if (inURI || inLiteral || inBnode) elem.append(c);
                 ignoreEndLiteral = false;
             }
@@ -132,6 +116,46 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
             throw(new MetafactureException("Statement must have exactly three elements: " + string));
 
         return statement;
+    }
+
+    /**
+     * Converts Unicode escape sequences in strings to regular UTF-8 encoded characters
+     * @param literal String to be checked for Unicode escape sequences
+     * @return String with converted Unicode escape sequences
+     */
+    static String toutf8(String literal) {
+        StringBuilder utf8String = new StringBuilder();
+        StringBuilder tempString = new StringBuilder();
+        char lastArtifact = ' ';
+        char secondLastArtifact = ' ';
+        int i = 0;
+        int stringLength = literal.length();
+        boolean unicodeChar = false;
+        while (i < stringLength) {
+            char c = literal.charAt(i);
+            if (unicodeChar) {
+                tempString.append(c);
+                if (tempString.length() >= 4) {
+                    // Converts hexadecimal code represented as String to integer and casts it afterwards to char
+                    c = (char)(int)Integer.valueOf(tempString.toString(), 16);
+                    tempString.setLength(0);
+                    unicodeChar = false;
+                }
+            } else {
+                // Unicode escape sequences begin are initialized with \\u. So we have to check for such a tuple,
+                // but at the same time have to make sure that this tuple is not escaped either (i.e. a literal \\u).
+                if (secondLastArtifact != '\\' && lastArtifact == '\\' && c == 'u') {
+                    unicodeChar = true;
+                } else {
+                    utf8String.append(lastArtifact);
+                }
+            }
+            secondLastArtifact = lastArtifact;
+            lastArtifact = c;
+            i++;
+            if (i == stringLength) utf8String.append(c);
+        }
+        return utf8String.toString().substring(1);
     }
 
 }
