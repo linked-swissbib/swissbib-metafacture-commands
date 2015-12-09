@@ -6,6 +6,8 @@ import org.culturegraph.mf.framework.annotations.Out;
 import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -13,7 +15,6 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.bytes.BytesArray;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.slf4j.Logger;
@@ -135,14 +136,18 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
     protected void establishConn() {
         LOG.info("Connecting to Elasticsearch nodes");
-        Settings settings = ImmutableSettings.settingsBuilder()
+        Settings settings = Settings.settingsBuilder()
                 .put("cluster.name", this.esClustername)
                 .build();
 
-        this.esClient = new TransportClient(settings);
+        this.esClient = TransportClient.builder().settings(settings).build();
         for (String elem: this.esNodes) {
             String[] node = elem.split(":");
-            this.esClient.addTransportAddress(new InetSocketTransportAddress(node[0], Integer.parseInt(node[1])));
+            try {
+                this.esClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(node[0]), Integer.parseInt(node[1])));
+            } catch (UnknownHostException e) {
+                LOG.error(e.getMessage());
+            }
         }
 
         this.bulkProcessor = BulkProcessor.builder(this.esClient, new BulkProcessor.Listener() {
@@ -180,7 +185,7 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
         if (!obj.equals("{}\n")) {
             BytesArray ba = new BytesArray((String) obj);
             try {
-                this.bulkProcessor.add(ba, false, "testsb", "bibliographicResource");
+                this.bulkProcessor.add(ba, null, null);
             } catch (Exception e) {
                 e.printStackTrace();
             }
