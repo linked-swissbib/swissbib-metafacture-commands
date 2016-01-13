@@ -223,7 +223,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
 
     @Override
     public void startRecord(String id) {
-        LOG.info("Parsing record {}", id);
+        LOG.debug("Parsing record {}", id);
         ctxRegistry = HashMultimap.create();
         node = new JsonToken(BNODE, null, null);
         rootNode = node;
