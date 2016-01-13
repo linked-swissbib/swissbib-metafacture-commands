@@ -22,10 +22,16 @@ public class TransportClientSingleton {
     private final static Logger LOG = LoggerFactory.getLogger(TransportClientSingleton.class);
     private static TransportClient esClient;
 
-
+    // Prevents directly instantiating class.
     private TransportClientSingleton() {}
 
-
+    /**
+     * Checks if an Elasticsearch transport client is already instantiated, and returns either the already or the newly
+     * instantiated client.
+     * @param nodes Nodes of the Elasticsearch cluster
+     * @param clustername Name of the Elasticsearch cluster
+     * @return The instantiated Elasticsearch transport client
+     */
     public static synchronized TransportClient getEsClient(String[] nodes, String clustername) {
         if (esClient == null) {
             LOG.info("Connecting to Elasticsearch cluster {}", clustername);
@@ -55,6 +61,10 @@ public class TransportClientSingleton {
         throw new CloneNotSupportedException();
     }
 
+    /**
+     * Shuts down Elasticsearch transport client
+     * @throws Throwable
+     */
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
