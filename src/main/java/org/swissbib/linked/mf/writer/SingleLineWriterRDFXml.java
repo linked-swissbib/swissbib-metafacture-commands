@@ -78,8 +78,8 @@ public class SingleLineWriterRDFXml<T> extends RdfXmlWriter<T> {
             SimpleDateFormat ft =  new SimpleDateFormat("yyyyMMdd_hhmmssS");
 
             if (subDirexists) {
-                String conceptName = this.concept != null ? this.concept.getName() : "noConceptInUse";
-                String filename = this.outFilePrefix + "_" +  ft.format(dNow) +  "_" + conceptName + ".xml.gz";
+                String typeName = this.type != null ? this.type : "noType";
+                String filename = this.outFilePrefix + "_" +  ft.format(dNow) +  "_" + typeName + ".xml.gz";
                 String path = this.useSubdir ? this.baseOutDir + File.separator + this.currentSubDir + File.separator +
                         filename : this.baseOutDir + File.separator + filename;
                 final OutputStream file = new FileOutputStream(path);

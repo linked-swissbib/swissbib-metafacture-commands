@@ -1,5 +1,6 @@
 package org.swissbib.linked.mf.writer;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.culturegraph.mf.exceptions.MetafactureException;
 import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
@@ -18,24 +19,6 @@ import java.util.regex.Pattern;
  *          Created on 10.09.15
  */
 public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
-
-
-    protected static enum Concept {
-        BIBLIOGRAPHICRESOURCE("BIBLIOGRAPHICRESOURCE"),
-        ITEM("ITEM"), ORGANIZATION("ORGANIZATION"),
-        PERSON("PERSON"), WORK("WORK");
-
-        private final String name;
-
-        Concept(final String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
 
     String header = "";
 
@@ -69,7 +52,7 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
 
     BufferedWriter fout = null;
 
-    protected Concept concept = null;
+    protected String type = null;
     protected boolean useSubdir = false;
     protected boolean useContributor = false;
 
@@ -142,7 +125,8 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
         this.separator = separator;
     }
 
-    public void setBaseOutDir (final String outDir) {
+    public void setBaseOutDir (String outDir) {
+        outDir = rmTrailingSlash(outDir);
         this.baseOutDir = outDir;
         //this.openOutFile(filename);
     }
@@ -155,26 +139,20 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
         this.fileSize = fileSize;
     }
 
-    public void setRootTag (String rootTag) {
+    public void setRootTag (final String rootTag) {
         this.rootTag = rootTag;
     }
 
-    public void setConcept (Concept concept) {
-        //try {
-        //    this.concept = Concept.valueOf(concept);
-        //} catch (Exception ex) {
-        //    throw new MetafactureException("value  '" + concept + "' is not allowed for attribute concept");
-
-        //}
-        this.concept = concept;
+    public void setType (String type) {
+        this.type = type;
     }
 
-    public void setSubdir (boolean useSubdir) {
-        this.useSubdir = useSubdir;
+    public void setSubdir (final String useSubdir) {
+        this.useSubdir = Boolean.parseBoolean(useSubdir);
     }
 
-    public void setUsecontributor (boolean contributor) {
-        this.useContributor = contributor;
+    public void setUsecontributor (final String contributor) {
+        this.useContributor = Boolean.parseBoolean(contributor);
     }
 
 
@@ -244,5 +222,10 @@ public abstract class RdfXmlWriter<T> implements ConfigurableObjectWriter<T> {
     }
 
     abstract void writeText(String text);
+
+    private static String rmTrailingSlash(String t) {
+        if(t.endsWith("/")) t = t.substring(0, t.length()-1);
+        return t;
+    }
 
 }
