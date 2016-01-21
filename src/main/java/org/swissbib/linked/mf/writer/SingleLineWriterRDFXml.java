@@ -3,40 +3,52 @@ package org.swissbib.linked.mf.writer;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.util.FileCompression;
 
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A formatter for multiline output.
  *
  * @author Guenter Hipler, project swissbib, Basel
- *
  */
 @Description("Writes RDF/XML documents in outpufiles. Each document is written down in one line which makes it easer for further processing")
 @In(Object.class)
 @Out(Void.class)
-public class SingleLineWriterRDFXml<T> extends RdfXmlWriter<T> {
+public class SingleLineWriterRDFXml<T> extends CustomWriter<T> {
 
-    int numberFilesPerDirectory = 300;
-    int currentSubDir = 1;
-    int numberOpenedFiles = 0;
-
-    FileCompression compression = FileCompression.AUTO;
+    protected boolean useContributor = false;
+    String rootTag = "rdf:RDF";
+    String footer = "</collection>\n</rdf:RDF>\n";
 
 
     public SingleLineWriterRDFXml() {
-        super();
+        this.bibliographicResource = Pattern.compile("<dct:BibliographicResource.*?</dct:BibliographicResource>", Pattern.MULTILINE | Pattern.DOTALL);
+        this.biboDoc = Pattern.compile("<bibo:Document.*?</bibo:Document>", Pattern.MULTILINE | Pattern.DOTALL);
+        this.item = Pattern.compile("<bf:HeldItem.*?</bf:HeldItem>", Pattern.MULTILINE | Pattern.DOTALL);
+        this.work = Pattern.compile("<bf:Work.*?</bf:Work>", Pattern.MULTILINE | Pattern.DOTALL);
+        this.person = Pattern.compile("<foaf:Person.*?</foaf:Person>", Pattern.MULTILINE | Pattern.DOTALL);
+        this.organization = Pattern.compile("<foaf:Organization.*?</foaf:Organization>", Pattern.MULTILINE | Pattern.DOTALL);
+        this.containsContributor = Pattern.compile("<dct:contributor.*?</dct:contributor>", Pattern.MULTILINE | Pattern.DOTALL);
     }
 
-    public void setFilesPerDir(int numberFilesPerDirectory) {
-        this.numberFilesPerDirectory = numberFilesPerDirectory;
+    public void setUsecontributor(final String contributor) {
+        this.useContributor = Boolean.parseBoolean(contributor);
+    }
+
+    public void setRootTag(final String rootTag) {
+        this.rootTag = rootTag;
+    }
+
+
+    public void trimmer(Matcher m) {
+        String recordToStore = m.group().replaceAll("[\n\r]", "").trim() + "\n";
+        this.writeText(recordToStore);
     }
 
     @Override
-    void writeText (String text) {
+    void writeText(String text) {
 
         try {
             if (this.fout != null) {
@@ -54,58 +66,66 @@ public class SingleLineWriterRDFXml<T> extends RdfXmlWriter<T> {
     }
 
     @Override
-    void openOutFile () {
+    public void process(T obj) {
 
-        try {
+        if (firstObject) {
+            this.documentHeader = ((String) obj).replaceAll("[\n\r]", "").trim() + "\n";
+            this.openOutFile();
+            firstObject = false;
+        } else {
+            Matcher m = this.bibliographicResource.matcher((String) obj);
+            if (m.find()) {
+                trimmer(m);
+            }
 
-            boolean subDirexists = true;
-            File subDir = this.useSubdir ? new File(this.baseOutDir + File.separator + this.currentSubDir) :
-                    new File(this.baseOutDir);
-            if (!subDir.exists()) {
+            m = this.biboDoc.matcher((String) obj);
+            if (m.find()) {
+                trimmer(m);
+            }
 
-                 subDirexists = subDir.mkdir();
-            } else if (this.numberFilesPerDirectory <= this.numberOpenedFiles) {
-                this.currentSubDir++;
-                subDir = this.useSubdir ? new File(this.baseOutDir + File.separator + this.currentSubDir) :
-                        new File(this.baseOutDir);
-                if (!subDir.exists()) {
-                    subDirexists = subDir.mkdir();
+            m = this.work.matcher((String) obj);
+            if (m.find()) {
+                trimmer(m);
+            }
+
+            if (this.useContributor) {
+                m = this.person.matcher((String) obj);
+                if (m.find()) {
+                    trimmer(m);
                 }
-                this.numberOpenedFiles = 0;
-            }
-
-            Date dNow = new Date( );
-            SimpleDateFormat ft =  new SimpleDateFormat("yyyyMMdd_hhmmssS");
-
-            if (subDirexists) {
-                String typeName = this.type != null ? this.type : "noType";
-                String filename = this.outFilePrefix + "_" +  ft.format(dNow) +  "_" + typeName + ".xml.gz";
-                String path = this.useSubdir ? this.baseOutDir + File.separator + this.currentSubDir + File.separator +
-                        filename : this.baseOutDir + File.separator + filename;
-                final OutputStream file = new FileOutputStream(path);
-                OutputStream compressor = compression.createCompressor(file, path);
-
-                this.fout = new BufferedWriter(new OutputStreamWriter(compressor,this.encoding));
-                this.writeText(this.documentHeader);
-
             } else {
-                this.fout = null;
+                m = this.person.matcher((String) obj);
+                Matcher m1 = this.containsContributor.matcher((String) obj);
+                if (m.find() && !m1.find()) {
+                    trimmer(m);
+                }
             }
 
-
-            if (this.fout != null) {
-                this.numberOpenedFiles++;
+            m = this.item.matcher((String) obj);
+            if (m.find()) {
+                trimmer(m);
             }
 
-            //Todo: GH: Look up Exception Handlng in Metafacture Framework
-            //hint: implementation of File opener in MF
-        } catch (FileNotFoundException fnfEx) {
-            System.out.println("file not Found");
-
-        } catch (UnsupportedEncodingException usEnc) {
-            System.out.println("UNsupportedEnding");
+            m = this.organization.matcher((String) obj);
+            if (m.find()) {
+                trimmer(m);
+            }
         }
 
+    }
+
+    @Override
+    void closeOutFile() {
+
+        if (this.fout != null) {
+            try {
+                this.writeText("</" + this.rootTag + ">");
+                this.fout.flush();
+                this.fout.close();
+            } catch (IOException ioEx) {
+                System.out.println("io Exception while output file should be closed");
+            }
+        }
     }
 
 }
