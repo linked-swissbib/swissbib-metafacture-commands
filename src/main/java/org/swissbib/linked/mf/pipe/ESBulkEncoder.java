@@ -26,8 +26,6 @@ import java.util.List;
 @Out(String.class)
 public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
 
-    private final static Logger LOG = LoggerFactory.getLogger(ESBulkEncoder.class);
-
     protected static final char COMMA 	    = ',';      // Comma transition (e.g. between value and parent)
     protected static final String NONE 	    = "";	    // No transition
     protected static final byte BNODE       = 0;	    // Node without key
@@ -35,7 +33,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
     protected static final byte ARRAY       = 2;
     protected static final byte KEY 	    = 3;	    // Equals literal ""<Name>""
     protected static final byte VALUE 	    = 4;	    // Equals literal ""<Name>""
-
+    private final static Logger LOG = LoggerFactory.getLogger(ESBulkEncoder.class);
     Multimap<JsonToken, JsonToken> ctxRegistry;         // Registers root parent of every parent
     boolean makeChildNode;                              // Set next key as child node of current node
     JsonToken node;                                     // Current node
@@ -46,144 +44,6 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
     boolean escapeChars                     = true;     // Should prohibited characters in JSON string be escaped?
     String type;                                        // Type of record
     String index;                                       // Index of record
-
-
-    /**
-     * Contains information on a Json token (e.g. parent) and methods to query, modify and serialize it.
-     */
-    private class JsonToken {
-
-        byte type;		    // Type of the token
-        String name;		// Name (only if type == parent / value, else null)
-        List<JsonToken> children = new ArrayList<>();	// Last element belonging to the parent (parent only, else null)
-        JsonToken parent;		// Key which token belongs to (for parent: root parent)
-        byte parentheses = -1;  // Parentheses which surrounds descendants (none, brackets or braces)
-
-
-        /**
-         * Constructor for class JsonToken
-         * @param type Type of token (one of ROOT_NODE, OBJECT, ARRAY, END_OBJECT, END_ARRAY, KEY, VALUE)
-         * @param name Name of token (only if type == KEY or VALUE, else null)
-         * @param parent Refers to parent id of which a token belongs to (parent refer to their root parent)
-         */
-        JsonToken(byte type, String name, JsonToken parent) {
-            this.type = type;
-            if (name == null) name = "";
-            if (name.endsWith("{}")) name = name.substring(0, name.length() - 2);
-            this.name = (escapeChars && !(name.equals(""))) ? escChars(name) : name;
-            this.parent = parent;
-            if (parent != null) parent.setChildren(this);
-            if (type == BNODE) this.parentheses = OBJECT;
-        }
-
-        /**
-         * Prints respective literal
-         * @return Literal
-         */
-        @Override
-        public String toString() {
-            switch (this.getType()) {
-                case BNODE:
-                    return NONE;
-                case KEY:
-                    return "\"" + this.getName() + "\"";
-                case VALUE:
-                    return "\"" + this.getName() + "\"";
-                default:
-                    return NONE;
-            }
-        }
-
-        /**
-         * Gets name of this JSON token
-         */
-        String getName() {
-            return name;
-        }
-
-        /**
-         * Gets descendants of node
-         * @return Last element
-         */
-        List<JsonToken> getChildren() {
-            return children;
-        }
-
-        /**
-         * Gets parent node
-         * @return Parent node
-         */
-        JsonToken getParent() {
-            return parent;
-        }
-
-        /**
-         * Adds a new descendant to node and probably sets new value for variable parentheses
-         * @param jt Respective JSON token
-         */
-        void setChildren(JsonToken jt) {
-            if (jt.getType() == KEY) parentheses = OBJECT;
-            if ((parentheses == 0 && (jt.getType() == VALUE) | jt.getType() == BNODE)) parentheses = ARRAY;
-            if (parentheses == -1 && (jt.getType() == VALUE | jt.getType() == BNODE)) parentheses = 0;
-            children.add(jt);
-        }
-
-        /**
-         * Gets type of JSON token (ROOT_NODE, KEY, VALUE)
-         * @return Type of JSON token
-         */
-        byte getType() {
-            return type;
-        }
-
-        /**
-         * Gets parentheses category (none, brackets or braces)
-         * @return Parantheses type (in byte)
-         */
-        public byte getParentheses() {
-            return parentheses;
-        }
-
-        String escChars(String value) {
-            StringBuilder stringBuilder = new StringBuilder();
-            String t;
-            for (char c: value.toCharArray()) {
-                switch(c) {
-                    case '\\':
-                    case '"':
-                        stringBuilder.append('\\');
-                        stringBuilder.append(c);
-                        break;
-                    case '\b':
-                        stringBuilder.append("\\b");
-                        break;
-                    case '\t':
-                        stringBuilder.append("\\t");
-                        break;
-                    case '\n':
-                        stringBuilder.append("\\n");
-                        break;
-                    case '\f':
-                        stringBuilder.append("\\f");
-                        break;
-                    case '\r':
-                        stringBuilder.append("\\r");
-                        break;
-                    default:
-                        if (c < ' ') {
-                            t = "000" + Integer.toHexString(c);
-                            stringBuilder.append("\\u");
-                            stringBuilder.append(t.substring(t.length() - 4));
-                        } else {
-                            stringBuilder.append(c);
-                        }
-                }
-            }
-            return stringBuilder.toString();
-        }
-
-    }
-
 
     /**
      * Should header be created?
@@ -264,6 +124,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
 
     /**
      * Creates a new parent token
+     *
      * @param name Name of parent
      */
     void buildKey(String name) {
@@ -285,7 +146,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
         if (name.endsWith("{}")) name = name.substring(0, name.length() - 2);
         JsonToken foundKey = null;
         if (ctxRegistry.containsKey(rootKey)) {
-            for (JsonToken jt: ctxRegistry.get(rootKey)) {
+            for (JsonToken jt : ctxRegistry.get(rootKey)) {
                 if (jt.getName().equals(name)) {
                     LOG.trace("Merging key {}", name);
                     foundKey = jt;
@@ -309,7 +170,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
      */
     String buildJsonString(byte lastTokenType, JsonToken jt) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (JsonToken child: jt.getChildren()) {
+        for (JsonToken child : jt.getChildren()) {
             // Set prefixes if required
             if (lastTokenType == OBJECT || lastTokenType == ARRAY) {
                 stringBuilder.append((child.getType() == KEY || child.getType() == BNODE) ? COMMA : NONE);
@@ -321,21 +182,26 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
             // Descend to child nodes if present
             if (child.getType() == KEY || child.getType() == BNODE) {
                 switch (child.getParentheses()) {
+                    case -1:
+                        // Entities without inner objects (fallback option)
+                        stringBuilder.append(":\"\"");
+                        lastTokenType = VALUE;
+                        break;
                     case 0:
                         stringBuilder.append(":");
-                        stringBuilder.append(buildJsonString((byte)0, child));
+                        stringBuilder.append(buildJsonString((byte) 0, child));
                         lastTokenType = VALUE;
                         break;
                     case OBJECT:
                         if (child.getType() != BNODE) stringBuilder.append(":");
                         stringBuilder.append("{");
-                        stringBuilder.append(buildJsonString((byte)0, child));
+                        stringBuilder.append(buildJsonString((byte) 0, child));
                         stringBuilder.append("}");
                         lastTokenType = OBJECT;
                         break;
                     case ARRAY:
                         stringBuilder.append(":[");
-                        stringBuilder.append(buildJsonString((byte)0, child));
+                        stringBuilder.append(buildJsonString((byte) 0, child));
                         stringBuilder.append("]");
                         lastTokenType = ARRAY;
                         break;
@@ -345,6 +211,149 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
             }
         }
         return stringBuilder.toString();
+    }
+
+    /**
+     * Contains information on a Json token (e.g. parent) and methods to query, modify and serialize it.
+     */
+    private class JsonToken {
+
+        byte type;            // Type of the token
+        String name;        // Name (only if type == parent / value, else null)
+        List<JsonToken> children = new ArrayList<>();    // Last element belonging to the parent (parent only, else null)
+        JsonToken parent;        // Key which token belongs to (for parent: root parent)
+        byte parentheses = -1;  // Parentheses which surrounds descendants (none, brackets or braces)
+
+
+        /**
+         * Constructor for class JsonToken
+         *
+         * @param type   Type of token (one of ROOT_NODE, OBJECT, ARRAY, END_OBJECT, END_ARRAY, KEY, VALUE)
+         * @param name   Name of token (only if type == KEY or VALUE, else null)
+         * @param parent Refers to parent id of which a token belongs to (parent refer to their root parent)
+         */
+        JsonToken(byte type, String name, JsonToken parent) {
+            this.type = type;
+            if (name == null) name = "";
+            if (name.endsWith("{}")) name = name.substring(0, name.length() - 2);
+            this.name = (escapeChars && !(name.equals(""))) ? escChars(name) : name;
+            this.parent = parent;
+            if (parent != null) parent.setChildren(this);
+            if (type == BNODE) this.parentheses = OBJECT;
+        }
+
+        /**
+         * Prints respective literal
+         *
+         * @return Literal
+         */
+        @Override
+        public String toString() {
+            switch (this.getType()) {
+                case BNODE:
+                    return NONE;
+                case KEY:
+                    return "\"" + this.getName() + "\"";
+                case VALUE:
+                    return "\"" + this.getName() + "\"";
+                default:
+                    return NONE;
+            }
+        }
+
+        /**
+         * Gets name of this JSON token
+         */
+        String getName() {
+            return name;
+        }
+
+        /**
+         * Gets descendants of node
+         *
+         * @return Last element
+         */
+        List<JsonToken> getChildren() {
+            return children;
+        }
+
+        /**
+         * Adds a new descendant to node and probably sets new value for variable parentheses
+         *
+         * @param jt Respective JSON token
+         */
+        void setChildren(JsonToken jt) {
+            if (jt.getType() == KEY) parentheses = OBJECT;
+            if ((parentheses == 0 && (jt.getType() == VALUE) | jt.getType() == BNODE)) parentheses = ARRAY;
+            if (parentheses == -1 && (jt.getType() == VALUE | jt.getType() == BNODE)) parentheses = 0;
+            children.add(jt);
+        }
+
+        /**
+         * Gets parent node
+         *
+         * @return Parent node
+         */
+        JsonToken getParent() {
+            return parent;
+        }
+
+        /**
+         * Gets type of JSON token (ROOT_NODE, KEY, VALUE)
+         *
+         * @return Type of JSON token
+         */
+        byte getType() {
+            return type;
+        }
+
+        /**
+         * Gets parentheses category (none, brackets or braces)
+         *
+         * @return Parantheses type (in byte)
+         */
+        public byte getParentheses() {
+            return parentheses;
+        }
+
+        String escChars(String value) {
+            StringBuilder stringBuilder = new StringBuilder();
+            String t;
+            for (char c : value.toCharArray()) {
+                switch (c) {
+                    case '\\':
+                    case '"':
+                        stringBuilder.append('\\');
+                        stringBuilder.append(c);
+                        break;
+                    case '\b':
+                        stringBuilder.append("\\b");
+                        break;
+                    case '\t':
+                        stringBuilder.append("\\t");
+                        break;
+                    case '\n':
+                        stringBuilder.append("\\n");
+                        break;
+                    case '\f':
+                        stringBuilder.append("\\f");
+                        break;
+                    case '\r':
+                        stringBuilder.append("\\r");
+                        break;
+                    default:
+                        if (c < ' ') {
+                            t = "000" + Integer.toHexString(c);
+                            stringBuilder.append("\\u");
+                            stringBuilder.append(t.substring(t.length() - 4));
+                        } else {
+                            stringBuilder.append(c);
+                        }
+                }
+            }
+            return stringBuilder.toString();
+        }
+
     }
 
 }
