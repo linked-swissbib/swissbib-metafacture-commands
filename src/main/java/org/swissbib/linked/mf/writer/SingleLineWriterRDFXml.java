@@ -71,6 +71,7 @@ public class SingleLineWriterRDFXml<T> extends CustomWriter<T> {
         if (firstObject) {
             this.documentHeader = ((String) obj).replaceAll("[\n\r]", "").trim() + "\n";
             this.openOutFile();
+            this.writeText(this.documentHeader);
             firstObject = false;
         } else {
             Matcher m = this.bibliographicResource.matcher((String) obj);

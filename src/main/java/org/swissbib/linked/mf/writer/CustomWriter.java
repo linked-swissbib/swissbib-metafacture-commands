@@ -75,12 +75,12 @@ public abstract class CustomWriter<T> implements ConfigurableObjectWriter<T> {
     }
 
     @Override
-    public void setCompression(String compression) {
+    public void setCompression(FileCompression compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
     @Override
-    public void setCompression(FileCompression compression) {
+    public void setCompression(String compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
@@ -200,8 +200,6 @@ public abstract class CustomWriter<T> implements ConfigurableObjectWriter<T> {
                 } else {
                     this.fout = new BufferedWriter(new OutputStreamWriter(file, this.encoding));
                 }
-
-                this.writeText(this.documentHeader);
 
             } else {
                 this.fout = null;

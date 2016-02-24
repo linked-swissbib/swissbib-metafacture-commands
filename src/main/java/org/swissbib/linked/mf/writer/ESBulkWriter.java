@@ -70,6 +70,18 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
     }
 
     @Override
+    void openOutFile() {
+        super.openOutFile();
+        try {
+            if (jsonCompliant) this.fout.write("[\n");
+            this.writeText(this.documentHeader);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
     void closeOutFile () {
         if (this.fout != null) {
             try {
