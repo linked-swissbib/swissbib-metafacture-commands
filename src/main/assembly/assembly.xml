@@ -5,7 +5,7 @@
     <id>plugins</id>
 
     <formats>
-        <format>jar</format>
+        <format>jar-with-dependencies</format>
     </formats>
 
     <includeBaseDirectory>false</includeBaseDirectory>
