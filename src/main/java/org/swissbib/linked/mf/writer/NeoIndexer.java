@@ -26,13 +26,13 @@ import java.io.File;
 public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
 
     private final static Logger LOG = LoggerFactory.getLogger(NeoIndexer.class);
-    GraphDatabaseService graphDb;
-    File dbDir;
-    Node mainNode;
-    Transaction tx;
-    int batchSize;
-    int counter = 0;
-    boolean firstRecord = true;
+    private GraphDatabaseService graphDb;
+    private File dbDir;
+    private Node mainNode;
+    private Transaction tx;
+    private int batchSize;
+    private int counter = 0;
+    private boolean firstRecord = true;
 
 
     public void setBatchSize(String batchSize) {
@@ -59,8 +59,6 @@ public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
                 graphDb.schema().constraintFor(lsbLabels.ORGANISATION).assertPropertyIsUnique("name").create();
             if (!graphDb.schema().getIndexes(lsbLabels.BIBLIOGRAPHICRESOURCE).iterator().hasNext())
                 graphDb.schema().constraintFor(lsbLabels.BIBLIOGRAPHICRESOURCE).assertPropertyIsUnique("name").create();
-            if (!graphDb.schema().getIndexes(lsbLabels.ITEM).iterator().hasNext())
-                graphDb.schema().constraintFor(lsbLabels.ITEM).assertPropertyIsUnique("name").create();
             if (!graphDb.schema().getIndexes(lsbLabels.LOCALSIGNATURE).iterator().hasNext())
                 graphDb.schema().constraintFor(lsbLabels.LOCALSIGNATURE).assertPropertyIsUnique("name").create();
             if (!graphDb.schema().getIndexes(lsbLabels.WORK).iterator().hasNext())
@@ -105,10 +103,6 @@ public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
                 node = createNode(lsbLabels.LOCALSIGNATURE, value, true);
                 node.createRelationshipTo(mainNode, lsbRelations.SIGNATUREOF);
                 break;
-            case "item":
-                node = createNode(lsbLabels.ITEM, value, true);
-                node.createRelationshipTo(mainNode, lsbRelations.ITEMOF);
-                break;
             case "work":
                 node = createNode(lsbLabels.WORK, value, true);
                 node.createRelationshipTo(mainNode, lsbRelations.WORKOF);
@@ -144,10 +138,10 @@ public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
     }
 
     private enum lsbLabels implements Label {
-        BIBLIOGRAPHICRESOURCE, PERSON, ORGANISATION, ITEM, LOCALSIGNATURE, WORK, ACTIVE
+        BIBLIOGRAPHICRESOURCE, PERSON, ORGANISATION, LOCALSIGNATURE, WORK, ACTIVE
     }
 
-    public enum lsbRelations implements RelationshipType {
-        CONTRIBUTOR, ITEMOF, SIGNATUREOF, WORKOF
+    private enum lsbRelations implements RelationshipType {
+        CONTRIBUTOR, SIGNATUREOF, WORKOF
     }
 }
