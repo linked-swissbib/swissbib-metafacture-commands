@@ -1,7 +1,6 @@
 package org.swissbib.linked.mf.writer;
 
 import org.culturegraph.mf.framework.DefaultStreamPipe;
-import org.culturegraph.mf.framework.ObjectReceiver;
 import org.culturegraph.mf.framework.StreamReceiver;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
@@ -22,8 +21,8 @@ import java.io.File;
  */
 @Description("Transforms documents to a Neo4j graph.")
 @In(StreamReceiver.class)
-@Out(Void.class)
-public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
+@Out(StreamReceiver.class)
+public class NeoIndexer extends DefaultStreamPipe<StreamReceiver> {
 
     private final static Logger LOG = LoggerFactory.getLogger(NeoIndexer.class);
     private GraphDatabaseService graphDb;
@@ -74,6 +73,7 @@ public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
         counter += 1;
         LOG.debug("Working on record {}", identifier);
         mainNode = createNode(lsbLabels.BIBLIOGRAPHICRESOURCE, identifier, true);
+        getReceiver().startRecord(identifier);
 
     }
 
@@ -86,6 +86,17 @@ public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
             tx = graphDb.beginTx();
         }
         super.endRecord();
+        getReceiver().endRecord();
+    }
+
+    @Override
+    public void startEntity(String name) {
+        getReceiver().startEntity(name);
+    }
+
+    @Override
+    public void endEntity() {
+        getReceiver().endEntity();
     }
 
     @Override
@@ -98,16 +109,32 @@ public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
                         createNode(lsbLabels.PERSON, value, true) :
                         createNode(lsbLabels.ORGANISATION, value, true);
                 mainNode.createRelationshipTo(node, lsbRelations.CONTRIBUTOR);
+                getReceiver().literal(name, value);
                 break;
             case "bf:local":
                 node = createNode(lsbLabels.LOCALSIGNATURE, value, true);
                 node.createRelationshipTo(mainNode, lsbRelations.SIGNATUREOF);
+                // Do not send this field further in the process, it doesn't belong to this concept
                 break;
             case "work":
                 node = createNode(lsbLabels.WORK, value, true);
                 node.createRelationshipTo(mainNode, lsbRelations.WORKOF);
+                getReceiver().literal(name, value);
+                break;
+            default:
+                getReceiver().literal(name, value);
+                break;
         }
     }
+
+    @Override
+    protected void onCloseStream() {
+        LOG.info("Cleaning up (altogether {} records processed)", counter);
+        tx.close();
+        getReceiver().closeStream();
+    }
+
+
 
     /**
      * Creates a new node. If node already exists, creation is skipped.
@@ -129,12 +156,6 @@ public class NeoIndexer extends DefaultStreamPipe<ObjectReceiver<String>> {
             n = graphDb.findNode(l, "name", v);
         }
         return n;
-    }
-
-    @Override
-    protected void onCloseStream() {
-        LOG.info("Cleaning up (altogether {} records processed)", counter);
-        tx.close();
     }
 
     private enum lsbLabels implements Label {
