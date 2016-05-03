@@ -1,138 +1,138 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>ch.linked-swissbib</groupId>
-	<artifactId>swissbibMF-plugins</artifactId>
-	<version>0.0.5-SNAPSHOT</version>
-	<name>swissbib-metafacture-plugins</name>
-	<description>Modules for linked-swissbib.ch to operate with metafacture </description>
-	<licenses>
-		<license>
-			<name>Apache License, Version 2.0</name>
-			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
-		</license>
-	</licenses>
-	<url>http://github.com/linked-swissbib/metafacture-sql</url>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>ch.linked-swissbib</groupId>
+    <artifactId>swissbibMF-plugins</artifactId>
+    <version>0.0.5-SNAPSHOT</version>
+    <name>swissbib-metafacture-plugins</name>
+    <description>Modules for linked-swissbib.ch to operate with metafacture</description>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+    <url>http://github.com/linked-swissbib/metafacture-sql</url>
 
- 	<developers>
-		<developer>
-			<id>guenterh</id>
-			<name>Guenter Hipler</name>
-			<email>guenter.hipler@unibas.ch</email>
-			<url>https://github.com/guenterh</url>
-			<organization>project swissbib</organization>
-			<organizationUrl>http://www.swissbib.org</organizationUrl>
-			<roles>
-				<role>architect</role>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>sschuepbach</id>
-			<name>Sebastian Schüpbach</name>
-			<email>sebastian.schuepbachr@unibas.ch</email>
-			<url>https://github.com/sschuepbach</url>
-			<organization>project swissbib</organization>
-			<organizationUrl>http://www.swissbib.org</organizationUrl>
-			<roles>
-				<role>developer</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <id>guenterh</id>
+            <name>Guenter Hipler</name>
+            <email>guenter.hipler@unibas.ch</email>
+            <url>https://github.com/guenterh</url>
+            <organization>project swissbib</organization>
+            <organizationUrl>http://www.swissbib.org</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+        <developer>
+            <id>sschuepbach</id>
+            <name>Sebastian Schüpbach</name>
+            <email>sebastian.schuepbachr@unibas.ch</email>
+            <url>https://github.com/sschuepbach</url>
+            <organization>project swissbib</organization>
+            <organizationUrl>http://www.swissbib.org</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
 
-  	<scm>
- 		<connection>scm:git:git://github.com/culturegraph/metafacture-sql.git</connection>
-		<developerConnection>scm:git:git@github.com:culturegraph/metafacture-sql.git</developerConnection>
-		<url>http://github.com/linked-swissbib/swissbib-mf-plugins</url>
-		<tag>HEAD</tag>
-	</scm>
-  
-	<issueManagement>
-		<system>GitHub Issues</system>
-		<url>https://github.com/culturegraph/metafacture-sql/issues</url>
-	</issueManagement>
+    <scm>
+        <connection>scm:git:git://github.com/culturegraph/metafacture-sql.git</connection>
+        <developerConnection>scm:git:git@github.com:culturegraph/metafacture-sql.git</developerConnection>
+        <url>http://github.com/linked-swissbib/swissbib-mf-plugins</url>
+        <tag>HEAD</tag>
+    </scm>
 
-	<distributionManagement>
-		<repository>
-			<id>sonatype-nexus-staging</id>
-			<name>Sonatype OSS Maven Repository : Releases</name>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-		<snapshotRepository>
-			<id>sonatype-nexus-snapshots</id>
-			<name>Sonatype OSS Maven Repository : Snapshots</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			<!-- <uniqueVersion>true</uniqueVersion> -->
-		</snapshotRepository>
-	</distributionManagement>
-	
- 	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>7</version>
-	</parent>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/culturegraph/metafacture-sql/issues</url>
+    </issueManagement>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<targetJdk>1.7</targetJdk>
-	</properties>
+    <distributionManagement>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Sonatype OSS Maven Repository : Releases</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype OSS Maven Repository : Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <!-- <uniqueVersion>true</uniqueVersion> -->
+        </snapshotRepository>
+    </distributionManagement>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>${targetJdk}</source>
-					<target>${targetJdk}</target>
-					<showWarnings>true</showWarnings>
-				</configuration>
-			</plugin>
-			
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.2</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<minimizeJar>true</minimizeJar>
-							<artifactSet>
-								<excludes>
-									<exclude>org.culturegraph:metafacture-core</exclude>
-								</excludes>
-							</artifactSet>
-							<shadedArtifactAttached>true</shadedArtifactAttached>
-							<shadedClassifierName>plugin</shadedClassifierName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.4</version><!--$NO-MVN-MAN-VER$-->
-				<!-- m2e complains about a different plugin version
-				     being specified in the parent pom. However,
-				     this is not actually problem for maven. So,
-				     we can ignore the warning. -->
-			</plugin>
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <targetJdk>1.7</targetJdk>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>${targetJdk}</source>
+                    <target>${targetJdk}</target>
+                    <showWarnings>true</showWarnings>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.culturegraph:metafacture-core</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>plugin</shadedClassifierName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4</version><!--$NO-MVN-MAN-VER$-->
+                <!-- m2e complains about a different plugin version
+                     being specified in the parent pom. However,
+                     this is not actually problem for maven. So,
+                     we can ignore the warning. -->
+            </plugin>
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-				<version>2.6</version>
+                <version>2.6</version>
                 <configuration>
-					<descriptors>
-						<descriptor>/src/main/assembly/assembly.xml</descriptor>
-					</descriptors>
+                    <descriptors>
+                        <descriptor>/src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
@@ -140,10 +140,10 @@
 
             </plugin>
 
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 
-	<dependencies>
+    <dependencies>
 
         <dependency>
             <groupId>org.culturegraph</groupId>
@@ -154,200 +154,169 @@
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-			<version>2.3.1</version>
+            <version>2.3.1</version>
         </dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.neo4j</groupId>
-			<artifactId>neo4j</artifactId>
-			<version>3.0.0-M05</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.solr</groupId>
-			<artifactId>solr-solrj</artifactId>
-			<version>5.2.1</version>
-		</dependency>
-		<!--		<dependency>
-                    <groupId>org.apache.lucene</groupId>
-                    <artifactId>lucene-queries</artifactId>
-                    <version>5.5.0</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.lucene</groupId>
-                    <artifactId>lucene-memory</artifactId>
-                    <version>5.5.0</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.lucene</groupId>
-                    <artifactId>lucene-highlighter</artifactId>
-                    <version>5.5.0</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.lucene</groupId>
-                    <artifactId>lucene-suggest</artifactId>
-                    <version>5.5.0</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.lucene</groupId>
-                    <artifactId>lucene-join</artifactId>
-                    <version>5.5.0</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.lucene</groupId>
-                    <artifactId>lucene-spatial</artifactId>
-                    <version>5.5.0</version>
-                </dependency>-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j</artifactId>
+            <version>3.0.0-M05</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>5.2.1</version>
+        </dependency>
+    </dependencies>
 
-	</dependencies>
+    <profiles>
+        <profile>
+            <id>sonatype-oss-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.3</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <show>public</show>
+                                    <nohelp>true</nohelp>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
 
-	<profiles>
-		<profile>
-			<id>sonatype-oss-release</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.10.3</version>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<phase>package</phase>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<show>public</show>
-									<nohelp>true</nohelp>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<version>2.4</version>
-						<executions>
-							<execution>
-								<id>attach-sources</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>jar-no-fork</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.4</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		
-		<profile>
-			<id>hudson</id>
-			<activation>
-				<property>
-					<name>BUILD_NUMBER</name>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-checkstyle-plugin</artifactId>
-						<version>2.13</version>
-						<configuration>
-							<configLocation>${basedir}/quality_assurance/checkstyle_rules.xml</configLocation>
-							<propertyExpansion>basedir=${basedir}</propertyExpansion>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>checkstyle</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.4</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
 
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>cobertura-maven-plugin</artifactId>
-						<version>2.7</version>
-						<configuration>
-							<formats>
-								<format>xml</format>
-							</formats>
-							<check/>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>cobertura</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>findbugs-maven-plugin</artifactId>
-						<version>3.0.3</version>
-						<configuration>
-							<threshold>High</threshold>
-							<failOnError>false</failOnError>
-							<findbugsXmlOutput>true</findbugsXmlOutput>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>check</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+        <profile>
+            <id>hudson</id>
+            <activation>
+                <property>
+                    <name>BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>2.13</version>
+                        <configuration>
+                            <configLocation>${basedir}/quality_assurance/checkstyle_rules.xml</configLocation>
+                            <propertyExpansion>basedir=${basedir}</propertyExpansion>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>checkstyle</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
 
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-pmd-plugin</artifactId>
-						<version>3.6</version>
-						<configuration>
-							<linkXRef>true</linkXRef>
-							<rulesets>
-								<ruleset>${basedir}/quality_assurance/pmd_rules.xml</ruleset>
-							</rulesets>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>pmd</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cobertura-maven-plugin</artifactId>
+                        <version>2.7</version>
+                        <configuration>
+                            <formats>
+                                <format>xml</format>
+                            </formats>
+                            <check/>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>cobertura</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>findbugs-maven-plugin</artifactId>
+                        <version>3.0.3</version>
+                        <configuration>
+                            <threshold>High</threshold>
+                            <failOnError>false</failOnError>
+                            <findbugsXmlOutput>true</findbugsXmlOutput>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <version>3.6</version>
+                        <configuration>
+                            <linkXRef>true</linkXRef>
+                            <rulesets>
+                                <ruleset>${basedir}/quality_assurance/pmd_rules.xml</ruleset>
+                            </rulesets>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>pmd</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

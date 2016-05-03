@@ -48,7 +48,7 @@ public class NeoIndexer extends DefaultStreamPipe<StreamReceiver> {
         if (firstRecord) {
             graphDb = new GraphDatabaseFactory()
                     .newEmbeddedDatabaseBuilder(dbDir)
-                    // TODO: Check pssible further tweakings
+                    // TODO: Check possible further tweakings
                     .setConfig(GraphDatabaseSettings.pagecache_memory, "24g")
                     .newGraphDatabase();
             tx = graphDb.beginTx();
