@@ -134,8 +134,6 @@ public class NeoIndexer extends DefaultStreamPipe<StreamReceiver> {
         getReceiver().closeStream();
     }
 
-
-
     /**
      * Creates a new node. If node already exists, creation is skipped.
      *
