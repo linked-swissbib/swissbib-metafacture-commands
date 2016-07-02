@@ -54,6 +54,7 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
 
     @Override
     public void literal(String name, String value) {
+        value = value.replaceAll("\"","");
         if (name.equals("rela")) {
             String[] tokens = value.split("#");
             if (relations.containsKey(tokens[0])) {
