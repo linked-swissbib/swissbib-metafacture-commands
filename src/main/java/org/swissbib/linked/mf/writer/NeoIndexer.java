@@ -116,11 +116,11 @@ public class NeoIndexer extends DefaultStreamPipe<StreamReceiver> {
                 node.createRelationshipTo(mainNode, lsbRelations.SIGNATUREOF);
                 // Do not send this field further in the process, it doesn't belong to this concept
                 break;
-            case "work":
+/*            case "work":
                 node = createNode(lsbLabels.WORK, value, true);
                 node.createRelationshipTo(mainNode, lsbRelations.WORKOF);
                 getReceiver().literal(name, value);
-                break;
+                break;*/
             default:
                 getReceiver().literal(name, value);
                 break;

@@ -26,5 +26,10 @@ class CsvWriterRegister {
         return writer;
     }
 
+    void close() {
+        for (HashMap.Entry<String,BufferedCsvWriter> entry : hm.entrySet()) {
+            entry.getValue().close();
+        }
+        }
 
 }

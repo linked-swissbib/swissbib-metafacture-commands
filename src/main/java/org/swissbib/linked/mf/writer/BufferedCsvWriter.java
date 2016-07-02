@@ -16,15 +16,14 @@ class BufferedCsvWriter {
     private int appendCounter = 0;
     private StringBuilder sb = new StringBuilder();
     private String filename;
-    private String nodeName;
 
 
     BufferedCsvWriter(String filename) {
         this.filename = filename;
-        if (nodeName.contains("-")) {
-            createRelaHeader();
+        if (filename.contains("-")) {
+            append(createRelaHeader());
         } else {
-            createNodeHeader();
+            append(createNodeHeader());
         }
     }
 
@@ -39,7 +38,7 @@ class BufferedCsvWriter {
 
     private void flush() {
         try {
-            Files.write(Paths.get(filename + ".csv"), sb.toString().getBytes(), StandardOpenOption.APPEND);
+            Files.write(Paths.get("/home/seb/temp/csv/" + filename + ".csv"), sb.toString().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -47,17 +46,15 @@ class BufferedCsvWriter {
     }
 
 
-    @Override
-    protected void finalize() throws Throwable {
+    void close() {
         flush();
-        super.finalize();
     }
 
     private String createNodeHeader() {
-        return "nodeId:ID(" + filename + "),subentity,name,addName,date,:LABEL";
+        return "nodeId:ID(" + filename + "),subentity,name,addName,date,:LABEL\n";
     }
 
     private String createRelaHeader() {
-        return ":START_ID(" + filename.split("-")[0] + "),name,:END_ID(" + filename.split("-")[1] + ")";
+        return ":START_ID(" + filename.split("-")[0] + "),name,:END_ID(" + filename.split("-")[1] + ")\n";
     }
 }

@@ -22,20 +22,22 @@ public class NeoWriter<T> implements ConfigurableObjectWriter<T> {
     private final static Logger LOG = LoggerFactory.getLogger(NeoWriter.class);
     private CsvWriterRegister register;
     private String nodeName;
+    private String nodeLabel;
 
-    NeoWriter() {
+    public NeoWriter() {
         register = new CsvWriterRegister();
     }
 
 
     public void process(T obj) {
-        this.nodeName = ((String) obj).split("#")[0];
+        this.nodeName = ((String) obj).split("#")[1].split(",")[0];
+        this.nodeLabel = ((String) obj).split("#")[0];
         deserializer((String) obj);
     }
 
     private void deserializer(String s) {
         int counter = 0;
-        for (String csvLines : s.split("|")) {
+        for (String csvLines : s.split("\\|")) {
             String[] csvTokens = csvLines.split("#");
             String filename;
             String content;
@@ -43,10 +45,10 @@ public class NeoWriter<T> implements ConfigurableObjectWriter<T> {
             // nodes of pattern node
             if (counter == 0) {
                 filename = csvTokens[0];
-                content = csvTokens[1] + "," + csvTokens[0];
+                content = csvTokens[1] + "," + csvTokens[0] + "\n";
             } else {
-                filename = nodeName + "-" + csvTokens[0];
-                content = csvTokens[0];
+                filename = nodeLabel + "-" + csvTokens[0];
+                content = nodeName + "," + csvTokens[0] + "," + csvTokens[1] + "\n";
             }
             writeText(filename, content);
             counter++;
@@ -117,11 +119,12 @@ public class NeoWriter<T> implements ConfigurableObjectWriter<T> {
 
     @Override
     public void resetStream() {
+        register.close();
 
     }
 
     @Override
     public void closeStream() {
-
+        register.close();
     }
 }
