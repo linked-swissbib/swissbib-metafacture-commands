@@ -27,8 +27,8 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
 
     private final static Logger LOG = LoggerFactory.getLogger(NeoEncoder.class);
 
-    Map<String, String> node = new HashMap<>();
-    Map<String, ArrayList<String>> relations = new HashMap<>();
+    private Map<String, String> node = new HashMap<>();
+    private Map<String, ArrayList<String>> relations = new HashMap<>();
 
 
     @Override
@@ -78,14 +78,19 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
         StringBuilder sb = new StringBuilder();
         sb.append(node.get("entity"))
                 .append("#")
+                .append("\"")
                 .append(node.get("id"))
                 .append("\",\"")
+                //.append(",")
                 .append(node.get("subentity"))
                 .append("\",\"")
+                //.append(",")
                 .append(node.get("name"))
                 .append("\",\"")
+                //.append(",")
                 .append(node.get("addName"))
                 .append("\",\"")
+                //.append(",")
                 .append(node.get("date"))
                 .append("\"")
                 .append("|");
@@ -93,9 +98,7 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
             sb.append(entry.getKey())
                     .append("#");
             for (String e : entry.getValue()) {
-                sb.append(node.get("id"))
-                        .append(",")
-                        .append(e)
+                sb .append(numericHash(e))
                         .append("\n");
             }
             sb.append("|");
