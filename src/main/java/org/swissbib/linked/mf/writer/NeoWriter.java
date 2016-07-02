@@ -21,7 +21,6 @@ public class NeoWriter<T> implements ConfigurableObjectWriter<T> {
 
     private final static Logger LOG = LoggerFactory.getLogger(NeoWriter.class);
     private CsvWriterRegister register;
-    private String nodeName;
     private String nodeLabel;
 
     public NeoWriter() {
@@ -30,7 +29,6 @@ public class NeoWriter<T> implements ConfigurableObjectWriter<T> {
 
 
     public void process(T obj) {
-        this.nodeName = ((String) obj).split("#")[1].split(",")[0];
         this.nodeLabel = ((String) obj).split("#")[0];
         deserializer((String) obj);
     }
@@ -48,7 +46,7 @@ public class NeoWriter<T> implements ConfigurableObjectWriter<T> {
                 content = csvTokens[1] + "," + csvTokens[0] + "\n";
             } else {
                 filename = nodeLabel + "-" + csvTokens[0];
-                content = nodeName + "," + csvTokens[0] + "," + csvTokens[1] + "\n";
+                content = csvTokens[1] + "\n";
             }
             writeText(filename, content);
             counter++;

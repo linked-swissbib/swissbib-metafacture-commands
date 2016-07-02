@@ -29,13 +29,16 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
 
     private Map<String, String> node = new HashMap<>();
     private Map<String, ArrayList<String>> relations = new HashMap<>();
+    private String nodeId;
 
 
     @Override
     public void startRecord(String id) {
         LOG.debug("Parsing record {}", id);
 
-        node.put("id", numericHash(id));
+        nodeId = numericHash(id);
+
+        node.put("id", nodeId);
         node.put("entity", "");
         node.put("subentity", "");
         node.put("name", "");
@@ -53,12 +56,12 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
     public void literal(String name, String value) {
         if (name.equals("rela")) {
             String[] tokens = value.split("#");
-            if (relations.containsKey(tokens[1])) {
-                relations.get(tokens[1]).add(tokens[0]);
+            if (relations.containsKey(tokens[0])) {
+                relations.get(tokens[0]).add(nodeId + "," + tokens[1] + "," + numericHash(tokens[2]));
             } else {
                 ArrayList<String> newRela = new ArrayList<>();
-                newRela.add(tokens[0]);
-                relations.put(tokens[1], newRela);
+                newRela.add(nodeId + "," + tokens[1] + "," + numericHash(tokens[2]));
+                relations.put(tokens[0], newRela);
             }
         } else {
             node.put(name, value);
@@ -81,27 +84,22 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
                 .append("\"")
                 .append(node.get("id"))
                 .append("\",\"")
-                //.append(",")
                 .append(node.get("subentity"))
                 .append("\",\"")
-                //.append(",")
                 .append(node.get("name"))
                 .append("\",\"")
-                //.append(",")
                 .append(node.get("addName"))
                 .append("\",\"")
-                //.append(",")
                 .append(node.get("date"))
                 .append("\"")
                 .append("|");
         for (Map.Entry<String, ArrayList<String>> entry : relations.entrySet()) {
-            sb.append(entry.getKey())
-                    .append("#");
             for (String e : entry.getValue()) {
-                sb .append(numericHash(e))
-                        .append("\n");
+                sb.append(entry.getKey())
+                        .append("#")
+                        .append(e)
+                        .append("|");
             }
-            sb.append("|");
         }
         return sb.toString();
     }
