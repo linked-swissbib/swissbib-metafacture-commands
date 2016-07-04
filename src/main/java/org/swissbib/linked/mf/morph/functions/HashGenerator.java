@@ -5,6 +5,7 @@ import org.culturegraph.mf.morph.functions.AbstractSimpleStatelessFunction;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.Normalizer;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -19,7 +20,7 @@ abstract class HashGenerator extends AbstractSimpleStatelessFunction {
     static final Pattern charsToReplace = Pattern.compile(",| *",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE|Pattern.DOTALL);
 
 
-    String generateId(String name) throws URISyntaxException {
+    protected String generateId(String name) throws URISyntaxException {
         String normalizedName = null;
         //decompose unicode characters eg. é -> e´
         if (!Normalizer.isNormalized(name, Normalizer.Form.NFD)) {
@@ -36,6 +37,18 @@ abstract class HashGenerator extends AbstractSimpleStatelessFunction {
         //return new URI(this.URI_PREFIX + uuid.toString());
         return uuid.toString();
     }
+
+
+    protected String  concatenateAndNormalizeValueParts (List<String> valueParts) {
+
+        StringBuilder normalizedValueParts = new StringBuilder();
+        for (String valuePart : valueParts) {
+            normalizedValueParts.append(charsToReplace.matcher(valuePart).replaceAll(""));
+        }
+
+        return normalizedValueParts.toString();
+    }
+
 
 
 }
