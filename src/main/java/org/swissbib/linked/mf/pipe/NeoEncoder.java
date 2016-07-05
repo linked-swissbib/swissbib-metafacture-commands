@@ -15,7 +15,7 @@ import java.util.Map;
 
 
 /**
- * Serialises an object as JSON-LD.
+ * Encodes objects as csv files fit for batch uploading to Neo4j
  *
  * @author Sebastian Schüpbach, project swissbib, Basel
  */
@@ -23,7 +23,6 @@ import java.util.Map;
 @In(StreamReceiver.class)
 @Out(String.class)
 public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
-
 
     private final static Logger LOG = LoggerFactory.getLogger(NeoEncoder.class);
 
@@ -36,9 +35,9 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
     public void startRecord(String id) {
         LOG.debug("Parsing record {}", id);
 
-        nodeId = numericHash(id);
+        nodeId = id;
 
-        node.put("id", nodeId);
+        node.put("id", quote(nodeId));
         node.put("entity", "");
         node.put("subentity", "");
         node.put("name", "");
@@ -54,58 +53,60 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
 
     @Override
     public void literal(String name, String value) {
-        value = value.replaceAll("\"","");
+        value = clean(value);
         if (name.equals("rela")) {
             String[] tokens = value.split("#");
             if (relations.containsKey(tokens[0])) {
-                relations.get(tokens[0]).add(nodeId + "," + tokens[1] + "," + numericHash(tokens[2]));
+                relations.get(tokens[0]).add(quote(nodeId) + "," + quote(tokens[1]) + "," + quote(tokens[2]));
             } else {
                 ArrayList<String> newRela = new ArrayList<>();
-                newRela.add(nodeId + "," + tokens[1] + "," + numericHash(tokens[2]));
+                newRela.add(quote(nodeId) + "," + quote(tokens[1]) + "," + quote(tokens[2]));
                 relations.put(tokens[0], newRela);
             }
         } else {
-            node.put(name, value);
+            node.put(name, quote(value));
         }
     }
 
-    private String numericHash(String id) {
-        char[] ca = id.toCharArray();
-        StringBuilder sb = new StringBuilder();
-        for (char aCa : ca) {
-            sb.append(((Character) aCa).hashCode());
-        }
-        return sb.toString();
-    }
 
     private String serializer() {
         StringBuilder sb = new StringBuilder();
         sb.append(node.get("entity"))
                 .append("#")
-                .append("\"")
                 .append(node.get("id"))
-                .append("\",\"")
+                .append(",")
                 .append(node.get("subentity"))
-                .append("\",\"")
+                .append(",")
                 .append(node.get("name"))
-                .append("\",\"")
+                .append(",")
                 .append(node.get("addName"))
-                .append("\",\"")
+                .append(",")
                 .append(node.get("date"))
-                .append("\"")
-                .append("|");
+                .append("||");
         for (Map.Entry<String, ArrayList<String>> entry : relations.entrySet()) {
             for (String e : entry.getValue()) {
                 sb.append(entry.getKey())
                         .append("#")
                         .append(e)
-                        .append("|");
+                        .append("||");
             }
         }
+        node.clear();
+        relations.clear();
         return sb.toString();
     }
 
+    private String clean(String rawString) {
+        if (rawString.endsWith("\\")) {
+            rawString = rawString.substring(0, rawString.length() - 2);
+        }
+        return rawString
+                .replaceAll("\"", "")
+                .replaceAll("\\|\\|", "");
+    }
+
+    private String quote(String rawString) {
+        return "\"" + rawString + "\"";
+    }
 
 }
-
-
