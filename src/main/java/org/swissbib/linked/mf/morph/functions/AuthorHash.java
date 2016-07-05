@@ -176,11 +176,13 @@ public class AuthorHash extends HashGenerator {
                     this.checkForValidValue(mappedValues, "firstname")) &&
                     this.checkForValidValue(mappedValues,"lifedata")) {
 
-                stringForHashId = this.concatenateAndNormalizeValueParts(Arrays.asList(
+                stringForHashId = this.generateId(
+                        this.concatenateAndNormalizeValueParts(Arrays.asList(
                         mappedValues.get("lastname"),
                         mappedValues.get("firstname"),
                         mappedValues.get("title"),
                         mappedValues.get("lifedata")
+                        )
                 ));
 
             }
@@ -188,16 +190,16 @@ public class AuthorHash extends HashGenerator {
             if (this.checkForValidValue(mappedValues, "fullname") &&
                     this.checkForValidValue(mappedValues, "lifedata")) {
 
-                stringForHashId = this.concatenateAndNormalizeValueParts(Arrays.asList(
+                stringForHashId = this.generateId(
+                        this.concatenateAndNormalizeValueParts(Arrays.asList(
                         mappedValues.get("fullname"),
                         mappedValues.get("title"),
                         mappedValues.get("lifedata")
+                        )
                 ));
 
             }
         }
-
-
 
         return stringForHashId;
     }
@@ -211,21 +213,25 @@ public class AuthorHash extends HashGenerator {
             if (this.checkForValidValue(mappedValues, "lastname") ||
                     this.checkForValidValue(mappedValues, "firstname")){
 
-                stringForHashId = this.concatenateAndNormalizeValueParts(Arrays.asList(
+                stringForHashId = this.generateId(
+                        this.concatenateAndNormalizeValueParts(Arrays.asList(
                         mappedValues.get("lastname"),
                         mappedValues.get("firstname"),
                         mappedValues.get("title"),
                         mappedValues.get("title245a")
+                        )
                 ));
 
             }
         } else if (author1000x7000x.contains(mappedValues.get("type"))) {
             if (this.checkForValidValue(mappedValues, "fullname")) {
 
-                stringForHashId = this.concatenateAndNormalizeValueParts(Arrays.asList(
+                stringForHashId = this.generateId(
+                        this.concatenateAndNormalizeValueParts(Arrays.asList(
                         mappedValues.get("fullname"),
                         mappedValues.get("title"),
                         mappedValues.get("title245a")
+                        )
                 ));
 
             }
