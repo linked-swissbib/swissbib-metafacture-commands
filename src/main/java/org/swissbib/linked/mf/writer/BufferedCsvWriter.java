@@ -1,6 +1,8 @@
 package org.swissbib.linked.mf.writer;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,23 +17,43 @@ import java.nio.file.StandardOpenOption;
  */
 class BufferedCsvWriter {
 
+    private final static Logger LOG = LoggerFactory.getLogger(NeoWriter.class);
+
     private int appendCounter = 0;
     private int totalCounter = 0;
     private int postFix = 1;
     private StringBuilder sb = new StringBuilder();
     private String filename;
 
+    private String csvDir;
+    private int csvFileLength;
+    private int batchWriteSize;
 
-    BufferedCsvWriter(String filename) {
+
+    BufferedCsvWriter(String filename, String csvDir, int csvFileLength, int batchWriteSize) {
         this.filename = filename;
+        if (csvDir == null) {
+            try {
+                throw new IOException("No path to csv output directory indicated!");
+            } catch (IOException e) {
+                LOG.error("No path to csv output directory indicated!");
+            }
+        } else {
+            if (!csvDir.endsWith("/")) {
+                csvDir += "/";
+            }
+        }
+        this.csvDir = csvDir;
+        this.csvFileLength = csvFileLength;
+        this.batchWriteSize = batchWriteSize;
         sb.append(newHeader());
     }
 
     void append(String text) {
-        if (appendCounter > 50) {
+        if (appendCounter > batchWriteSize) {
             flush();
         }
-        if (totalCounter > 1000000) {
+        if (totalCounter > csvFileLength) {
             flush();
             sb.append(newHeader());
             postFix++;
@@ -44,7 +66,7 @@ class BufferedCsvWriter {
 
     private void flush() {
         try {
-            Files.write(Paths.get("/home/seb/temp/csv/" + filename + StringUtils.leftPad(Integer.toString(postFix), 4, '0') + ".csv"), sb.toString().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+            Files.write(Paths.get(csvDir + filename + StringUtils.leftPad(Integer.toString(postFix), 4, '0') + ".csv"), sb.toString().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

@@ -9,7 +9,18 @@ import java.util.HashMap;
  *          Created on 02.07.16
  */
 class CsvWriterRegister {
+
     private HashMap<String, BufferedCsvWriter> hm = new HashMap<>();
+
+    private String csvDir;
+    private int csvFileLength;
+    private int batchWriteSize;
+
+    CsvWriterRegister(String csvDir, int csvFileLength, int batchWriteSize) {
+        this.csvDir = csvDir;
+        this.csvFileLength = csvFileLength;
+        this.batchWriteSize = batchWriteSize;
+    }
 
     private void register(String name, BufferedCsvWriter writer) {
         hm.put(name, writer);
@@ -20,7 +31,7 @@ class CsvWriterRegister {
         if (hm.containsKey(name)) {
             writer = hm.get(name);
         } else {
-            writer = new BufferedCsvWriter(name);
+            writer = new BufferedCsvWriter(name, csvDir, csvFileLength, batchWriteSize);
             register(name, writer);
         }
         return writer;
