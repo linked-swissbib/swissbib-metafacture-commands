@@ -11,15 +11,14 @@ import java.io.IOException;
  *
  * @author Guenter Hipler, project swissbib, Basel
  * @author Sebastian Schüpbach, project swissbib, Basel
- *
  */
 @Description("Outputs an Elasticsearch Bulk API compliant file.")
 @In(Object.class)
 @Out(Void.class)
 public class ESBulkWriter<T> extends CustomWriter<T> {
 
-    Boolean jsonCompliant = false;
-    int numberRecordsWritten = 0;
+    private Boolean jsonCompliant = false;
+    private int numberRecordsWritten = 0;
 
     public void setJsonCompliant(final String jsonCompliant) {
         this.jsonCompliant = Boolean.parseBoolean(jsonCompliant);
@@ -40,7 +39,7 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
     }
 
     @Override
-    void writeText (String text) {
+    void writeText(String text) {
 
         try {
             if (this.fout != null) {
@@ -62,13 +61,6 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
     }
 
 
-
-    @Override
-    public void closeStream() {
-        this.closeOutFile();
-        closed = true;
-    }
-
     @Override
     void openOutFile() {
         super.openOutFile();
@@ -82,7 +74,7 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
     }
 
     @Override
-    void closeOutFile () {
+    void closeOutFile() {
         if (this.fout != null) {
             try {
                 if (jsonCompliant) this.fout.write("\n]");
