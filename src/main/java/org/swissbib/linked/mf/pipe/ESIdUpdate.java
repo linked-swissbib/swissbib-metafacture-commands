@@ -2,7 +2,6 @@ package org.swissbib.linked.mf.pipe;
 
 import org.culturegraph.mf.framework.DefaultStreamPipe;
 import org.culturegraph.mf.framework.StreamReceiver;
-
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
@@ -16,10 +15,14 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swissbib.linked.mf.utils.TransportClientSingleton;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,23 +42,45 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
 
     private final static Logger LOG = LoggerFactory.getLogger(ESIdUpdate.class);
 
-    String[] esNodes = {"localhost:9300"};
-    String esClustername = "linked-swissbib";
-    List<String> mFields = new ArrayList<>();
-    Float sThreshold;
-    String uriPrefix;
-    String refPath;
+    private String[] esNodes = {"localhost:9300"};
+    private String esClustername = "linked-swissbib";
+    private List<String> mFields = new ArrayList<>();
+    private Float sThreshold;
+    private String uriPrefix;
+    private String refPath;
+    private File graphDbDir;
 
-    String index;
-    String type;
+    private String index;
+    private String type;
 
-    Boolean skipAll = false;
-    String identifier;
-    Boolean noId = false;
-    BoolQueryBuilder matchQuery;
+    private Boolean skipAll = false;
+    private String identifier;
+    private Boolean noId = false;
+    private BoolQueryBuilder matchQuery;
+    private String resId;
 
-    TransportClient esClient;
+    private TransportClient esClient;
+    private GraphDatabaseService graphDb;
 
+    /**
+     * Traverses nested maps searching and replacing a specified string
+     *
+     * @param map  Map to traverse
+     * @param oVal Value to be replaced
+     * @param rVal Replacing value
+     */
+    private static void traverseMap(Map<String, Object> map, String oVal, String rVal) {
+        for (String k : map.keySet()) {
+            Object value = map.get(k);
+            if (Map.class.isAssignableFrom(value.getClass())) {
+                traverseMap((Map<String, Object>) value, oVal, rVal);
+            } else {
+                if (value.getClass().getName().equals("java.lang.String") && value.equals(oVal)) {
+                    map.put(k, rVal);
+                }
+            }
+        }
+    }
 
     public void setEsClustername(final String esClustername) {
         this.esClustername = esClustername;
@@ -92,6 +117,9 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
         this.uriPrefix = uriPrefix;
     }
 
+    public void setGraphDbDir(String graphDbDir) {
+        this.graphDbDir = new File(graphDbDir);
+    }
 
     @Override
     public void startRecord(String identifier) {
@@ -115,6 +143,14 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
 
     @Override
     public void endRecord() {
+        /**
+         * There are three possibilities here:
+         * 1) The contributor already exists (noId == false): Just link the contributor to the resource in Neo4j
+         * 2) The contributor doesn't already exist, but there is a match in elasticsearch: Link the identified contributor-node
+         * to the resource
+         * 3) The contributor doesn't already exist, and no match has been found: Create a new contributor-node and
+         * link it to the resource
+         */
         if (noId && !skipAll) {
             SearchResponse matchResponse = esClient
                     .prepareSearch(index)
@@ -131,8 +167,22 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
                 this.updateReferences(oId, identifier);
             } else {
                 LOG.debug("No matching document above score threshold ({}) could be found.", sThreshold);
+                try (Transaction tx = graphDb.beginTx()) {
+                    Node resNode = graphDb.findNode(lsbLabels.BIBLIOGRAPHICRESOURCE, "name", resId);
+                    Node contribNode = graphDb.createNode(lsbLabels.ORGANISATION);
+                    contribNode.setProperty("name", identifier);
+                    resNode.createRelationshipTo(contribNode, lsbRelations.CONTRIBUTOR);
+                    tx.success();
+                } catch (ConstraintViolationException e) {
+                    // FIXME: Write a better / more adequate log message...
+                    LOG.debug("Relationship with label CONTRIBUTOR between node {} and node {} already exists. So don't create a new one.", resId, identifier);
+                }
             }
+
+
             this.noId = false;
+        } else {
+            resourceContribEdge(identifier);
         }
         this.getReceiver().endRecord();
     }
@@ -149,8 +199,12 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
 
     @Override
     public void literal(String name, String value) {
+        // TODO: Which and how many elements must match in order to be identified as same entity
         if (noId && mFields.contains(name) && !skipAll) {
             matchQuery.must(QueryBuilders.matchQuery(name, value).fuzziness("AUTO"));
+        }
+        if (name.equals("resid")) {
+            resId = value;
         }
         this.getReceiver().literal(name, value);
     }
@@ -161,7 +215,7 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
      * @param oId ID of the old document
      * @param tId ID of the new document
      */
-    void moveDocument(String oId, String tId) {
+    private void moveDocument(String oId, String tId) {
         LOG.trace("Getting document with id {}", oId);
         GetResponse gr = esClient
                 .prepareGet(index, type, oId)
@@ -184,7 +238,7 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
      * @param oId URI to be replaced
      * @param tId URI reference
      */
-    void updateReferences(String oId, String tId) {
+    private void updateReferences(String oId, String tId) {
         SearchResponse sr = esClient
                 .prepareSearch(index)
                 .setTypes("bibliographicResource")
@@ -204,22 +258,16 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
     }
 
     /**
-     * Traverses nested maps searching and replacing a specified string
      *
-     * @param map  Map to traverse
-     * @param oVal Value to be replaced
-     * @param rVal Replacing value
      */
-    static public void traverseMap(Map<String, Object> map, String oVal, String rVal) {
-        for (String k : map.keySet()) {
-            Object value = map.get(k);
-            if (Map.class.isAssignableFrom(value.getClass())) {
-                traverseMap((Map<String, Object>) value, oVal, rVal);
-            } else {
-                if (value.getClass().getName().equals("java.lang.String") && value.equals(oVal)) {
-                    map.put(k, rVal);
-                }
-            }
+    private void resourceContribEdge(String contribId) {
+        try (Transaction tx = graphDb.beginTx()) {
+            Node resNode = graphDb.findNode(lsbLabels.BIBLIOGRAPHICRESOURCE, "name", resId);
+            Node contribNode = graphDb.findNode(lsbLabels.ORGANISATION, "name", contribId);
+            resNode.createRelationshipTo(contribNode, lsbRelations.CONTRIBUTOR);
+            tx.success();
+        } catch (ConstraintViolationException e) {
+            LOG.debug("Relationship with label CONTRIBUTOR between node {} and node {} already exists. So don't create a new one.", resId, identifier);
         }
     }
 
@@ -237,6 +285,21 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
             LOG.info("No index {} exists in cluster. Skipping further queries.", index);
             skipAll = true;
         }
+        graphDb = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(graphDbDir)
+                // TODO: Check possible further tweakings
+                .setConfig(GraphDatabaseSettings.pagecache_memory, "24g")
+                .newGraphDatabase();
+
         super.onSetReceiver();
+    }
+
+    private enum lsbLabels implements Label {
+        BIBLIOGRAPHICRESOURCE, PERSON, ORGANISATION
+    }
+
+
+    private enum lsbRelations implements RelationshipType {
+        CONTRIBUTOR
     }
 }
