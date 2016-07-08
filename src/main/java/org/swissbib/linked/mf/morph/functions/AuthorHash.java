@@ -28,14 +28,25 @@ public class AuthorHash extends HashGenerator {
 
     private final static List<String> author1001x7001x;
     private final static List<String> author1000x7000x;
+    private final static List<String> organisationList;
 
 
-    private static final Logger authorLogger ;
+    private static final Logger hash1000x7000 ;
+    private static final Logger hash1001x7001 ;
+    private static final Logger hash710;
+    private static final Logger hash711;
+    private static final Logger hashById;
+
 
     static {
-        authorLogger = LoggerFactory.getLogger(AuthorHash.class);
+        hash1000x7000 = LoggerFactory.getLogger("hash1000x7000");
+        hash1001x7001 = LoggerFactory.getLogger("hash1001x7001");
+        hash710 = LoggerFactory.getLogger("hash710");
+        hash711 = LoggerFactory.getLogger("hash711");
+        hashById = LoggerFactory.getLogger("hashById");
         author1001x7001x =  Arrays.asList("1001", "7001");
         author1000x7000x =  Arrays.asList("1001", "7001");
+        organisationList = Arrays.asList("710__", "711__");
 
     }
 
@@ -65,11 +76,17 @@ public class AuthorHash extends HashGenerator {
 
                 globalIdentifier = this.hashKeyByAuthorityID(mappedValues);
                 //we couldn't create a hash ID with authority number
-                if (globalIdentifier.equals(NO_HASH)) {
+                if (globalIdentifier.equals(NO_HASH) && isOrganisation(mappedValues)) {
+                    //by now treatment for organisations and others are differnt
+                    //to be proved!
+                    globalIdentifier = this.hashKeyForOrganisations(mappedValues);
+
+                }else {
                     globalIdentifier = this.hashKeyByNameAndLifeDates(mappedValues);
 
-                } if (globalIdentifier.equals(NO_HASH)) {
-                    globalIdentifier = this.hashKeyByNameAndTitle(mappedValues);
+                    if (globalIdentifier.equals(NO_HASH)) {
+                        globalIdentifier = this.hashKeyByNameAndTitle(mappedValues);
+                    }
                 }
 
 
@@ -89,7 +106,7 @@ public class AuthorHash extends HashGenerator {
             check = NO_HASH;
         } else {
             String authorType = valueParts[0];
-            check = Arrays.asList("1000","1001","7000","7001").contains(authorType) ? authorType : NO_HASH;
+            check = Arrays.asList("1000","1001","7000","7001","710__","711__").contains(authorType) ? authorType : NO_HASH;
         }
 
         return check;
@@ -105,6 +122,8 @@ public class AuthorHash extends HashGenerator {
                 break;
             case "1000":
             case "7000":
+            case "710__":
+            case "711__":
                 check = values.length == 9 ? VALUES_OK : NO_HASH;
                 break;
         }
@@ -144,6 +163,17 @@ public class AuthorHash extends HashGenerator {
                 mappedValues.put("publishYear",values [7]);
                 mappedValues.put("title245a",values [8]);
                 break;
+            case "710__":
+            case "711__":
+                mappedValues.put("type",values [0]);
+                mappedValues.put("swissbib_id",values [1]);
+                mappedValues.put("number",values [2]);
+                mappedValues.put("name",values [3]);
+                mappedValues.put("subunit",values [4]);
+                mappedValues.put("date",values [5]);
+                mappedValues.put("location",values [6]);
+                mappedValues.put("publishYear",values [7]);
+                mappedValues.put("title245a",values [8]);
         }
 
 
@@ -161,6 +191,8 @@ public class AuthorHash extends HashGenerator {
             //079$b n  -> simple named person (not identified)
             //identified persons are more reliable. But even this should be analyzed in more details
             stringForHashId =  this.generateId( mappedValues.get("number"));
+            hashById.debug(String.format("hashKeyById (id): %s / (number): %s", mappedValues.get("swissbib_id"),
+                    mappedValues.get("number")));
         }
 
         return stringForHashId;
@@ -184,6 +216,7 @@ public class AuthorHash extends HashGenerator {
                         mappedValues.get("lifedata")
                         )
                 ));
+                hash1001x7001.debug(String.format("hashKeyByNameAndLifeDates: (id) - %s ", mappedValues.get("swissbib_id")));
 
             }
         } else if (author1000x7000x.contains(mappedValues.get("type"))) {
@@ -197,6 +230,7 @@ public class AuthorHash extends HashGenerator {
                         mappedValues.get("lifedata")
                         )
                 ));
+                hash1000x7000.debug(String.format("hashKeyByNameAndLifeDates: (id) - %s ", mappedValues.get("swissbib_id")));
 
             }
         }
@@ -221,6 +255,7 @@ public class AuthorHash extends HashGenerator {
                         mappedValues.get("title245a")
                         )
                 ));
+                hash1001x7001.debug(String.format("hashKeyByNameAndTitle: (id) - %s ", mappedValues.get("swissbib_id")));
 
             }
         } else if (author1000x7000x.contains(mappedValues.get("type"))) {
@@ -233,6 +268,7 @@ public class AuthorHash extends HashGenerator {
                         mappedValues.get("title245a")
                         )
                 ));
+                hash1000x7000.debug(String.format("hashKeyByNameAndTitle: (id) - %s ", mappedValues.get("swissbib_id")));
 
             }
         }
@@ -241,12 +277,43 @@ public class AuthorHash extends HashGenerator {
     }
 
 
+    private String hashKeyForOrganisations(HashMap<String, String> mappedValues)
+            throws URISyntaxException {
+        String stringForHashId = NO_HASH;
+
+        stringForHashId = this.generateId(
+                this.concatenateAndNormalizeValueParts(Arrays.asList(
+                        mappedValues.get("name"),
+                        mappedValues.get("subunit"),
+                        mappedValues.get("date"),
+                        mappedValues.get("location")
+                        )
+                ));
+
+        if (mappedValues.get("type").equals("710__")) {
+            hash710.debug(String.format("hashKeyOrganisation 710: (id) - %s ", mappedValues.get("swissbib_id")));
+        } else {
+            hash711.debug(String.format("hashKeyOrganisation 711: (id) - %s", mappedValues.get("swissbib_id")));
+        }
+
+
+
+        return stringForHashId;
+    }
+
+
+
+
     private boolean checkForValidValue(HashMap<String, String> mappedValues, String key) {
         return (mappedValues.containsKey(key) && mappedValues.get(key) != null ) &&
             !mappedValues.get(key).isEmpty();
 
     }
 
+    private boolean isOrganisation(HashMap<String, String> mappedValues) {
+        return  mappedValues != null && mappedValues.size() > 0 &&
+                organisationList.contains(mappedValues.get("type"));
+    }
 
 
 }
