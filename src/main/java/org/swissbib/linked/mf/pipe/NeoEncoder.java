@@ -57,10 +57,10 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
         if (name.equals("rela")) {
             String[] tokens = value.split("#");
             if (relations.containsKey(tokens[0])) {
-                relations.get(tokens[0]).add(quote(nodeId) + "," + quote(tokens[1]) + "," + quote(tokens[2]));
+                relations.get(tokens[0]).add(tokens[1] + "#" + quote(nodeId) + "," + quote(tokens[2]));
             } else {
                 ArrayList<String> newRela = new ArrayList<>();
-                newRela.add(quote(nodeId) + "," + quote(tokens[1]) + "," + quote(tokens[2]));
+                newRela.add(tokens[1] + "#" + quote(nodeId) + "," + quote(tokens[2]));
                 relations.put(tokens[0], newRela);
             }
         } else {
@@ -85,10 +85,7 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
                 .append("||");
         for (Map.Entry<String, ArrayList<String>> entry : relations.entrySet()) {
             for (String e : entry.getValue()) {
-                sb.append(entry.getKey())
-                        .append("#")
-                        .append(e)
-                        .append("||");
+                sb.append(e).append("||");
             }
         }
         node.clear();

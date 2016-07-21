@@ -55,7 +55,6 @@ class BufferedCsvWriter {
         }
         if (totalCounter > csvFileLength) {
             flush();
-            sb.append(newHeader());
             postFix++;
             totalCounter = 0;
         }
@@ -66,7 +65,7 @@ class BufferedCsvWriter {
 
     private void flush() {
         try {
-            Files.write(Paths.get(csvDir + filename + StringUtils.leftPad(Integer.toString(postFix), 4, '0') + ".csv"), sb.toString().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+            Files.write(Paths.get(csvDir + filename + "_" + StringUtils.leftPad(Integer.toString(postFix), 4, '0') + ".csv"), sb.toString().getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -81,7 +80,7 @@ class BufferedCsvWriter {
 
     private String newHeader() {
         String header;
-        if (filename.contains("-")) {
+        if (filename.split("_")[0].length() == 4) {
             header = createRelaHeader();
         } else {
             header = createNodeHeader();
@@ -90,10 +89,12 @@ class BufferedCsvWriter {
     }
 
     private String createNodeHeader() {
-        return "nodeId:ID(" + filename + "),subentity,name,addName,date,:LABEL\n";
+        // return "nodeId:ID(" + filename + "),subentity,name,addName,date,:LABEL\n";
+        return "nodeId:ID,subentity,name,addName,date\n";
     }
 
     private String createRelaHeader() {
-        return ":START_ID(" + filename.split("-")[0] + "),name,:END_ID(" + filename.split("-")[1] + ")\n";
+        //return ":START_ID(" + filename.split("-")[0] + "),name,:END_ID(" + filename.split("-")[1] + ")\n";
+        return ":START_ID,:END_ID\n";
     }
 }

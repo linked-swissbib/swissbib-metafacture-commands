@@ -45,26 +45,24 @@ public class NeoWriter<T> implements ConfigurableObjectWriter<T> {
             register = new CsvWriterRegister(csvDir, csvFileLength, batchWriteSize);
             firstRecord = false;
         }
-        String rawNodeLabel = ((String) obj).split("#")[0];
-        this.nodeLabel = rawNodeLabel.substring(1, rawNodeLabel.length() - 1);
-        deserializer((String) obj);
+        String[] splittedObj = ((String) obj).split("#", 2);
+        this.nodeLabel = splittedObj[0].substring(1, splittedObj[0].length() - 1);
+        deserializer((String) splittedObj[1]);
     }
 
     private void deserializer(String s) {
         int counter = 0;
         for (String csvLines : s.split("\\|\\|")) {
-            // Set limit of returned strings to 2 (we don't know if there are another # in text)
-            String[] csvTokens = csvLines.split("#", 2);
             String filename;
             String content;
-            // If counter == 0, it's a node, if not, it's a relation. Relations have a filename of pattern node1-node2,
-            // nodes of pattern node
+            // If counter == 0, it's a node, if not, it's a relation.
             if (counter == 0) {
                 filename = nodeLabel;
-                content = csvTokens[1] + "," + csvTokens[0] + "\n";
+                content = csvLines + "\n";
             } else {
-                filename = nodeLabel + "-" + csvTokens[0];
-                content = csvTokens[1] + "\n";
+                String[] splittedContent = csvLines.split("#");
+                content = splittedContent[1] + "\n";
+                filename = splittedContent[0];
             }
             writeText(filename, content);
             counter++;
