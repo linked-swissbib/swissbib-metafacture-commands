@@ -43,16 +43,17 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
 
         try {
             if (this.fout != null) {
-                LOG.debug("Writing record {} in file", numberRecordsWritten);
-                if (jsonCompliant) text = text.substring(0, text.length() - 1);
-                if (!text.equals("{}\n")) this.fout.write(text);
                 this.numberRecordsWritten++;
+                LOG.debug("Writing record {} in file", numberRecordsWritten);
+                if (jsonCompliant) {
+                    if (numberRecordsWritten > 1) fout.write((",\n"));
+                    text = text.substring(0, text.length() - 1);
+                }
+                if (!text.equals("{}\n")) this.fout.write(text);
                 if (this.numberRecordsWritten >= this.fileSize) {
                     this.numberRecordsWritten = 0;
                     this.closeOutFile();
                     this.openOutFile();
-                } else {
-                    if (jsonCompliant) this.fout.write(",\n");
                 }
             }
         } catch (IOException ioExc) {
