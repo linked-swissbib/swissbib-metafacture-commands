@@ -1,16 +1,12 @@
 package org.swissbib.linked.mf.morph.functions;
 
-import org.culturegraph.mf.morph.functions.AbstractSimpleStatelessFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.text.Normalizer;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *  A Hash function to create global unique identifiers for authors.
@@ -24,19 +20,14 @@ import java.util.regex.Pattern;
 public class AuthorHash extends HashGenerator {
 
 
-    private final String URI_PREFIX = "http://data.swissbib.ch/agent/";
-
     private final static List<String> author1001x7001x;
     private final static List<String> author1000x7000x;
     private final static List<String> organisationList;
-
-
     private static final Logger hash1000x7000 ;
     private static final Logger hash1001x7001 ;
     private static final Logger hash710;
     private static final Logger hash711;
     private static final Logger hashById;
-
 
     static {
         hash1000x7000 = LoggerFactory.getLogger("hash1000x7000");
@@ -45,10 +36,12 @@ public class AuthorHash extends HashGenerator {
         hash711 = LoggerFactory.getLogger("hash711");
         hashById = LoggerFactory.getLogger("hashById");
         author1001x7001x =  Arrays.asList("1001", "7001");
-        author1000x7000x =  Arrays.asList("1001", "7001");
+        author1000x7000x = Arrays.asList("1000", "7000");
         organisationList = Arrays.asList("710__", "711__");
 
     }
+
+    private final String URI_PREFIX = "http://data.swissbib.ch/agent/";
 
     /**
      *
@@ -259,11 +252,11 @@ public class AuthorHash extends HashGenerator {
 
             }
         } else if (author1000x7000x.contains(mappedValues.get("type"))) {
-            if (this.checkForValidValue(mappedValues, "fullname")) {
+            if (this.checkForValidValue(mappedValues, "name")) {
 
                 stringForHashId = this.generateId(
                         this.concatenateAndNormalizeValueParts(Arrays.asList(
-                        mappedValues.get("fullname"),
+                                mappedValues.get("name"),
                         mappedValues.get("title"),
                         mappedValues.get("title245a")
                         )
