@@ -5,13 +5,15 @@ Plugin with additional Metafacture commands
 
 ### decode-ntriples
 `org.swissbib.linked.mf.decoder.NtriplesDecoder`
+
 *Parses Ntriples-decoded records.*
 
-Parameters:
+Parameter:
 *`unicodeEscapeSeq`: "true", "false"
 
 ### encode-esbulk
 `org.swissbib.linked.mf.pipe.NtriplesEncoder`
+
 *Encodes records for bulk uploading to Elasticsearch.*
 
 ### encode-neo4j
@@ -20,26 +22,32 @@ Parameters:
 
 ### index-esbulk
 `org.swissbib.linked.mf.pipe.ESBulkIndexer`
+
 *Indexes records in Elasticsearch.*
 
 Parameters:
+
 *esClustername: Elasticsearch cluster name
 *recordsPerUpload: Number of records per single bulk upload
 *esNodes: Elasticsearch nodes. Nodes are separated by #
 
 ### index-neo4j
 `org.swissbib.linked.mf.writer.NeoIndexer`
+
 *Indexes fields in Neo4j. Because the selection of the fields which are to be indexed is hardcoded, the benefit of this command is somewhat limited.*
 
 Parameters:
+
 *batchSize: Size of batch upload for Neo4j
 *dbDir: Path to Neo4j database
 
 ### itemerase-es
 `org.swissbib.linked.mf.pipe.ESItemErase`
+
 *Deletes items which belong to a certain bibliographicResource. Recommended for internal use only.*
 
 Parameters:
+
 *esClustername: Elasticsearch cluster name
 *esNodes: Elasticsearch nodes. Nodes are separated by #
 *esIndex: Elasticsearch index
@@ -47,9 +55,11 @@ Parameters:
 
 ### lookup-es
 `org.swissbib.linked.mf.pipe.ESLookup`
+
 *Filters out records whose identifier already exists in an Elasticsearch index.*
 
 Parameters:
+
 *esClustername: Elasticsearch cluster name
 *esNodes: Elasticsearch nodes. Nodes are separated by #
 *esIndex: Elasticsearch index
@@ -57,16 +67,20 @@ Parameters:
 
 ### split-entitites
 `org.swissbib.linked.mf.pipe.EntitySplitter`
+
 *Splits entities into individual records.*
 
 Parameter:
+
 *entityBoundary: Node depth for entity splitting
 
 ### update-es-id
 `org.swissbib.linked.mf.pipe.ESIdUpdate`
+
 *Identifies partially modified documents by comparing them to an Elasticsearch index.*
 
 Parameter:
+
 *esClustername: Elasticsearch cluster name
 *esNodes: Elasticsearch nodes. Nodes are separated by #
 *esIndex: Elasticsearch index
@@ -79,9 +93,11 @@ Parameter:
 
 ### write-esbulk
 `org.swissbib.linked.mf.writer.ESBulkWriter`
+
 *Writes records as JSON files which comply with the requirements of the Bulk API of Elasticsearch.*
 
 Parameters:
+
 *outDir: Root directory for output
 *filePrefix: Prefix for file names
 *fileSize: Number of records in one file
@@ -92,9 +108,11 @@ Parameters:
 
 ### write-neo4j
 `org.swissbib.linked.mf.writer.NeoWriter`
+
 *Writes csv files for batch uploading to a new Neo4j database. Intended to be used in junction with index-neo4j.*
 
 Parameters:
+
 *csvDir: Path to the output directory
 *csvFileLength: Numbers of records in one dedicated CSV file
 *batchWriteSize: Maximal number of records of the same category
@@ -102,9 +120,11 @@ Parameters:
 
 ### write-rdf-1line
 `org.swissbib.linked.mf.writer.SingleLineWriterRDFXml`
+
 *Writes RDF-XML files, one line per record.*
 
 Parameters:
+
 *usecontributor: "true", "false"
 *rootTag: XML root tag
 *extension: File extension for output files
