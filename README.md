@@ -12,9 +12,15 @@ Parameter:
 * `unicodeEscapeSeq`: "true", "false"
 
 ### encode-esbulk
-`org.swissbib.linked.mf.pipe.NtriplesEncoder`
+`org.swissbib.linked.mf.pipe.ESBulkEncoder`
 
 *Encodes records for bulk uploading to Elasticsearch.*
+
+Parameters:
+* header: Should header for ES bulk be written (Boolean; default: true)? Warning: Setting this parameter to false will result in an invalid Bulk format!
+* escapeChars: Escapes prohibited characters in JSON strings (Boolean; default: true)
+* index: Index name of records
+* type: Type name of records
 
 ### encode-neo4j
 `org.swissbib.linked.mf.pipe.NeoEncoder`
@@ -27,7 +33,6 @@ Parameter:
 *Indexes records in Elasticsearch.*
 
 Parameters:
-
 * esClustername: Elasticsearch cluster name
 * recordsPerUpload: Number of records per single bulk upload
 * esNodes: Elasticsearch nodes. Nodes are separated by #
@@ -38,7 +43,6 @@ Parameters:
 *Indexes fields in Neo4j. Because the selection of the fields which are to be indexed is hardcoded, the benefit of this command is somewhat limited.*
 
 Parameters:
-
 * batchSize: Size of batch upload for Neo4j
 * dbDir: Path to Neo4j database
 
@@ -48,7 +52,6 @@ Parameters:
 *Deletes items which belong to a certain bibliographicResource. Recommended for internal use only.*
 
 Parameters:
-
 * esClustername: Elasticsearch cluster name
 * esNodes: Elasticsearch nodes. Nodes are separated by #
 * esIndex: Elasticsearch index
@@ -60,7 +63,6 @@ Parameters:
 *Filters out records whose identifier already exists in an Elasticsearch index.*
 
 Parameters:
-
 * esClustername: Elasticsearch cluster name
 * esNodes: Elasticsearch nodes. Nodes are separated by #
 * esIndex: Elasticsearch index
@@ -72,7 +74,6 @@ Parameters:
 *Splits entities into individual records.*
 
 Parameter:
-
 * entityBoundary: Node depth for entity splitting
 
 ### update-es-id
@@ -80,8 +81,7 @@ Parameter:
 
 *Identifies partially modified documents by comparing them to an Elasticsearch index.*
 
-Parameter:
-
+Parameters:
 * esClustername: Elasticsearch cluster name
 * esNodes: Elasticsearch nodes. Nodes are separated by #
 * esIndex: Elasticsearch index
@@ -98,7 +98,6 @@ Parameter:
 *Writes records as JSON files which comply with the requirements of the Bulk API of Elasticsearch.*
 
 Parameters:
-
 * outDir: Root directory for output
 * filePrefix: Prefix for file names
 * fileSize: Number of records in one file
@@ -113,7 +112,6 @@ Parameters:
 *Writes csv files for batch uploading to a new Neo4j database. Intended to be used in junction with index-neo4j.*
 
 Parameters:
-
 * csvDir: Path to the output directory
 * csvFileLength: Numbers of records in one dedicated CSV file
 * batchWriteSize: Maximal number of records of the same category
@@ -125,7 +123,6 @@ Parameters:
 *Writes RDF-XML files, one line per record.*
 
 Parameters:
-
 * usecontributor: "true", "false"
 * rootTag: XML root tag
 * extension: File extension for output files
