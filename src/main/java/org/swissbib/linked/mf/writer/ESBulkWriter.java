@@ -33,8 +33,9 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
             this.documentHeader = (String) obj;
             this.openOutFile();
             firstObject = false;
+        } else {
+            this.writeText((String) obj);
         }
-        this.writeText((String) obj);
 
     }
 

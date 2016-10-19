@@ -5,9 +5,6 @@ import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
 import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
-
-import java.nio.charset.Charset;
-
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -16,6 +13,8 @@ import org.elasticsearch.common.bytes.BytesArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swissbib.linked.mf.utils.TransportClientSingleton;
+
+import java.nio.charset.Charset;
 
 
 /**
@@ -29,14 +28,11 @@ import org.swissbib.linked.mf.utils.TransportClientSingleton;
 @Out(Void.class)
 public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
+    static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
     private final static Logger LOG = LoggerFactory.getLogger(ESBulkIndexer.class);
-
     String header = DEFAULT_HEADER;
     String footer = DEFAULT_FOOTER;
     String separator = DEFAULT_SEPARATOR;
-
-    static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
-
     String[] esNodes = {"localhost:9300"};
     String esClustername = "linked-swissbib";
     int recordsPerUpload = 2000;
@@ -80,18 +76,15 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
         return FileCompression.NONE;
     }
 
-
-    @Override
-    public void setCompression(FileCompression compression) {
-        throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
-    }
-
-
     @Override
     public void setCompression(String compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
+    @Override
+    public void setCompression(FileCompression compression) {
+        throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
+    }
 
     @Override
     public String getHeader() {
@@ -139,7 +132,8 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
             try {
                 this.bulkProcessor.add(ba, null, null);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.warn(ba.toString());
+                LOG.warn(e.toString());
             }
         }
     }
