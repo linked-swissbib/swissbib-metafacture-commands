@@ -70,6 +70,7 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
             if (jsonCompliant) this.fout.write("[\n");
             this.writeText(this.documentHeader);
         } catch (IOException e) {
+            LOG.error(e.getMessage());
             e.printStackTrace();
         }
 
