@@ -77,12 +77,12 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     }
 
     @Override
-    public void setCompression(String compression) {
+    public void setCompression(FileCompression compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
     @Override
-    public void setCompression(FileCompression compression) {
+    public void setCompression(String compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
@@ -132,7 +132,7 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
             try {
                 this.bulkProcessor.add(ba, null, null);
             } catch (Exception e) {
-                LOG.warn(ba.toString());
+                LOG.warn((String) obj);
                 LOG.warn(e.toString());
             }
         }
