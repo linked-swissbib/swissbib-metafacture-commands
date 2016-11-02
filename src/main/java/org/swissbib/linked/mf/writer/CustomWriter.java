@@ -45,7 +45,7 @@ public abstract class CustomWriter<T> implements ConfigurableObjectWriter<T> {
     Boolean compress = true;
     String extension = "";
     int numberLinesWritten = 0;
-    int subdirSize = 300;
+    int subdirSize = 0;
     int currentSubDir = 1;
     int numberOpenedFiles = 0;
     String encoding = "UTF-8";
@@ -75,12 +75,12 @@ public abstract class CustomWriter<T> implements ConfigurableObjectWriter<T> {
     }
 
     @Override
-    public void setCompression(FileCompression compression) {
+    public void setCompression(String compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
     @Override
-    public void setCompression(String compression) {
+    public void setCompression(FileCompression compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
