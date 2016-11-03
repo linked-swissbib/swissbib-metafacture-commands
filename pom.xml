@@ -171,6 +171,11 @@
             <artifactId>solr-solrj</artifactId>
             <version>5.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>0.10.0.0</version>
+        </dependency>
     </dependencies>
 
     <profiles>
