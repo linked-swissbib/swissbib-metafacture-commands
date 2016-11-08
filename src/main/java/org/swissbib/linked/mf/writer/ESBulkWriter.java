@@ -30,12 +30,10 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
     public void process(T obj) {
 
         if (firstObject) {
-            this.documentHeader = (String) obj;
             this.openOutFile();
             firstObject = false;
-        } else {
-            this.writeText((String) obj);
         }
+        this.writeText((String) obj);
 
     }
 
@@ -68,7 +66,6 @@ public class ESBulkWriter<T> extends CustomWriter<T> {
         super.openOutFile();
         try {
             if (jsonCompliant) this.fout.write("[\n");
-            this.writeText(this.documentHeader);
         } catch (IOException e) {
             LOG.error(e.getMessage());
             e.printStackTrace();
