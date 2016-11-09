@@ -86,12 +86,6 @@ public class ESLookup extends DefaultStreamPipe<StreamReceiver> {
     }
 
 
-    @Override
-    protected void onCloseStream() {
-        esClient.close();
-    }
-
-
     /**
      * Checks if a document already exists in Elasticsearch index by issuing a get request on the identifier
      *

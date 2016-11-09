@@ -21,24 +21,20 @@ import java.nio.charset.Charset;
  * Writes Elasticsearch Bulk API compliant strings to Elasticsearch Index
  *
  * @author Sebastian Schüpbach, project swissbib, Basel
- *
  */
 @Description("Outputs an Elasticsearch Bulk API compliant file.")
 @In(Object.class)
 @Out(Void.class)
 public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
-    static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
+    private static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
     private final static Logger LOG = LoggerFactory.getLogger(ESBulkIndexer.class);
-    String header = DEFAULT_HEADER;
-    String footer = DEFAULT_FOOTER;
-    String separator = DEFAULT_SEPARATOR;
-    String[] esNodes = {"localhost:9300"};
-    String esClustername = "linked-swissbib";
-    int recordsPerUpload = 2000;
+    private String[] esNodes = {"localhost:9300"};
+    private String esClustername = "linked-swissbib";
+    private int recordsPerUpload = 2000;
 
-    TransportClient esClient;
-    BulkProcessor bulkProcessor;
+    private TransportClient esClient;
+    private BulkProcessor bulkProcessor;
 
 
     public void setEsClustername(final String esClustername) {
@@ -77,12 +73,12 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     }
 
     @Override
-    public void setCompression(String compression) {
+    public void setCompression(FileCompression compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
     @Override
-    public void setCompression(FileCompression compression) {
+    public void setCompression(String compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
@@ -91,10 +87,14 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
         return DEFAULT_HEADER;
     }
 
-
+    /**
+     * Sets the header which is output before the first object.
+     *
+     * @param header new header string
+     */
     @Override
     public void setHeader(String header) {
-        this.header = header;
+
     }
 
 
@@ -103,10 +103,14 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
         return DEFAULT_FOOTER;
     }
 
-
+    /**
+     * Sets the footer which is output after the last object.
+     *
+     * @param footer new footer string
+     */
     @Override
     public void setFooter(String footer) {
-        this.footer = footer;
+
     }
 
 
@@ -115,10 +119,14 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
         return DEFAULT_SEPARATOR;
     }
 
-
+    /**
+     * Sets the separator which is output between objects.
+     *
+     * @param separator new separator string
+     */
     @Override
     public void setSeparator(String separator) {
-        this.separator = separator;
+
     }
 
 
@@ -137,7 +145,7 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
         }
     }
 
-    protected void createTransportClient() {
+    private void createTransportClient() {
 
         this.bulkProcessor = BulkProcessor.builder(this.esClient, new BulkProcessor.Listener() {
 
@@ -172,7 +180,6 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     public void closeStream() {
         this.bulkProcessor.flush();
         LOG.info("Shutting down Elasticsearch bulk processor.");
-        this.bulkProcessor.close();
     }
 
 }
