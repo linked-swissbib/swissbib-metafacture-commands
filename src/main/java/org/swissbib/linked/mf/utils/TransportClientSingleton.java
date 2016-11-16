@@ -3,6 +3,7 @@ package org.swissbib.linked.mf.utils;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,10 +36,10 @@ public class TransportClientSingleton {
     public static synchronized TransportClient getEsClient(String[] nodes, String clustername) {
         if (esClient == null) {
             LOG.info("Connecting to Elasticsearch cluster {}", clustername);
-            Settings settings = Settings.settingsBuilder()
+            Settings settings = Settings.builder()
                     .put("cluster.name", clustername)
                     .build();
-            esClient = TransportClient.builder().settings(settings).build();
+            esClient = new PreBuiltTransportClient(settings);
             for (String elem: nodes) {
                 String[] node = elem.split(":");
                 try {
@@ -56,6 +57,7 @@ public class TransportClientSingleton {
      * @return An error
      * @throws CloneNotSupportedException
      */
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
