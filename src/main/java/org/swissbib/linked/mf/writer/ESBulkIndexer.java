@@ -73,12 +73,12 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     }
 
     @Override
-    public void setCompression(FileCompression compression) {
+    public void setCompression(String compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
     @Override
-    public void setCompression(String compression) {
+    public void setCompression(FileCompression compression) {
         throw new UnsupportedOperationException(SET_COMPRESSION_ERROR);
     }
 
@@ -178,7 +178,6 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
 
     @Override
     public void closeStream() {
-        this.bulkProcessor.flush();
         LOG.info("Shutting down Elasticsearch bulk processor.");
     }
 
