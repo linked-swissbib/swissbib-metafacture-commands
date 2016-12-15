@@ -66,7 +66,7 @@ public class ContinuousCsvWriter<T> implements ConfigurableObjectWriter<T> {
     /**
      * Sets the compression mode.
      *
-     * @param compression
+     * @param compression Compression mode as String
      */
     @Override
     public void setCompression(FileCompression compression) {
@@ -76,7 +76,7 @@ public class ContinuousCsvWriter<T> implements ConfigurableObjectWriter<T> {
     /**
      * Sets the compression mode.
      *
-     * @param compression
+     * @param compression Compression mode as FileCompression instance
      */
     @Override
     public void setCompression(String compression) {
@@ -248,7 +248,7 @@ public class ContinuousCsvWriter<T> implements ConfigurableObjectWriter<T> {
                 try {
                     out = new OutputStreamWriter(compressor, encoding);
                     lineCounter = 0;
-                    if (!continuousFile || fileNumber == 0) {
+                    if ((!continuousFile || fileNumber == 0) && header != null) {
                         writeRecord(header);
                     }
                     fileNumber++;
