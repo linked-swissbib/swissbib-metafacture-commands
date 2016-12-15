@@ -19,34 +19,34 @@ import java.util.List;
  * Serialises an object as JSON-LD.
  *
  * @author Sebastian Schüpbach, project swissbib, Basel
- *
  */
 @Description("Serialises an object as JSON-LD")
 @In(StreamReceiver.class)
 @Out(String.class)
 public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
 
-    protected static final char COMMA 	    = ',';      // Comma transition (e.g. between value and parent)
-    protected static final String NONE 	    = "";	    // No transition
-    protected static final byte BNODE       = 0;	    // Node without key
-    protected static final byte OBJECT      = 1;
-    protected static final byte ARRAY       = 2;
-    protected static final byte KEY 	    = 3;	    // Equals literal ""<Name>""
-    protected static final byte VALUE 	    = 4;	    // Equals literal ""<Name>""
+    private static final char COMMA = ',';      // Comma transition (e.g. between value and parent)
+    private static final String NONE = "";        // No transition
+    private static final byte BNODE = 0;        // Node without key
+    private static final byte OBJECT = 1;
+    private static final byte ARRAY = 2;
+    private static final byte KEY = 3;        // Equals literal ""<Name>""
+    private static final byte VALUE = 4;        // Equals literal ""<Name>""
     private final static Logger LOG = LoggerFactory.getLogger(ESBulkEncoder.class);
-    Multimap<JsonToken, JsonToken> ctxRegistry;         // Registers root parent of every parent
-    boolean makeChildNode;                              // Set next key as child node of current node
-    JsonToken node;                                     // Current node
-    JsonToken rootNode;                                 // Current root node
-    String outputString                     = "";
+    private Multimap<JsonToken, JsonToken> ctxRegistry;         // Registers root parent of every parent
+    private boolean makeChildNode;                              // Set next key as child node of current node
+    private JsonToken node;                                     // Current node
+    private JsonToken rootNode;                                 // Current root node
+    private String outputString = "";
 
-    boolean header                          = true;     // Should bulk-header be printed?
-    boolean escapeChars                     = true;     // Should prohibited characters in JSON string be escaped?
-    String type;                                        // Type of record
-    String index;                                       // Index of record
+    private boolean header = true;     // Should bulk-header be printed?
+    private boolean escapeChars = true;     // Should prohibited characters in JSON string be escaped?
+    private String type;                                        // Type of record
+    private String index;                                       // Index of record
 
     /**
      * Should header be created?
+     *
      * @param header true, false
      */
     public void setHeader(String header) {
@@ -56,6 +56,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
 
     /**
      * Escape prohibited characters in JSON strings
+     *
      * @param escapeChars true, false
      */
     public void setEscapeChars(String escapeChars) {
@@ -65,6 +66,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
 
     /**
      * Sets index of record
+     *
      * @param index Index of record
      */
     public void setIndex(String index) {
@@ -74,6 +76,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
 
     /**
      * Sets type of record
+     *
      * @param type Type of record
      */
     public void setType(String type) {
@@ -132,7 +135,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
      *
      * @param name Name of parent
      */
-    void buildKey(String name) {
+    private void buildKey(String name) {
         JsonToken sameNode = checkKeyExists(getParentNode(), name);
         node = (sameNode == null) ?
                 new JsonToken(KEY, name, getParentNode()) :
@@ -143,11 +146,12 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
 
     /**
      * Checks if a parent with same name and same root parent (context) exists
+     *
      * @param rootKey Reference to root parent
-     * @param name Name of parent
+     * @param name    Name of parent
      * @return JsonToken Root parent, if a parent has been found, otherwise null
      */
-    JsonToken checkKeyExists(JsonToken rootKey, String name) {
+    private JsonToken checkKeyExists(JsonToken rootKey, String name) {
         if (name.endsWith("{}")) name = name.substring(0, name.length() - 2);
         JsonToken foundKey = null;
         if (ctxRegistry.containsKey(rootKey)) {
@@ -163,17 +167,19 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
 
     /**
      * Gets parent node
+     *
      * @return Parent node
      */
-    JsonToken getParentNode() {
+    private JsonToken getParentNode() {
         return makeChildNode ? node : node.getParent();
     }
 
     /**
      * Builds JSON string
+     *
      * @return JSON string
      */
-    String buildJsonString(byte lastTokenType, JsonToken jt) {
+    private String buildJsonString(byte lastTokenType, JsonToken jt) {
         StringBuilder stringBuilder = new StringBuilder();
         for (JsonToken child : jt.getChildren()) {
             // Set prefixes if required
