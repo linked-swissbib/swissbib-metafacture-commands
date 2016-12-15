@@ -43,6 +43,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
     private boolean escapeChars = true;     // Should prohibited characters in JSON string be escaped?
     private String type;                                        // Type of record
     private String index;                                       // Index of record
+    private boolean avoidMergers = false;
 
     /**
      * Should header be created?
@@ -84,6 +85,10 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
         LOG.debug("Settings - Set type: {}", type);
     }
 
+    public void setAvoidMergers(String avoidMergers) {
+        this.avoidMergers = Boolean.parseBoolean(avoidMergers);
+    }
+
     @Override
     public void startRecord(String id) {
         LOG.debug("Parsing record {}", id);
@@ -110,7 +115,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
     public void startEntity(String name) {
         buildKey(name);
         makeChildNode = true;
-        if (name.endsWith("{}")) node = new JsonToken(BNODE, null, getParentNode());
+        if (name.endsWith("{}") || avoidMergers) node = new JsonToken(BNODE, null, getParentNode());
     }
 
     @Override
@@ -318,7 +323,7 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
          *
          * @return Parantheses type (in byte)
          */
-        public byte getParentheses() {
+        byte getParentheses() {
             return parentheses;
         }
 
