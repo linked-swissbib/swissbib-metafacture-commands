@@ -1,6 +1,9 @@
 package org.swissbib.linked.mf.writer;
 
 import org.culturegraph.mf.exceptions.MetafactureException;
+import org.culturegraph.mf.framework.annotations.Description;
+import org.culturegraph.mf.framework.annotations.In;
+import org.culturegraph.mf.framework.annotations.Out;
 import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
 import org.culturegraph.mf.util.FileCompression;
 
@@ -12,6 +15,9 @@ import java.io.*;
  *          <p>
  *          Created on 01.11.16
  */
+@Description("Serialises data as CSV file with optional header")
+@In(String.class)
+@Out(Void.class)
 public class ContinuousCsvWriter<T> implements ConfigurableObjectWriter<T> {
 
     private String footer = "";
@@ -66,21 +72,21 @@ public class ContinuousCsvWriter<T> implements ConfigurableObjectWriter<T> {
     /**
      * Sets the compression mode.
      *
-     * @param compression Compression mode as String
-     */
-    @Override
-    public void setCompression(FileCompression compression) {
-        this.compression = compression;
-    }
-
-    /**
-     * Sets the compression mode.
-     *
      * @param compression Compression mode as FileCompression instance
      */
     @Override
     public void setCompression(String compression) {
         setCompression(FileCompression.valueOf(compression.toUpperCase()));
+    }
+
+    /**
+     * Sets the compression mode.
+     *
+     * @param compression Compression mode as String
+     */
+    @Override
+    public void setCompression(FileCompression compression) {
+        this.compression = compression;
     }
 
     /**
