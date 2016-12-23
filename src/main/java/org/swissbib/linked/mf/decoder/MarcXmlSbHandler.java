@@ -17,7 +17,6 @@ package org.swissbib.linked.mf.decoder;
 
 import org.culturegraph.mf.framework.DefaultXmlPipe;
 import org.culturegraph.mf.framework.ObjectReceiver;
-import org.culturegraph.mf.framework.StreamReceiver;
 import org.culturegraph.mf.framework.XmlReceiver;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
@@ -33,7 +32,7 @@ import org.xml.sax.SAXException;
  */
 @Description("A marc xml reader")
 @In(XmlReceiver.class)
-@Out(StreamReceiver.class)
+@Out(String.class)
 public final class MarcXmlSbHandler extends DefaultXmlPipe<ObjectReceiver<String>> {
 
     private static final String SUBFIELD = "subfield";
