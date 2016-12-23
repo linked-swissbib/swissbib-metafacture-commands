@@ -5,34 +5,34 @@ Plugin with additional Metafacture commands used in linked-swissbib workflows
 
 The commands are divided into several categories:
 * Readers:
-** [read-json](#read-json): Parses JSON files
+    * [read-json](#read-json): Parses JSON files
 * Decoders:
-** [decode-ntriples](#decode-ntriples): Parses Ntriples files
-** [handle-marcxml-sb](#handle-marcxml-sb): Directly transforms MARC-XML fields to CSV rows like record-id,field,indicator1,indicator2,subfield,value
-** [handle-marcxml-sru](#handle-marcxml-sru): Handles MARC-XML files received from the SRU interface of Swissbib
+    * [decode-ntriples](#decode-ntriples): Parses Ntriples files
+    * [handle-marcxml-sb](#handle-marcxml-sb): Directly transforms MARC-XML fields to CSV rows like record-id,field,indicator1,indicator2,subfield,value
+    * [handle-marcxml-sru](#handle-marcxml-sru): Handles MARC-XML files received from the SRU interface of Swissbib
 * Pipe:
-** [encode-esbulk](#encode-esbulk): Encodes data as JSON-LD or in a special format suitable for bulk indexing in Elasticsearch
-** [encode-neo4j](#encode-neo4j): Encodes data as csv files suitable for batch uploads to a Neo4j database
-** [encode-ntriples](#encode-ntriples): Encodes data as Ntriples
-** [ext-filter](#ext-filter): Extends the default filter command in Flux by providing a parameter to implement a "filter not" mechanism
-** [itemerase-es](#itemerase-ex): Deletes items which belong to a certain bibliographicResource
-** [lookup-es](#lookup-es): Filters out records whose identifier already exists in an Elasticsearch index
-** [split-entities](#split-entities): Splits entities into individual records.
-** [update-es-id](#update-es-id): Identifies partially modified documents by comparing them to an Elasticsearch index.
+    * [encode-esbulk](#encode-esbulk): Encodes data as JSON-LD or in a special format suitable for bulk indexing in Elasticsearch
+    * [encode-neo4j](#encode-neo4j): Encodes data as csv files suitable for batch uploads to a Neo4j database
+    * [encode-ntriples](#encode-ntriples): Encodes data as Ntriples
+    * [ext-filter](#ext-filter): Extends the default filter command in Flux by providing a parameter to implement a "filter not" mechanism
+    * [itemerase-es](#itemerase-ex): Deletes items which belong to a certain bibliographicResource
+    * [lookup-es](#lookup-es): Filters out records whose identifier already exists in an Elasticsearch index
+    * [split-entities](#split-entities): Splits entities into individual records.
+    * [update-es-id](#update-es-id): Identifies partially modified documents by comparing them to an Elasticsearch index.
 * Writers:
-** [index-esbulk](#index-esbulk): Uses the bulk mechanisms of Elasticsearch to index records
-** [index-neo4j](#index-neo4j): Indexes nodes and relationships in Neo4j
-** [write-csv](#write-csv): Serialises data as CSV file with optional header.
-** [write-esbulk](#write-esbulk): Writes records as JSON files which can comply with the requirements of the Bulk API of Elasticsearch.
-** [write-kafka](#write-kafka): Acts as a producer in a Kafka cluster.
-** [write-neo4j](#write-neo4j): Writes csv files for batch uploading to a new Neo4j database.
-** [write-rdf-1line](#write-rdf-1line): Writes RDF-XML files, one line per record.
-** [write-socket](#write-socket): Sets up a socket server.
+    * [index-esbulk](#index-esbulk): Uses the bulk mechanisms of Elasticsearch to index records
+    * [index-neo4j](#index-neo4j): Indexes nodes and relationships in Neo4j
+    * [write-csv](#write-csv): Serialises data as CSV file with optional header.
+    * [write-esbulk](#write-esbulk): Writes records as JSON files which can comply with the requirements of the Bulk API of Elasticsearch.
+    * [write-kafka](#write-kafka): Acts as a producer in a Kafka cluster.
+    * [write-neo4j](#write-neo4j): Writes csv files for batch uploading to a new Neo4j database.
+    * [write-rdf-1line](#write-rdf-1line): Writes RDF-XML files, one line per record.
+    * [write-socket](#write-socket): Sets up a socket server.
 * Source:
-** [open-multi-http](#open-multi-http): Allows to open HTTP resources in a "paging" manner, e.g. to get data by chunks from a database
+    * [open-multi-http](#open-multi-http): Allows to open HTTP resources in a "paging" manner, e.g. to get data by chunks from a database
 * Morph Functions:
-** [AuthorHash](#AuthorHash): Creates a hash value for authors based on different MARC fields.
-** [ItemHash](#ItemHash): Creates a hash value for items based on different MARC fields.
+    * [AuthorHash](#AuthorHash): Creates a hash value for authors based on different MARC fields.
+    * [ItemHash](#ItemHash): Creates a hash value for items based on different MARC fields.
 
 
 
@@ -60,7 +60,7 @@ Option: `unicodeEscapeSeq`: "true", "false"
 
 TODO: Example
 
-### (#encode-esbulk)
+### encode-esbulk
 
 *Encodes records for bulk uploading to Elasticsearch.*
 
