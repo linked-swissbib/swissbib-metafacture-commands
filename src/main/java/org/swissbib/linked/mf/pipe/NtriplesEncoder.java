@@ -22,43 +22,16 @@ import java.util.List;
 @Out(String.class)
 public class NtriplesEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
 
-    List<String> subjects = new ArrayList<>();
-    int bnodeCounter = 0;
-    StringBuilder resource = new StringBuilder();
-
-
-    @Override
-    public void startRecord(String identifier) {
-        subjects.add(identifier);
-    }
-
-    @Override
-    public void endRecord() {
-        getReceiver().process(resource.toString());
-        resource.setLength(0);
-    }
-
-    @Override
-    public void startEntity(String name) {
-        resource.append(createStatement(subjects.get(subjects.size() - 1), name, createBnode(++bnodeCounter)));
-    }
-
-    @Override
-    public void endEntity() {
-        subjects.remove(subjects.size() - 1);
-    }
-
-    @Override
-    public void literal(String name, String value) {
-        resource.append(createStatement(subjects.get(subjects.size() - 1), name, value));
-    }
+    private List<String> subjects = new ArrayList<>();
+    private int bnodeCounter = 0;
+    private StringBuilder resource = new StringBuilder();
 
     /**
      * Performs a simple check if a string could be a URI
      * @param uri String to be checked
      * @return true if string could be a URI, false if otherwise
      */
-    static Boolean simpleUriCheck(String uri) {
+    private static Boolean simpleUriCheck(String uri) {
         // scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]
         return uri.matches("[^ ]+:[^ ]+");
     }
@@ -68,8 +41,8 @@ public class NtriplesEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
      * @param counter Number of identifier
      * @return Identifier as string
      */
-    static String createBnode(int counter) {
-        return "_:b" + ("00" + String.valueOf(counter)).substring(String.valueOf(counter).length());
+    private static String createBnode(int counter) {
+        return "_:b" + ("0000000" + String.valueOf(counter)).substring(String.valueOf(counter).length());
     }
 
     /**
@@ -79,7 +52,7 @@ public class NtriplesEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
      * @param object Object of the triple
      * @return N-triple statement as string
      */
-    static String createStatement(String subject, String predicate, String object) {
+    private static String createStatement(String subject, String predicate, String object) {
         StringBuilder statement = new StringBuilder();
         statement.append((subject.startsWith("_")) ? subject : "<" + subject + ">");
         statement.append(" <");
@@ -94,6 +67,34 @@ public class NtriplesEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
         }
         statement.append(" .\n");
         return statement.toString();
+    }
+
+    @Override
+    public void startRecord(String identifier) {
+        subjects.add(identifier);
+    }
+
+    @Override
+    public void endRecord() {
+        getReceiver().process(resource.toString());
+        resource.setLength(0);
+        subjects.clear();
+    }
+
+    @Override
+    public void startEntity(String name) {
+        subjects.add(createBnode(++bnodeCounter));
+        resource.append(createStatement(subjects.get(subjects.size() - 2), name, subjects.get(subjects.size() - 1)));
+    }
+
+    @Override
+    public void endEntity() {
+        subjects.remove(subjects.size() - 1);
+    }
+
+    @Override
+    public void literal(String name, String value) {
+        resource.append(createStatement(subjects.get(subjects.size() - 1), name, value));
     }
 
 }
