@@ -23,8 +23,8 @@ public class EntitySplitter extends DefaultStreamPipe<StreamReceiver> {
 
     private final static Logger LOG = LoggerFactory.getLogger(EntitySplitter.class);
 
-    int nodeLevel = 0;
-    int entityBoundary = 0;
+    private int nodeLevel = 0;
+    private int entityBoundary = 0;
 
 
     public void setEntityBoundary(String entityBoundary) {
