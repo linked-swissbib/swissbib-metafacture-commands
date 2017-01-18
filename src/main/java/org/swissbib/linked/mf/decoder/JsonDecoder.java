@@ -6,6 +6,9 @@ import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Sebastian Schüpbach
  * @version 0.1
@@ -27,14 +30,15 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
     private static final char SEPOBJECTS = ',';
     private static final char WHITESPACE = ' ';
     private static final char ESCAPECHAR = '\'';
+    private static final byte OBJECT = 0;
+    private static final byte ARRAY = 1;
+    private static final byte LITERAL = 2;
+    private static final byte SPECIALLITERAL = 3;
 
     private static String nullValue = "";
     private static StringBuilder literal = new StringBuilder();
-    private byte objectLevel = 0;
-    private boolean inLiteral = false;
-    private boolean inArray = false;
     private boolean ignoreNextChar = false;
-    private boolean inSpecialLiteral = false;
+    private Path path = new Path();
     private String key = "";
 
     public static void setNullValue(String nullValue) {
@@ -86,9 +90,9 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
 
         for (int i = 0; i < obj.length(); i++) {
             char c = obj.charAt(i);
-            if (objectLevel == 0) {
+            if (path.empty()) {
                 if (c == '{') {
-                    objectLevel++;
+                    path.add(new JsonObject(""));
                     getReceiver().startRecord("");
                 }
             } else {
@@ -96,28 +100,26 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
                     literal.append(c);
                     ignoreNextChar = false;
                 } else {
-                    if (inLiteral) {
+                    if (path.literal()) {
                         switch (c) {
                             case ESCAPECHAR:
                                 ignoreNextChar = true;
                                 break;
                             case ENDLITERAL:
+                                path.remove();
                                 // Is value, else key
                                 if (key.length() > 0) {
                                     getReceiver().literal(key, literal.toString());
-                                    if (!inArray) {
-                                        key = "";
-                                    }
+                                    key = "";
                                 } else {
                                     key = literal.toString();
                                 }
-                                inLiteral = false;
                                 literal.setLength(0);
                                 break;
                             default:
                                 literal.append(c);
                         }
-                    } else if (inSpecialLiteral) { // If value is not delimited by apostrophes
+                    } else if (path.specialLiteral()) { // If value is not delimited by apostrophes
                         switch (c) {
                             case SEPOBJECTS:
                             case ENDOBJECT:
@@ -134,10 +136,10 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
                                     getReceiver().literal(key, "");
                                 }
                                 literal.setLength(0);
-                                if (!inArray) {
+                                if (!path.array()) {
                                     key = "";
                                 }
-                                inSpecialLiteral = false;
+                                path.remove();
                                 break;
                             case ESCAPECHAR:
                                 ignoreNextChar = true;
@@ -147,31 +149,34 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
                     } else {
                         switch (c) {
                             case STARTOBJECT:
-                                if (objectLevel == 0) {
+                                if (path.empty()) {
                                     getReceiver().startRecord("");
                                 } else {
+                                    if (path.array()) { // In case objects are in an array
+                                        key = path.last().key();
+                                    }
                                     getReceiver().startEntity(key);
-                                    key = "";
                                 }
-                                objectLevel++;
+                                path.add(new JsonObject(key));
+                                key = "";
                                 break;
                             case ENDOBJECT:
-                                if (objectLevel > 1) {
+                                if (path.size() > 1) {
                                     getReceiver().endEntity();
                                 } else {
                                     getReceiver().endRecord();
                                 }
-                                objectLevel--;
+                                path.remove();
                                 break;
                             case STARTARRAY:
-                                inArray = true;
+                                path.add(new JsonArray(key));
                                 break;
                             case ENDARRAY:
-                                inArray = false;
+                                path.remove();
                                 key = "";
                                 break;
                             case STARTLITERAL:
-                                inLiteral = true;
+                                path.add(new JsonLiteral());
                                 break;
                             case ESCAPECHAR:
                                 ignoreNextChar = true;
@@ -182,7 +187,7 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
                                 break;
                             default:
                                 literal.append(c);
-                                inSpecialLiteral = true;
+                                path.add(new JsonSpecialLiteral());
                         }
                     }
                 }
@@ -190,10 +195,109 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
         }
     }
 
-    private class IllegalCharacterException extends Exception {
+    abstract private class JsonToken {
+        String key;
 
+        abstract byte type();
+
+        abstract String key();
     }
 
+    private class JsonArray extends JsonToken {
+        JsonArray(String name) {
+            this.key = name;
+        }
+
+        @Override
+        byte type() {
+            return ARRAY;
+        }
+
+        @Override
+        String key() {
+            return this.key;
+        }
+    }
+
+    private class JsonObject extends JsonToken {
+        JsonObject(String name) {
+            this.key = name;
+        }
+
+        @Override
+        byte type() {
+            return OBJECT;
+        }
+
+        @Override
+        String key() {
+            return this.key;
+        }
+    }
+
+    private class JsonLiteral extends JsonToken {
+        @Override
+        byte type() {
+            return LITERAL;
+        }
+
+        @Override
+        String key() {
+            return "";
+        }
+    }
+
+    private class JsonSpecialLiteral extends JsonToken {
+        @Override
+        byte type() {
+            return SPECIALLITERAL;
+        }
+
+        @Override
+        String key() {
+            return "";
+        }
+    }
+
+    private class Path {
+        private List<JsonToken> path = new ArrayList<>();
+
+        boolean empty() {
+            return path.size() == 0;
+        }
+
+        void add(JsonToken token) {
+            path.add(token);
+        }
+
+        void remove() {
+            path.remove(indexLast());
+        }
+
+        private JsonToken last() {
+            return path.get(indexLast());
+        }
+
+        int size() {
+            return path.size();
+        }
+
+        boolean array() {
+            return !empty() && last().type() == ARRAY;
+        }
+
+        boolean literal() {
+            return !empty() && last().type() == LITERAL;
+        }
+
+        boolean specialLiteral() {
+            return !empty() && last().type() == SPECIALLITERAL;
+        }
+
+        private int indexLast() {
+            return path.size() - 1;
+        }
+    }
 
 }
 
