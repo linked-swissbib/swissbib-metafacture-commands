@@ -40,7 +40,7 @@ The commands are divided into several categories:
 
 *Creates a hash value for authors based on different MARC fields.*
 
-* Implementation: `org.swissbib.linked.mf.morph.functions.AuthorHash`
+* Implementation: [org.swissbib.linked.mf.morph.functions.AuthorHash](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/morph/functions.AuthorHash.java)
 
 Resources:
 * [Morph definition](https://github.com/linked-swissbib/mfWorkflows/blob/master/src/main/resources/transformation/indexWorkflows/morphModules/authorHash100.xml) for an author name in field 100
@@ -53,9 +53,9 @@ Resources:
 
 *Parses Ntriples-decoded records.*
 
-* Implementation: `org.swissbib.linked.mf.decoder.NtriplesDecoder`
+* Implementation: [org.swissbib.linked.mf.decoder.NtriplesDecoder](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/decoder/NtriplesDecoder.java)
 * In: `java.io.Reader`
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Option: `unicodeEscapeSeq`: "true", "false"
 
 TODO: Example
@@ -64,8 +64,8 @@ TODO: Example
 
 *Encodes records for bulk uploading to Elasticsearch.*
 
-* Implementation: `org.swissbib.linked.mf.pipe.ESBulkEncoder`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.pipe.ESBulkEncoder](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ESBulkEncoder.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Out: `java.lang.String`
 * Options:
     * avoidMergers: If set to true, fields with same keys are modelled as separate inner objects instead of having their values merged (Boolean; default: false)
@@ -80,8 +80,8 @@ TODO: Example
 
 *Encodes records as csv files for batch uploading them to a new Neo4j-database. As the headers of the csv files are hardcoded, it is not ready to be used in a broader context.*
 
-* Implementation: `org.swissbib.linked.mf.pipe.NeoEncoder`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.pipe.NeoEncoder](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/NeoEncoder.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Out: `java.lang.String`
 
 [Example](https://github.com/guenterh/gndHackathon2016/blob/master/examples/gh/hackathonGND/gnd.flux)
@@ -91,8 +91,8 @@ TODO: Example
 
 *Encodes data as Ntriples*
 
-* Implementation: `org.swissbib.linked.mf.pipe.NtriplesEncoder`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.pipe.NtriplesEncoder](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/NtriplesEncoder.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Out: `java.lang.String`
 
 TODO: Example
@@ -102,9 +102,9 @@ TODO: Example
 
 *Extends the default filter command in Flux by providing a parameter to implement a "filter not" mechanism*
 
-* Implementation: `org.swissbib.linked.mf.pipe.ExtFilter`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.pipe.ExtFilter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ExtFilter.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Option: `filterNot`: If set to true, filters out all records which match (Boolean; default: false)
 
 TODO: Example
@@ -114,8 +114,8 @@ TODO: Example
 
 *Directly transforms MARC-XML fields to CSV rows like record-id,field,indicator1,indicator2,subfield,value*
 
-* Implementation: `org.swissbib.linked.mf.decoder.MarcXmlSbHandler`
-* In: `org.culturegraph.mf.framework.XmlReceiver`
+* Implementation: [org.swissbib.linked.mf.decoder.MarcXmlSbHandler](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/decoder/MarcXmlSbHandler.java)
+* In: [org.culturegraph.mf.framework.XmlReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/XmlReceiver.java)
 * Out: `java.lang.String`
 
 TODO: Example
@@ -125,9 +125,9 @@ TODO: Example
 
 *Handles MARC-XML files received from the SRU interface of Swissbib*
 
-* Implementation: `org.swissbib.linked.mf.decoder.MarcXmlSruHandler`
-* In: `org.culturegraph.mf.framework.XmlReceiver`:
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.decoder.MarcXmlSruHandler](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/decoder/MarcXmlSruHandler.java)
+* In: [org.culturegraph.mf.framework.XmlReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/XmlReceiver.java)
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 
 TODO: Example
 
@@ -136,7 +136,7 @@ TODO: Example
 
 *Indexes records in Elasticsearch.*
 
-* Implementation: `org.swissbib.linked.mf.pipe.ESBulkIndexer`
+* Implementation: [org.swissbib.linked.mf.pipe.ESBulkIndexer](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ESBulkIndexer.java)
 * In: `java.lang.Object`
 * Out: `java.lang.Void`
 * Options:
@@ -151,9 +151,9 @@ TODO: Example
 
 *Indexes fields in Neo4j. Because the selection of the fields which are to be indexed is hardcoded, the benefit of this command is somewhat limited.*
 
-* Implementation: `org.swissbib.linked.mf.writer.NeoIndexer`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.writer.NeoIndexer](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/NeoIndexer.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Options:
     * batchSize: Size of batch upload for Neo4j
     * dbDir: Path to Neo4j database
@@ -165,7 +165,7 @@ TODO: Example
 
 *Creates a hash value for items based on different MARC fields.*
 
-* Implementation: `org.swissbib.linked.mf.morph.functions.ItemHash`
+* Implementation: [org.swissbib.linked.mf.morph.functions.ItemHash](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/morph/functions.ItemHash.java)
 
 Resource: [Morph definition](https://github.com/linked-swissbib/mfWorkflows/blob/master/src/main/resources/transformation/indexWorkflows/itemMorph.xml) which uses the item hash generator
 
@@ -174,9 +174,9 @@ Resource: [Morph definition](https://github.com/linked-swissbib/mfWorkflows/blob
 
 *Deletes items which belong to a certain bibliographicResource. Recommended for internal use only.*
 
-* Implementation: `org.swissbib.linked.mf.pipe.ESItemErase`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.pipe.ESItemErase](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ESItemErase.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Options:
     * esClustername: Elasticsearch cluster name
     * esNodes: Elasticsearch nodes. Nodes are separated by #
@@ -190,9 +190,9 @@ TODO: Example
 
 *Filters out records whose identifier already exists in an Elasticsearch index.*
 
-* Implementation: `org.swissbib.linked.mf.pipe.ESLookup`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.pipe.ESLookup](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ESLookup.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Options:
     * esClustername: Elasticsearch cluster name
     * esNodes: Elasticsearch nodes. Nodes are separated by #
@@ -206,7 +206,7 @@ TODO: Example
 
 *Allows to open HTTP resources in a "paging" manner, e.g. to get data by chunks from a database. You have to define two variable parts in the URL: `${cs}`, which sets the chunk size, and `${pa}`, which sets the offset.*
 
-* Implementation: `org.swissbib.linked.mf.source.MultiHttpOpener`
+* Implementation: [org.swissbib.linked.mf.source.MultiHttpOpener](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/source/MultiHttpOpener.java)
 * In: `java.lang.String`
 * Out: `java.lang.Reader`
 * Options:
@@ -223,9 +223,9 @@ TODO: Example
 
 *Parses JSON files*
 
-* Implementation: `org.swissbib.linked.mf.reader.JsonReader`
+* Implementation: [org.swissbib.linked.mf.reader.JsonReader](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/reader/JsonReader.java)
 * In: `java.lang.String`
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Option: `nullValues`: By default, null values are returned as empty strings. With nullValues this behaviour can be changed.
 
 TODO: Example
@@ -235,9 +235,9 @@ TODO: Example
 
 *Splits entities into individual records.*
 
-* Implementation: `org.swissbib.linked.mf.pipe.EntitySplitter`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.pipe.EntitySplitter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/EntitySplitter.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Option: `entityBoundary`: Node depth for entity splitting
 
 TODO: Example
@@ -247,9 +247,9 @@ TODO: Example
 
 *Identifies partially modified documents by comparing them to an Elasticsearch index. Is tailored to the so-called baseline workflow of linked-swissbib, so it's probably useless for other purposes*
 
-* Implementation: `org.swissbib.linked.mf.pipe.ESIdUpdate`
-* In: `org.culturegraph.mf.framework.StreamReceiver`
-* Out: `org.culturegraph.mf.framework.StreamReceiver`
+* Implementation: [org.swissbib.linked.mf.pipe.ESIdUpdate](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ESIdUpdate.java)
+* In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Options:
     * esClustername: Elasticsearch cluster name
     * esNodes: Elasticsearch nodes. Nodes are separated by #
@@ -267,7 +267,7 @@ TODO: Example
 
 *Serialises data as CSV file with optional header*
 
-* Implementation: `org.swissbib.linked.mf.writer.ContinuousCsvWriter`
+* Implementation: [org.swissbib.linked.mf.writer.ContinuousCsvWriter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/ContinuousCsvWriter.java)
 * In: `java.lang.String`
 * Out: `java.lang.Void`
 * Options:
@@ -290,7 +290,7 @@ TODO: Example
 
 *Writes records as JSON files which comply with the requirements of the Bulk API of Elasticsearch.*
 
-* Implementation: `org.swissbib.linked.mf.writer.ESBulkWriter`
+* Implementation: [org.swissbib.linked.mf.writer.ESBulkWriter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/ESBulkWriter.java)
 * In: `java.lang.Object`
 * Out: `java.lang.Void`
 * Options:
@@ -309,7 +309,7 @@ TODO: Example
 
 *Acts as a producer in a Kafka cluster.*
 
-* Implementation: `org.swissbib.linked.mf.writer.KafkaWriter`
+* Implementation: [org.swissbib.linked.mf.writer.KafkaWriter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/KafkaWriter.java)
 * In: `java.lang.Object`
 * Out: `java.lang.Void`
 * Option:
@@ -323,7 +323,7 @@ TODO: Example
 
 *Writes csv files for batch uploading to a new Neo4j database. Intended to be used in junction with index-neo4j.*
 
-* Implementation: `org.swissbib.linked.mf.writer.NeoWriter`
+* Implementation: [org.swissbib.linked.mf.writer.NeoWriter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/NeoWriter.java)
 * In: `java.lang.Object`
 * Out: `java.lang.Void`
 * Options:
@@ -338,7 +338,7 @@ TODO: Example
 
 *Writes RDF-XML files, one line per record.*
 
-* Implementation: `org.swissbib.linked.mf.writer.SingleLineWriterRDFXml`
+* Implementation: [org.swissbib.linked.mf.writer.SingleLineWriterRDFXml](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/SingleLineWriterRDFXml.java)
 * In: `java.lang.Object`
 * Out: `java.lang.Void`
 * Options:
@@ -359,7 +359,7 @@ TODO: Example
 
 *Sets up a socket server*
 
-* Implementation: `org.swissbib.linked.mf.writer.SocketWriter`
+* Implementation: [org.swissbib.linked.mf.writer.SocketWriter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/SocketWriter.java)
 * In: `java.lang.Object`
 * Out: `java.lang.Void`
 * Option: `port`: Port of socket server (host is always 127.0.0.1)
