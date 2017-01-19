@@ -276,10 +276,7 @@ Example: [linked-swissbib "Baseline"](https://github.com/sschuepbach/metafacture
     * path: Path to directory with CSV files
     * separator: Sets the separator which is output between objects
 
-Examples:
-
-* [Workflow which queries the Swissbib SRU interface and filters, transforms and dumps the results to a CSV file](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Swissbib-SRU)
-* [Transformation of author data from ]
+Examples: [Workflow which queries the Swissbib SRU interface and filters, transforms and dumps the results to a CSV file](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Swissbib-SRU)
 
 
 ### write-esbulk
