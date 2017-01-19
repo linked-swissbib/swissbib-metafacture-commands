@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ch.linked-swissbib</groupId>
     <artifactId>swissbibMF-plugins</artifactId>
-    <version>0.0.5-SNAPSHOT</version>
+    <version>1.0</version>
     <name>swissbib-metafacture-plugins</name>
     <description>Modules for linked-swissbib.ch to operate with metafacture</description>
     <licenses>
