@@ -58,7 +58,7 @@ Resources:
 * Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Option: `unicodeEscapeSeq`: "true", "false"
 
-TODO: Example
+Example: [linked-swissbib "EnrichedLine"](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Linked-Swissbib-Enrichedline)
 
 ### encode-esbulk
 
@@ -74,7 +74,7 @@ TODO: Example
     * index: Index name of records
     * type: Type name of records
 
-TODO: Example
+Example: [linked-swissbib "Baseline"](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Linked-Swissbib-Baseline)
 
 ### encode-neo4j
 
@@ -84,7 +84,7 @@ TODO: Example
 * In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Out: `java.lang.String`
 
-[Example](https://github.com/guenterh/gndHackathon2016/blob/master/examples/gh/hackathonGND/gnd.flux)
+Example: [Graph visualisation of the GND](https://github.com/guenterh/gndHackathon2016/blob/master/examples/gh/hackathonGND)
 
 
 ### encode-ntriples
@@ -95,7 +95,7 @@ TODO: Example
 * In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Out: `java.lang.String`
 
-TODO: Example
+Example: [Libadmin entries as Ntriples](https://github.com/sschuepbach/metafacture-examples/blob/master/Swissbib-Extensions/Libadmin-Ntriples/libadminFlux.flux)
 
 
 ### ext-filter
@@ -105,9 +105,9 @@ TODO: Example
 * Implementation: [org.swissbib.linked.mf.pipe.ExtFilter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ExtFilter.java)
 * In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
-* Option: `filterNot`: If set to true, filters out all records which match (Boolean; default: false)
+* Option: `filterNot`: If set to true, returns only records which don't match a certain criteria (Boolean; default: false)
 
-TODO: Example
+Example: [Show record ids which don't have a title (MARC field 245$a)](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Records-without-titles)
 
 
 ### handle-marcxml-sb
@@ -118,7 +118,7 @@ TODO: Example
 * In: [org.culturegraph.mf.framework.XmlReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/XmlReceiver.java)
 * Out: `java.lang.String`
 
-TODO: Example
+Example: [1:1 transformation of MARC-XML to CSV](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/MARC-CSV)
 
 
 ### handle-marcxml-sru
@@ -129,7 +129,7 @@ TODO: Example
 * In: [org.culturegraph.mf.framework.XmlReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/XmlReceiver.java)
 * Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 
-TODO: Example
+Example: [Workflow which queries the Swissbib SRU interface and filters, transforms and dumps the results to a CSV file](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Swissbib-SRU)
 
 
 ### index-esbulk
@@ -144,12 +144,12 @@ TODO: Example
     * recordsPerUpload: Number of records per single bulk upload
     * esNodes: Elasticsearch nodes. Nodes are separated by #
 
-TODO: Example
+Example: [linked-swissbib "Baseline"](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Linked-Swissbib-Baseline)
 
 
 ### index-neo4j
 
-*Indexes fields in Neo4j. Because the selection of the fields which are to be indexed is hardcoded, the benefit of this command is somewhat limited.*
+*Indexes fields in Neo4j. Because the selection of the fields which are to be indexed is hardcoded, the benefit of this command outside our admittedly narrow scope is somewhat limited.*
 
 * Implementation: [org.swissbib.linked.mf.writer.NeoIndexer](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/NeoIndexer.java)
 * In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
@@ -157,8 +157,6 @@ TODO: Example
 * Options:
     * batchSize: Size of batch upload for Neo4j
     * dbDir: Path to Neo4j database
-
-TODO: Example
 
 
 ### ItemHash
@@ -172,7 +170,7 @@ Resource: [Morph definition](https://github.com/linked-swissbib/mfWorkflows/blob
 
 ### itemerase-es
 
-*Deletes items which belong to a certain bibliographicResource. Recommended for internal use only.*
+*Deletes items which belong to a certain bibliographicResource. Recommended for internal use only. Intended to use with the tracking framework of linked-swissbib*
 
 * Implementation: [org.swissbib.linked.mf.pipe.ESItemErase](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ESItemErase.java)
 * In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
@@ -183,12 +181,10 @@ Resource: [Morph definition](https://github.com/linked-swissbib/mfWorkflows/blob
     * esIndex: Elasticsearch index
     * esType: Document type for Elasticsearch
 
-TODO: Example
-
 
 ### lookup-es
 
-*Filters out records whose identifier already exists in an Elasticsearch index.*
+*Filters out records whose identifier already exists in an Elasticsearch index. Intended to use with the tracking framework of linked-swissbib.*
 
 * Implementation: [org.swissbib.linked.mf.pipe.ESLookup](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/pipe/ESLookup.java)
 * In: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
@@ -198,8 +194,6 @@ TODO: Example
     * esNodes: Elasticsearch nodes. Nodes are separated by #
     * esIndex: Elasticsearch index
     * esType: Document type for Elasticsearch
-
-TODO: Example
 
 
 ### open-multi-http
@@ -216,7 +210,7 @@ TODO: Example
     * upperBound: Limit
     * chunkSize: Number of documents to be downloaded in a single retrieval
 
-TODO: Example
+Example: [Workflow which queries the Swissbib SRU interface and filters, transforms and dumps the results to a CSV file](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Swissbib-SRU)
 
 
 ### read-json
@@ -228,7 +222,7 @@ TODO: Example
 * Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Option: `nullValues`: By default, null values are returned as empty strings. With nullValues this behaviour can be changed.
 
-TODO: Example
+Example: [libadmin entries as Ntriples](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Libadmin-Ntriples)
 
 
 ### split-entitites
@@ -240,7 +234,7 @@ TODO: Example
 * Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
 * Option: `entityBoundary`: Node depth for entity splitting
 
-TODO: Example
+Example: [linked-swissbib "Baseline"](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Linked-Swissbib-Baseline)
 
 
 ### update-es-id
@@ -261,7 +255,6 @@ TODO: Example
     * uriPrefix: Prefix for identifier (e.g. http://data.swissbib.ch/person/)
     * graphDbDir: Path to Neo4j database
 
-TODO: Example
 
 ### write-csv
 
@@ -283,7 +276,10 @@ TODO: Example
     * path: Path to directory with CSV files
     * separator: Sets the separator which is output between objects
 
-TODO: Example
+Examples:
+
+* [Workflow which queries the Swissbib SRU interface and filters, transforms and dumps the results to a CSV file](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Swissbib-SRU)
+* [Transformation of author data from ]
 
 
 ### write-esbulk
@@ -302,7 +298,7 @@ TODO: Example
     * subdirSize: Number of files in one subdirectory (Default: 300)
     * type: Type name of records (will only be attached to filename)
 
-TODO: Example
+Example: [linked-swissbib "Baseline"](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Linked-Swissbib-Baseline)
 
 
 ### write-kafka
@@ -313,10 +309,11 @@ TODO: Example
 * In: `java.lang.Object`
 * Out: `java.lang.Void`
 * Option:
-    * host: Hostname of Kafka cluster
-    * port: Port of Kafka cluster
+    * host: Hostname of Kafka cluster (required)
+    * port: Port of Kafka cluster (required)
+    * topic: Name of Kafka topic (required)
 
-TODO: Example
+Example: [A very small example of using the Kafka consumer](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Kafka-Producer)
 
 
 ### write-neo4j
@@ -331,7 +328,7 @@ TODO: Example
     * csvFileLength: Numbers of records in one dedicated CSV file
     * batchWriteSize: Maximal number of records of the same category
 
-[Example](https://github.com/guenterh/gndHackathon2016/blob/master/examples/gh/hackathonGND/gnd.flux)
+Example: [Graph visualisation of the GND](https://github.com/guenterh/gndHackathon2016/blob/master/examples/gh/hackathonGND)
 
 
 ### write-rdf-1line
@@ -352,7 +349,7 @@ TODO: Example
     * subDirSize: Number of records in one subdirectory
     * type: Concept / type name
 
-TODO: Example
+Example: [Deprecated linked-swissbib "baseline" for bibliographicResource documents (use resourceTransformation.rdfXml.flux)](https://github.com/linked-swissbib/mfWorkflows/tree/unused-transformations/src/main/resources/transformation/resource)
 
 
 ### write-socket
@@ -364,4 +361,4 @@ TODO: Example
 * Out: `java.lang.Void`
 * Option: `port`: Port of socket server (host is always 127.0.0.1)
 
-TODO: Example
+Example: [Stream MARC-XML to socket](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Socket-Sink)
