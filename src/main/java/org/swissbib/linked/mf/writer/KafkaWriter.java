@@ -24,6 +24,7 @@ public class KafkaWriter<T> implements ConfigurableObjectWriter<T> {
     private String separator;
     private String host;
     private Integer port;
+    private String kafkaTopic;
     private PrintWriter out;
     private Boolean firstRecord = true;
     private Properties props = new Properties();
@@ -63,21 +64,21 @@ public class KafkaWriter<T> implements ConfigurableObjectWriter<T> {
     /**
      * Sets the compression mode.
      *
-     * @param compression Compression mode as FileCompression instance
-     */
-    @Override
-    public void setCompression(FileCompression compression) {
-        this.compression = compression;
-    }
-
-    /**
-     * Sets the compression mode.
-     *
      * @param compression Compression mode as String compression
      */
     @Override
     public void setCompression(String compression) {
         this.compression = FileCompression.valueOf(compression);
+    }
+
+    /**
+     * Sets the compression mode.
+     *
+     * @param compression Compression mode as FileCompression instance
+     */
+    @Override
+    public void setCompression(FileCompression compression) {
+        this.compression = compression;
     }
 
     /**
@@ -148,6 +149,10 @@ public class KafkaWriter<T> implements ConfigurableObjectWriter<T> {
         this.port = Integer.parseInt(port);
     }
 
+    public void setKafkaTopic(String kafkaTopic) {
+        this.kafkaTopic = kafkaTopic;
+    }
+
     /**
      * This method is called by upstream modules to trigger the
      * processing of {@code obj}.
@@ -160,7 +165,7 @@ public class KafkaWriter<T> implements ConfigurableObjectWriter<T> {
             startProducer();
             firstRecord = false;
         }
-        producer.send(new ProducerRecord<String, String>("tes", obj.toString()));
+        producer.send(new ProducerRecord<String, String>(kafkaTopic, obj.toString()));
     }
 
     /**
