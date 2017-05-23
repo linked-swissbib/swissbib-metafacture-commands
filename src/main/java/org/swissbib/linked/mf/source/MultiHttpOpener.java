@@ -15,19 +15,26 @@
  */
 package org.swissbib.linked.mf.source;
 
-import org.culturegraph.mf.exceptions.MetafactureException;
-import org.culturegraph.mf.framework.DefaultObjectPipe;
+import org.culturegraph.mf.framework.MetafactureException;
+import org.culturegraph.mf.framework.helpers.DefaultObjectPipe;
 import org.culturegraph.mf.framework.ObjectReceiver;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.stream.source.Opener;
+import org.culturegraph.mf.io.HttpOpener;
+//import org.culturegraph.mf.stream.source.Opener;
+//import org.culturegraph.mf.io.ResourceOpener;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
+
+
+/*
+todo: what was the idea of this type???
+ */
 
 
 /**
@@ -39,8 +46,8 @@ import java.net.URLConnection;
 @Description("Opens a http resource. Supports the setting of Accept and Accept-Charset as http header fields.")
 @In(String.class)
 @Out(Reader.class)
-public final class MultiHttpOpener
-        extends DefaultObjectPipe<String, ObjectReceiver<Reader>> implements Opener {
+public final class MultiHttpOpener extends DefaultObjectPipe<String, ObjectReceiver<Reader>>
+{
     private String encoding = "UTF-8";
     private String accept = "*/*";
     private int lowerBound;

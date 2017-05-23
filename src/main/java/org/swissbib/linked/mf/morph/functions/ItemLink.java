@@ -1,8 +1,11 @@
 package org.swissbib.linked.mf.morph.functions;
 
 
-import org.culturegraph.mf.morph.functions.AbstractSimpleStatelessFunction;
-import org.culturegraph.mf.util.ResourceUtil;
+import org.culturegraph.mf.framework.MetafactureException;
+import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
+import org.culturegraph.mf.commons.ResourceUtil;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,40 +42,47 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
 
     public ItemLink() {
 
+        try {
 
-        Properties config = ResourceUtil.loadProperties("itemLinks/AlephNetworks.properties");
-        Enumeration<Object> keys = config.keys();
-        this.alephNetworks = new HashMap<String, AlephStructure>();
-        while (keys.hasMoreElements()) {
-            String alephKey =    (String) keys.nextElement();
-            String[] keyValues = config.getProperty(alephKey).split(",");
-            if (!(keyValues.length == 2)) continue;
-            AlephStructure as = new AlephStructure();
-            as.docLibrary = keyValues[1];
-            as.server = keyValues[0];
-            this.alephNetworks.put(alephKey, as);
-        }
 
-        config = ResourceUtil.loadProperties("itemLinks/VirtuaNetworks.properties");
-        keys = config.keys();
-        this.virtuaNetworks = new HashMap<String, VirtuaStructure>();
-        while (keys.hasMoreElements()) {
-            String key =    (String) keys.nextElement();
-            String[] keyValues = config.getProperty(key).split(",");
-            if (!(keyValues.length == 2)) continue;
-            VirtuaStructure vs = new VirtuaStructure();
-            vs.server = keyValues[0];
-            this.virtuaNetworks.put(key, vs);
-        }
+            Properties config = ResourceUtil.loadProperties("itemLinks/AlephNetworks.properties");
+            Enumeration<Object> keys = config.keys();
+            this.alephNetworks = new HashMap<String, AlephStructure>();
+            while (keys.hasMoreElements()) {
+                String alephKey = (String) keys.nextElement();
+                String[] keyValues = config.getProperty(alephKey).split(",");
+                if (!(keyValues.length == 2)) continue;
+                AlephStructure as = new AlephStructure();
+                as.docLibrary = keyValues[1];
+                as.server = keyValues[0];
+                this.alephNetworks.put(alephKey, as);
+            }
 
-        config = ResourceUtil.loadProperties("itemLinks/Backlinks.properties");
-        keys = config.keys();
-        this.urlTemplates = new HashMap<String, BacklinksTemplate>();
-        while (keys.hasMoreElements()) {
-            String key =    (String) keys.nextElement();
-            BacklinksTemplate bT = new BacklinksTemplate();
-            bT.urlTemplate = config.getProperty(key);
-            this.urlTemplates.put(key, bT);
+            config = ResourceUtil.loadProperties("itemLinks/VirtuaNetworks.properties");
+            keys = config.keys();
+            this.virtuaNetworks = new HashMap<String, VirtuaStructure>();
+            while (keys.hasMoreElements()) {
+                String key = (String) keys.nextElement();
+                String[] keyValues = config.getProperty(key).split(",");
+                if (!(keyValues.length == 2)) continue;
+                VirtuaStructure vs = new VirtuaStructure();
+                vs.server = keyValues[0];
+                this.virtuaNetworks.put(key, vs);
+            }
+
+            config = ResourceUtil.loadProperties("itemLinks/Backlinks.properties");
+            keys = config.keys();
+            this.urlTemplates = new HashMap<String, BacklinksTemplate>();
+            while (keys.hasMoreElements()) {
+                String key = (String) keys.nextElement();
+                BacklinksTemplate bT = new BacklinksTemplate();
+                bT.urlTemplate = config.getProperty(key);
+                this.urlTemplates.put(key, bT);
+            }
+        } catch (IOException ioException) {
+            //todo: how to handle this exception in constructor?
+            //is it appropriate to throw a MetafactureException?
+            throw new MetafactureException(ioException);
         }
 
 

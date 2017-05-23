@@ -15,7 +15,7 @@
  */
 package org.swissbib.linked.mf.decoder;
 
-import org.culturegraph.mf.framework.DefaultXmlPipe;
+import org.culturegraph.mf.framework.helpers.DefaultXmlPipe;
 import org.culturegraph.mf.framework.ObjectReceiver;
 import org.culturegraph.mf.framework.XmlReceiver;
 import org.culturegraph.mf.framework.annotations.Description;

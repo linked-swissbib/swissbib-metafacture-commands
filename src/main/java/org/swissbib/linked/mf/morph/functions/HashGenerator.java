@@ -1,6 +1,6 @@
 package org.swissbib.linked.mf.morph.functions;
 
-import org.culturegraph.mf.morph.functions.AbstractSimpleStatelessFunction;
+import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

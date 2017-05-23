@@ -148,7 +148,7 @@
         <dependency>
             <groupId>org.culturegraph</groupId>
             <artifactId>metafacture-core</artifactId>
-            <version>3.3.2-SNAPSHOT</version>
+            <version>5.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
