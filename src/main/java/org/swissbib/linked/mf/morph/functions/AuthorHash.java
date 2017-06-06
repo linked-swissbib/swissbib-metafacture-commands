@@ -51,7 +51,6 @@ public class AuthorHash extends HashGenerator {
      * the generated hash value
      */
 
-    @Override
     protected String process(String value) {
 
         // There are a very small number of cases where field 245 .a does not exist

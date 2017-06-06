@@ -4,9 +4,8 @@ Plugin with additional Metafacture commands used in linked-swissbib workflows
 ## List of commands
 
 The commands are divided into several categories:
-* Readers:
-    * [read-json](#read-json): Parses JSON files
 * Decoders:
+    * [decode-json](#decode-json): Parses JSON files
     * [decode-ntriples](#decode-ntriples): Parses Ntriples files
     * [handle-marcxml-sb](#handle-marcxml-sb): Directly transforms MARC-XML fields to CSV rows like record-id,field,indicator1,indicator2,subfield,value
     * [handle-marcxml-sru](#handle-marcxml-sru): Handles MARC-XML files received from the SRU interface of Swissbib
@@ -49,9 +48,18 @@ Resources:
 * [Morph definition](https://github.com/linked-swissbib/mfWorkflows/blob/master/src/main/resources/transformation/indexWorkflows/morphModules/authorHash711.xml) for an organisation name in field 711
 
 
+### decode-json
+
+*Parses JSON.*
+
+* Implementation: [org.swissbib.linked.mf.decode.JsonDecoder](https://github.com/linked-swissbib/mfWorkflows/blob/master/src/main/java/org/swissbib/linked/mf/decoder/JsonDecoder.java)
+* In: `java.io.Reader`
+* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
+* Option: `nullValues`: Set if null values should not be returned as empty strings.
+
 ### decode-ntriples
 
-*Parses Ntriples-decoded records.*
+*Parses Ntriples-encoded records.*
 
 * Implementation: [org.swissbib.linked.mf.decoder.NtriplesDecoder](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/decoder/NtriplesDecoder.java)
 * In: `java.io.Reader`
@@ -305,7 +313,7 @@ Example: [linked-swissbib "Baseline"](https://github.com/sschuepbach/metafacture
 * Implementation: [org.swissbib.linked.mf.writer.KafkaWriter](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/writer/KafkaWriter.java)
 * In: `java.lang.Object`
 * Out: `java.lang.Void`
-* Option:
+* Options:
     * host: Hostname of Kafka cluster (required)
     * port: Port of Kafka cluster (required)
     * topic: Name of Kafka topic (required)

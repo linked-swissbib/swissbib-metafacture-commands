@@ -15,13 +15,12 @@
  */
 package org.swissbib.linked.mf.source;
 
-import org.culturegraph.mf.exceptions.MetafactureException;
-import org.culturegraph.mf.framework.DefaultObjectPipe;
+import org.culturegraph.mf.framework.MetafactureException;
 import org.culturegraph.mf.framework.ObjectReceiver;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.stream.source.Opener;
+import org.culturegraph.mf.framework.helpers.DefaultObjectPipe;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,7 +39,7 @@ import java.net.URLConnection;
 @In(String.class)
 @Out(Reader.class)
 public final class MultiHttpOpener
-        extends DefaultObjectPipe<String, ObjectReceiver<Reader>> implements Opener {
+        extends DefaultObjectPipe<String, ObjectReceiver<Reader>> {
     private String encoding = "UTF-8";
     private String accept = "*/*";
     private int lowerBound;

@@ -1,10 +1,11 @@
 package org.swissbib.linked.mf.decoder;
 
-import org.culturegraph.mf.framework.DefaultObjectPipe;
+import org.culturegraph.mf.framework.FluxCommand;
 import org.culturegraph.mf.framework.StreamReceiver;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
+import org.culturegraph.mf.framework.helpers.DefaultObjectPipe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
         "parameter nullValue.")
 @In(String.class)
 @Out(StreamReceiver.class)
+@FluxCommand("decode-json")
 public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
     private static final char STARTOBJECT = '{';
     private static final char ENDOBJECT = '}';
@@ -34,16 +36,11 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
     private static final byte ARRAY = 1;
     private static final byte LITERAL = 2;
     private static final byte SPECIALLITERAL = 3;
-
-    private static String nullValue = "";
     private static StringBuilder literal = new StringBuilder();
+    private String nullValue = "";
     private boolean ignoreNextChar = false;
     private Path path = new Path();
     private String key = "";
-
-    public static void setNullValue(String nullValue) {
-        JsonDecoder.nullValue = nullValue;
-    }
 
     private static boolean charArrayContains(char[] array, char character) {
         boolean contains = false;
@@ -83,6 +80,10 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
             valid = false;
         }
         return valid;
+    }
+
+    public void setNullValue(String nullValue) {
+        this.nullValue = nullValue;
     }
 
     @Override

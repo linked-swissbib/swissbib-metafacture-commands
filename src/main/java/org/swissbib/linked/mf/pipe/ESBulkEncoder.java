@@ -2,12 +2,12 @@ package org.swissbib.linked.mf.pipe;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import org.culturegraph.mf.framework.DefaultStreamPipe;
 import org.culturegraph.mf.framework.ObjectReceiver;
 import org.culturegraph.mf.framework.StreamReceiver;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
+import org.culturegraph.mf.framework.helpers.DefaultStreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

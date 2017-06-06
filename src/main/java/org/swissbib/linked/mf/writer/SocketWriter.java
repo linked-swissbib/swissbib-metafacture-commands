@@ -1,7 +1,7 @@
 package org.swissbib.linked.mf.writer;
 
-import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
-import org.culturegraph.mf.util.FileCompression;
+import org.culturegraph.mf.io.ConfigurableObjectWriter;
+import org.culturegraph.mf.io.FileCompression;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;

@@ -13,7 +13,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
-import org.culturegraph.mf.morph.functions.AbstractSimpleStatelessFunction;
+import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,9 +27,9 @@ import java.util.HashSet;
 public class MatchViaf extends AbstractSimpleStatelessFunction {
 
 
+    protected final static String fixVIAFResorce;
     protected static String indexUrl;
     protected static HttpSolrClient solrClient;
-    protected final static String fixVIAFResorce;
 
     static {
 

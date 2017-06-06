@@ -1,13 +1,12 @@
 package org.swissbib.linked.mf.morph.functions;
 
-import org.culturegraph.mf.morph.functions.AbstractSimpleStatelessFunction;
+import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.Normalizer;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -17,12 +16,9 @@ import java.util.regex.Pattern;
  */
 abstract class HashGenerator extends AbstractSimpleStatelessFunction {
 
+    protected static final Logger hashError;
     static final String NO_HASH = "NO_HASH";
     static final String VALUES_OK = "OK";
-
-    protected static final Logger hashError ;
-
-
     static final Pattern charsToReplace = Pattern.compile(",| *",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE|Pattern.DOTALL);
 
 

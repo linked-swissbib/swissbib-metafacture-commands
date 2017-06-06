@@ -3,8 +3,8 @@ package org.swissbib.linked.mf.writer;
 import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.stream.sink.ConfigurableObjectWriter;
-import org.culturegraph.mf.util.FileCompression;
+import org.culturegraph.mf.io.ConfigurableObjectWriter;
+import org.culturegraph.mf.io.FileCompression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class NeoWriter<T> implements ConfigurableObjectWriter<T> {
         }
         String[] splittedObj = ((String) obj).split("#", 2);
         this.nodeLabel = splittedObj[0].substring(1, splittedObj[0].length() - 1);
-        deserializer((String) splittedObj[1]);
+        deserializer(splittedObj[1]);
     }
 
     private void deserializer(String s) {

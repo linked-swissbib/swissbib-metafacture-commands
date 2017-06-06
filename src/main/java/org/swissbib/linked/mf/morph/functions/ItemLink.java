@@ -1,9 +1,13 @@
 package org.swissbib.linked.mf.morph.functions;
 
 
-import org.culturegraph.mf.morph.functions.AbstractSimpleStatelessFunction;
-import org.culturegraph.mf.util.ResourceUtil;
-import java.util.*;
+import org.culturegraph.mf.commons.ResourceUtil;
+import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
+
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,10 +38,10 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
     protected HashMap< String, VirtuaStructure> virtuaNetworks;
     protected HashMap< String, BacklinksTemplate> urlTemplates;
     protected HashMap<String, Pattern> systemNumberPattern;
-    protected Pattern pNebisReplacePattern = Pattern.compile("\\{bib-system-number\\}");
+    protected Pattern pNebisReplacePattern = Pattern.compile("\\{bib-system-number}");
 
 
-    public ItemLink() {
+    public ItemLink() throws IOException {
 
 
         Properties config = ResourceUtil.loadProperties("itemLinks/AlephNetworks.properties");
