@@ -29,6 +29,8 @@ The commands are divided into several categories:
     * [write-socket](#write-socket): Sets up a socket server.
 * Source:
     * [open-multi-http](#open-multi-http): Allows to open HTTP resources in a "paging" manner, e.g. to get data by chunks from a database
+* Record Splitters:
+    * [read-json-object](#read-json-object): Reads in a JSON file and splits it at the end of the root object / array.
 * Morph Functions:
     * [AuthorHash](#authorhash): Creates a hash value for authors based on different MARC fields.
     * [ItemHash](#itemhash): Creates a hash value for items based on different MARC fields.
@@ -50,7 +52,7 @@ Resources:
 
 ### decode-json
 
-*Parses JSON.*
+*Parses JSON. Preferably used in conjunction with [read-json-object](#read-json-object)*
 
 * Implementation: [org.swissbib.linked.mf.decode.JsonDecoder](https://github.com/linked-swissbib/mfWorkflows/blob/master/src/main/java/org/swissbib/linked/mf/decoder/JsonDecoder.java)
 * In: `java.io.Reader`
@@ -221,14 +223,13 @@ Resource: [Morph definition](https://github.com/linked-swissbib/mfWorkflows/blob
 Example: [Workflow which queries the Swissbib SRU interface and filters, transforms and dumps the results to a CSV file](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Swissbib-SRU)
 
 
-### read-json
+### read-json-object
 
-*Parses JSON files*
+*Reads in a JSON file and splits it at the end of the root object / array. Preferably used in conjunction with [decode-json](#decode-json)* 
 
-* Implementation: [org.swissbib.linked.mf.reader.JsonReader](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/reader/JsonReader.java)
-* In: `java.lang.String`
-* Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
-* Option: `nullValues`: By default, null values are returned as empty strings. With nullValues this behaviour can be changed.
+* Implementation: [org.swissbib.linked.mf.io.JsonObjectReader](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/io/JsonObjectReader.java)
+* In: `java.lang.Reader`
+* Out: `java.lang.String`
 
 Example: [libadmin entries as Ntriples](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Libadmin-Ntriples)
 
