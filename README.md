@@ -28,6 +28,7 @@ The commands are divided into several categories:
     * [write-rdf-1line](#write-rdf-1line): Writes RDF-XML files, one line per record.
     * [write-socket](#write-socket): Sets up a socket server.
 * Source:
+    * [read-kafka](#read-kafka): Acts as a Kafka Consumer for Metafacture
     * [open-multi-http](#open-multi-http): Allows to open HTTP resources in a "paging" manner, e.g. to get data by chunks from a database
 * Record Splitters:
     * [read-json-object](#read-json-object): Reads in a JSON file and splits it at the end of the root object / array.
@@ -221,6 +222,18 @@ Resource: [Morph definition](https://github.com/linked-swissbib/mfWorkflows/blob
     * chunkSize: Number of documents to be downloaded in a single retrieval
 
 Example: [Workflow which queries the Swissbib SRU interface and filters, transforms and dumps the results to a CSV file](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Swissbib-SRU)
+
+
+### read-kafka
+
+*Acts as a Kafka consumer for Metafacture*
+
+* Implementation: [org.swissbib.linked.mf.source.MfKafkaConsumer](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/source/MfKafkaConsumer.java)
+* In: `java.lang.String`
+* Out: `java.lang.Reader`
+* Options:
+    * topics: Kafka topics (separated by #)
+    * groupId: Kafka group identifier
 
 
 ### read-json-object
