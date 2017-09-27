@@ -186,6 +186,7 @@ public class AuthorHash extends HashGenerator {
             //079$b n  -> simple named person (not identified)
             //identified persons are more reliable. But even this should be analyzed in more details
             stringForHashId = this.generateId(mappedValues.get("gnd"));
+            stringForHashId = mappedValues.get("gnd");
             hashById.debug(String.format("hashKeyById (id): %s / (gnd): %s", mappedValues.get("swissbib_id"),
                     mappedValues.get("gnd")));
         }
