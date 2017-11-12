@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * A Hash function to create global unique identifiers for authors.
@@ -26,6 +27,8 @@ public class AuthorHash extends HashGenerator {
     private static final Logger hash710;
     private static final Logger hash711;
     private static final Logger hashById;
+    private static final String gndPath;
+    private static Pattern gndPrefix = Pattern.compile("\\(.*?\\)");
 
     static {
         hash1000x7000 = LoggerFactory.getLogger("hash1000x7000");
@@ -36,6 +39,7 @@ public class AuthorHash extends HashGenerator {
         author1001x7001x = Arrays.asList("1001", "7001");
         author1000x7000x = Arrays.asList("1000", "7000");
         organisationList = Arrays.asList("710__", "711__");
+        gndPath = "gnd/";
 
     }
 
@@ -185,8 +189,8 @@ public class AuthorHash extends HashGenerator {
             //079$b P -> identified person
             //079$b n  -> simple named person (not identified)
             //identified persons are more reliable. But even this should be analyzed in more details
-            stringForHashId = this.generateId(mappedValues.get("gnd"));
-            stringForHashId = mappedValues.get("gnd");
+
+            stringForHashId = gndPath + this.cleanGNDNumber(mappedValues.get("gnd"));
             hashById.debug(String.format("hashKeyById (id): %s / (gnd): %s", mappedValues.get("swissbib_id"),
                     mappedValues.get("gnd")));
         }
@@ -194,6 +198,12 @@ public class AuthorHash extends HashGenerator {
         return stringForHashId;
     }
 
+    private String cleanGNDNumber(String gndFromRepository) {
+        //although we try to filter out the prefixes in the gnd number like
+        //(DE-588) it might happen that such a thing creeps in so it should be replaced
+        return gndPrefix.matcher(gndFromRepository).replaceFirst("");
+
+    }
 
     private String hashKeyByNameAndLifeDates(HashMap<String, String> mappedValues)
             throws URISyntaxException {
