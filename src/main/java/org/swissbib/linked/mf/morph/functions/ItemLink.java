@@ -1,8 +1,8 @@
 package org.swissbib.linked.mf.morph.functions;
 
 
-import org.culturegraph.mf.commons.ResourceUtil;
-import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
+import org.metafacture.commons.ResourceUtil;
+import org.metafacture.metamorph.api.helpers.AbstractSimpleStatelessFunction;
 
 import java.io.IOException;
 import java.util.Enumeration;

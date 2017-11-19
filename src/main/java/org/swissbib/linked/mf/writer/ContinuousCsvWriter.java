@@ -1,11 +1,11 @@
 package org.swissbib.linked.mf.writer;
 
-import org.culturegraph.mf.framework.MetafactureException;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.io.ConfigurableObjectWriter;
-import org.culturegraph.mf.io.FileCompression;
+import org.metafacture.framework.MetafactureException;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.io.ConfigurableObjectWriter;
+import org.metafacture.io.FileCompression;
 
 import java.io.*;
 

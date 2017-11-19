@@ -3,8 +3,8 @@ package org.swissbib.linked.mf.writer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.culturegraph.mf.io.ConfigurableObjectWriter;
-import org.culturegraph.mf.io.FileCompression;
+import org.metafacture.io.ConfigurableObjectWriter;
+import org.metafacture.io.FileCompression;
 
 import java.io.PrintWriter;
 import java.util.Properties;

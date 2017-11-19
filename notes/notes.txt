@@ -1,0 +1,50 @@
+http://blog.bripkens.de/2012/03/Install-artefacts-local-repository-gradle/
+https://discuss.gradle.org/t/how-to-include-dependencies-in-jar/19571/4
+http://imperceptiblethoughts.com/shadow/
+
+
+https://stackoverflow.com/questions/37807562/how-to-create-single-jar-with-fatjar-gradle
+und dann gradle shadowJar
+
+
+jar build:
+mvn clean install assembly:assembly -Dmaven.test.skip=true
+
+curl -XGET 'sb-ues1.swissbib.unibas.ch:8080/lsb/person/_search?pretty' -H 'Content-Type: application/json' -d'
+{
+    "query": {
+        "exists" : { "field" : "owl:sameAs" }
+    }
+}
+'
+
+curl -XGET 'sb-ues1.swissbib.unibas.ch:8080/lsb/bibliographicResource/_search?pretty' -H 'Content-Type: application/json' -d'
+{
+  "query": {
+    "term" : { "dct:contributor" : "http://data.swissbib.ch/person/1009b0f3-89f4-385c-9a71-af93a1f4168d" }
+  }
+}
+'
+
+
+mvn archetype:generate                                  \
+  -DarchetypeGroupId=org.swissbib.mf.mongo                \
+  -DarchetypeArtifactId=swissbib-mongo          \
+  -DarchetypeVersion=1.0-snapshot                \
+  -DgroupId=<my.groupid>                                \
+  -DartifactId=<my-artifactId>
+
+
+mvn archetype:generate                                  \
+  -DarchetypeGroupId=org.swissbib.mf.mongo                \
+  -DarchetypeArtifactId=swissbib-mongo          \
+  -DarchetypeVersion=1.0-snapshot     \
+  -DgroupId=org.swissbib.mf.mongo                                \
+  -DartifactId=1.0-snapshot
+
+
+mvn archetype:generate          \
+    -DgroupId=org.swissbib.mf.mongo    \
+    -DartifactId=swissbib-mongo     \
+    -DarchetypeArtifactId=maven-archetype-quickstart    \
+    -DinteractiveMode=false

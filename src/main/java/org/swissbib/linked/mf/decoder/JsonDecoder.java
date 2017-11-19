@@ -1,11 +1,11 @@
 package org.swissbib.linked.mf.decoder;
 
-import org.culturegraph.mf.framework.FluxCommand;
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultObjectPipe;
+import org.metafacture.framework.FluxCommand;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultObjectPipe;
 
 import java.util.ArrayList;
 import java.util.List;

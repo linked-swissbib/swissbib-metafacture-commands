@@ -1,7 +1,7 @@
 package org.swissbib.linked.mf.writer;
 
-import org.culturegraph.mf.io.ConfigurableObjectWriter;
-import org.culturegraph.mf.io.FileCompression;
+import org.metafacture.io.ConfigurableObjectWriter;
+import org.metafacture.io.FileCompression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

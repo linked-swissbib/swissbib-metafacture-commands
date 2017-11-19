@@ -16,14 +16,14 @@
 package org.swissbib.linked.mf.pipe;
 
 
-import org.culturegraph.mf.flowcontrol.StreamBuffer;
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultStreamPipe;
-import org.culturegraph.mf.javaintegration.SingleValue;
-import org.culturegraph.mf.metamorph.Metamorph;
+import org.metafacture.flowcontrol.StreamBuffer;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultStreamPipe;
+import org.metafacture.javaintegration.SingleValue;
+import org.metafacture.metamorph.Metamorph;
 
 /**
  * @author Markus Michael Geipel
