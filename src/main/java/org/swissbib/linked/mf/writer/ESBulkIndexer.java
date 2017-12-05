@@ -179,7 +179,9 @@ public class ESBulkIndexer<T> implements ConfigurableObjectWriter<T> {
     @Override
     public void closeStream() {
         LOG.info("Shutting down Elasticsearch bulk processor.");
-        this.bulkProcessor.flush();
+        if (this.bulkProcessor != null) {
+            this.bulkProcessor.flush();
+        }
     }
 
 }

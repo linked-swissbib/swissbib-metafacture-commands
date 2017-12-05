@@ -7,6 +7,9 @@ import org.culturegraph.mf.framework.annotations.Description;
 import org.culturegraph.mf.framework.annotations.In;
 import org.culturegraph.mf.framework.annotations.Out;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -27,6 +30,7 @@ import java.util.List;
 public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamReceiver> {
 
     public Boolean unicodeEscapeSeq = true;
+    private static final Logger LOG = LoggerFactory.getLogger(NtriplesDecoder.class);
 
     /**
      * Converts Unicode escape sequences in strings to regular UTF-8 encoded characters
@@ -67,6 +71,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
             if (i == stringLength) utf8String.append(c);
         }
         return utf8String.toString().substring(1);
+
     }
 
     public void setUnicodeEscapeSeq(String unicodeEscapeSeq) {
@@ -81,11 +86,26 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
         try {
             for(String e = lineReader.readLine(); e != null; e = lineReader.readLine()) {
                 if (!e.startsWith("#")) {
-                    List<String> statement = parseLine(e);
-                    this.getReceiver().startRecord(statement.get(0));
-                    this.getReceiver().literal(statement.get(1),
-                            unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2));
-                    this.getReceiver().endRecord();
+                    /*
+                    the fix with nested exception handers is very bad only we get it running
+                    some thoughts:
+                    - I used ObjectExceptionHandler in Flux (pipe) which didn't work
+                    - make a more stable parsing
+                    - no null statements (use Java 8 elements)
+                     */
+                    List<String> statement = null;
+                    try {
+                        statement = parseLine(e);
+                    } catch (Exception ex) {
+                        statement = null;
+                        LOG.error("NTriplesDecoder triple parse error:\n{}", e);
+                    }
+                    if (null != statement) {
+                        this.getReceiver().startRecord(statement.get(0));
+                        this.getReceiver().literal(statement.get(1),
+                                unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2));
+                        this.getReceiver().endRecord();
+                    }
                 }
             }
 
