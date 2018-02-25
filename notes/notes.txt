@@ -6,6 +6,11 @@ http://imperceptiblethoughts.com/shadow/
 https://stackoverflow.com/questions/37807562/how-to-create-single-jar-with-fatjar-gradle
 und dann gradle shadowJar
 
+http://www.vogella.com/tutorials/Gradle/article.html
+
+
+http://www.vogella.com/tutorials/Mockito/article.html
+
 
 jar build:
 mvn clean install assembly:assembly -Dmaven.test.skip=true

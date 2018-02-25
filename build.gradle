@@ -5,6 +5,9 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'java-library-distribution'
+apply plugin: 'distribution'
+
 
 
 group = 'ch.linked-swissbib'
