@@ -23,19 +23,19 @@ public class AuthorHash extends HashGenerator {
     private final static List<String> organisationList;
     private static final Logger hash1000x7000;
     private static final Logger hash1001x7001;
-    private static final Logger hash710;
-    private static final Logger hash711;
+    private static final Logger hash110x710;
+    private static final Logger hash111x711;
     private static final Logger hashById;
 
     static {
         hash1000x7000 = LoggerFactory.getLogger("hash1000x7000");
         hash1001x7001 = LoggerFactory.getLogger("hash1001x7001");
-        hash710 = LoggerFactory.getLogger("hash710");
-        hash711 = LoggerFactory.getLogger("hash711");
+        hash110x710 = LoggerFactory.getLogger("hash110x710");
+        hash111x711 = LoggerFactory.getLogger("hash111x711");
         hashById = LoggerFactory.getLogger("hashById");
         author1001x7001x = Arrays.asList("1001", "7001");
         author1000x7000x = Arrays.asList("1000", "7000");
-        organisationList = Arrays.asList("710__", "711__");
+        organisationList = Arrays.asList("110__", "710__", "111__", "711__");
 
     }
 
@@ -99,7 +99,7 @@ public class AuthorHash extends HashGenerator {
             check = NO_HASH;
         } else {
             String authorType = valueParts[0];
-            check = Arrays.asList("1000", "1001", "7000", "7001", "710__", "711__").contains(authorType) ? authorType : NO_HASH;
+            check = Arrays.asList("1000", "1001", "7000", "7001", "110__", "710__", "111__", "711__").contains(authorType) ? authorType : NO_HASH;
         }
 
         return check;
@@ -115,7 +115,9 @@ public class AuthorHash extends HashGenerator {
                 break;
             case "1000":
             case "7000":
+            case "110__":
             case "710__":
+            case "111__":
             case "711__":
                 check = values.length == 10 ? VALUES_OK : NO_HASH;
                 break;
@@ -158,7 +160,9 @@ public class AuthorHash extends HashGenerator {
                 mappedValues.put("publishYear", values[8]);
                 mappedValues.put("title245a", values[9]);
                 break;
+            case "110__":
             case "710__":
+            case "111__":
             case "711__":
                 mappedValues.put("type", values[0]);
                 mappedValues.put("swissbib_id", values[1]);
@@ -286,10 +290,14 @@ public class AuthorHash extends HashGenerator {
                         )
                 ));
 
-        if (mappedValues.get("type").equals("710__")) {
-            hash710.debug(String.format("hashKeyOrganisation 710: (id) - %s ", mappedValues.get("swissbib_id")));
+        if (mappedValues.get("type").equals("110__")) {
+            hash110x710.debug(String.format("hashKeyOrganisation 110: (id) - %s ", mappedValues.get("swissbib_id")));
+        } else if (mappedValues.get("type").equals("710__")) {
+            hash110x710.debug(String.format("hashKeyOrganisation 710: (id) - %s ", mappedValues.get("swissbib_id")));
+        } else if (mappedValues.get("type").equals("111__")) {
+            hash110x710.debug(String.format("hashKeyOrganisation 111: (id) - %s ", mappedValues.get("swissbib_id")));
         } else {
-            hash711.debug(String.format("hashKeyOrganisation 711: (id) - %s", mappedValues.get("swissbib_id")));
+            hash111x711.debug(String.format("hashKeyOrganisation 711: (id) - %s", mappedValues.get("swissbib_id")));
         }
 
 
