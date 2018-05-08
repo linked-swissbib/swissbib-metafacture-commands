@@ -1,10 +1,10 @@
 package org.swissbib.linked.mf.pipe;
 
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultStreamPipe;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultStreamPipe;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
@@ -143,13 +143,13 @@ public class ESIdUpdate extends DefaultStreamPipe<StreamReceiver> {
 
     @Override
     public void endRecord() {
-        /**
-         * There are three possibilities here:
-         * 1) The contributor already exists (noId == false): Just link the contributor to the resource in Neo4j
-         * 2) The contributor doesn't already exist, but there is a match in elasticsearch: Link the identified contributor-node
-         * to the resource
-         * 3) The contributor doesn't already exist, and no match has been found: Create a new contributor-node and
-         * link it to the resource
+        /*
+          There are three possibilities here:
+          1) The contributor already exists (noId == false): Just link the contributor to the resource in Neo4j
+          2) The contributor doesn't already exist, but there is a match in elasticsearch: Link the identified contributor-node
+          to the resource
+          3) The contributor doesn't already exist, and no match has been found: Create a new contributor-node and
+          link it to the resource
          */
         if (noId && !skipAll) {
             SearchResponse matchResponse = esClient

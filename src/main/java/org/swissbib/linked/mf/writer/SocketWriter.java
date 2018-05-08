@@ -1,7 +1,7 @@
 package org.swissbib.linked.mf.writer;
 
-import org.culturegraph.mf.io.ConfigurableObjectWriter;
-import org.culturegraph.mf.io.FileCompression;
+import org.metafacture.io.ConfigurableObjectWriter;
+import org.metafacture.io.FileCompression;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -21,7 +21,6 @@ public class SocketWriter<T> implements ConfigurableObjectWriter<T> {
     private String enconding;
     private FileCompression compression;
     private String header;
-    private String footer;
     private String separator;
     private int port;
     private ServerSocket serverSocket;
@@ -115,7 +114,7 @@ public class SocketWriter<T> implements ConfigurableObjectWriter<T> {
      */
     @Override
     public void setFooter(String footer) {
-        this.footer = footer;
+        String footer1 = footer;
     }
 
     /**

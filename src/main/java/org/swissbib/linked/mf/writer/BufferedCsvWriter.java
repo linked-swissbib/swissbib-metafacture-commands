@@ -22,12 +22,12 @@ class BufferedCsvWriter {
     private int appendCounter = 0;
     private int totalCounter = 0;
     private int postFix = 1;
-    private StringBuilder sb = new StringBuilder();
-    private String filename;
+    private final StringBuilder sb = new StringBuilder();
+    private final String filename;
 
-    private String csvDir;
-    private int csvFileLength;
-    private int batchWriteSize;
+    private final String csvDir;
+    private final int csvFileLength;
+    private final int batchWriteSize;
 
 
     BufferedCsvWriter(String filename, String csvDir, int csvFileLength, int batchWriteSize) {

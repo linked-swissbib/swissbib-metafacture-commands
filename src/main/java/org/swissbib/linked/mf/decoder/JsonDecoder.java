@@ -1,11 +1,11 @@
 package org.swissbib.linked.mf.decoder;
 
-import org.culturegraph.mf.framework.FluxCommand;
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultObjectPipe;
+import org.metafacture.framework.FluxCommand;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultObjectPipe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,21 +36,19 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
     private static final byte ARRAY = 1;
     private static final byte LITERAL = 2;
     private static final byte SPECIALLITERAL = 3;
-    private static StringBuilder literal = new StringBuilder();
+    private static final StringBuilder literal = new StringBuilder();
     private String nullValue = "";
     private boolean ignoreNextChar = false;
-    private Path path = new Path();
+    private final Path path = new Path();
     private String key = "";
 
-    private static boolean charArrayContains(char[] array, char character) {
-        boolean contains = false;
+    private static boolean charArrayContainsNot(char[] array, char character) {
         for (char elem : array) {
             if (elem == character) {
-                contains = true;
-                break;
+                return false;
             }
         }
-        return contains;
+        return true;
     }
 
     private static boolean checkValidNumber(String s) {
@@ -59,11 +57,11 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
         char[] validFirstChars = {'-', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         char[] validMiddleChars = {'-', '+', 'e', 'E', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         char[] validLastChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        if (!charArrayContains(validFirstChars, s.charAt(0))) {
+        if (charArrayContainsNot(validFirstChars, s.charAt(0))) {
             valid = false;
         }
         for (int i = 1; i < s.length() - 1; i++) {
-            if (!charArrayContains(validMiddleChars, s.charAt(i))) {
+            if (charArrayContainsNot(validMiddleChars, s.charAt(i))) {
                 valid = false;
                 break;
             } else if (s.charAt(i) == 'e' || s.charAt(i) == 'E') {
@@ -76,7 +74,7 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
                 }
             }
         }
-        if (!charArrayContains(validLastChars, s.charAt(s.length() - 1))) {
+        if (charArrayContainsNot(validLastChars, s.charAt(s.length() - 1))) {
             valid = false;
         }
         return valid;
@@ -261,7 +259,7 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
     }
 
     private class Path {
-        private List<JsonToken> path = new ArrayList<>();
+        private final List<JsonToken> path = new ArrayList<>();
 
         boolean empty() {
             return path.size() == 0;

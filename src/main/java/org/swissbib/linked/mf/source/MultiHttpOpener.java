@@ -15,12 +15,12 @@
  */
 package org.swissbib.linked.mf.source;
 
-import org.culturegraph.mf.framework.MetafactureException;
-import org.culturegraph.mf.framework.ObjectReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultObjectPipe;
+import org.metafacture.framework.MetafactureException;
+import org.metafacture.framework.ObjectReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultObjectPipe;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

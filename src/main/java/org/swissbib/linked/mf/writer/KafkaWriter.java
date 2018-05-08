@@ -3,8 +3,8 @@ package org.swissbib.linked.mf.writer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.culturegraph.mf.io.ConfigurableObjectWriter;
-import org.culturegraph.mf.io.FileCompression;
+import org.metafacture.io.ConfigurableObjectWriter;
+import org.metafacture.io.FileCompression;
 
 import java.io.PrintWriter;
 import java.util.Properties;
@@ -20,14 +20,13 @@ public class KafkaWriter<T> implements ConfigurableObjectWriter<T> {
     private String enconding;
     private FileCompression compression;
     private String header;
-    private String footer;
     private String separator;
     private String host;
     private Integer port;
     private String kafkaTopic;
     private PrintWriter out;
     private Boolean firstRecord = true;
-    private Properties props = new Properties();
+    private final Properties props = new Properties();
     private Producer<String, String> producer;
 
 
@@ -118,7 +117,7 @@ public class KafkaWriter<T> implements ConfigurableObjectWriter<T> {
      */
     @Override
     public void setFooter(String footer) {
-        this.footer = footer;
+        String footer1 = footer;
     }
 
     /**
@@ -165,7 +164,7 @@ public class KafkaWriter<T> implements ConfigurableObjectWriter<T> {
             startProducer();
             firstRecord = false;
         }
-        producer.send(new ProducerRecord<String, String>(kafkaTopic, obj.toString()));
+        producer.send(new ProducerRecord<>(kafkaTopic, obj.toString()));
     }
 
     /**

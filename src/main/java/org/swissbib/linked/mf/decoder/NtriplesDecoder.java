@@ -1,11 +1,11 @@
 package org.swissbib.linked.mf.decoder;
 
-import org.culturegraph.mf.framework.MetafactureException;
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultObjectPipe;
+import org.metafacture.framework.MetafactureException;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultObjectPipe;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.util.List;
 @Out(StreamReceiver.class)
 public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamReceiver> {
 
-    public Boolean unicodeEscapeSeq = true;
+    private Boolean unicodeEscapeSeq = true;
 
     /**
      * Converts Unicode escape sequences in strings to regular UTF-8 encoded characters
@@ -34,7 +34,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
      * @param literal String to be checked for Unicode escape sequences
      * @return String with converted Unicode escape sequences
      */
-    static String toutf8(String literal) {
+    private static String toutf8(String literal) {
         StringBuilder utf8String = new StringBuilder();
         StringBuilder tempString = new StringBuilder();
         char lastArtifact = ' ';
@@ -100,7 +100,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
      * @param string Statement to be parsed
      * @return List with subject, predicate and object
      */
-    List<String> parseLine(String string) {
+    private List<String> parseLine(String string) {
 
         List<String> statement = new ArrayList<>();
 

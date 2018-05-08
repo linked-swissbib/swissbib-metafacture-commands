@@ -274,7 +274,7 @@ public class AuthorHash extends HashGenerator {
 
     private String hashKeyForOrganisations(HashMap<String, String> mappedValues)
             throws URISyntaxException {
-        String stringForHashId = NO_HASH;
+        String stringForHashId;
 
         stringForHashId = this.generateId(
                 this.concatenateAndNormalizeValueParts(Arrays.asList(

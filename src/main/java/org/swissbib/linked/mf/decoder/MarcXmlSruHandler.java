@@ -15,12 +15,12 @@
  */
 package org.swissbib.linked.mf.decoder;
 
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.XmlReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultXmlPipe;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.XmlReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultXmlPipe;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 

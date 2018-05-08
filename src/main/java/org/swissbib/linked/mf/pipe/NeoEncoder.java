@@ -1,11 +1,11 @@
 package org.swissbib.linked.mf.pipe;
 
-import org.culturegraph.mf.framework.ObjectReceiver;
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultStreamPipe;
+import org.metafacture.framework.ObjectReceiver;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultStreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +26,8 @@ public final class NeoEncoder extends DefaultStreamPipe<ObjectReceiver<String>> 
 
     private final static Logger LOG = LoggerFactory.getLogger(NeoEncoder.class);
 
-    private Map<String, String> node = new HashMap<>();
-    private Map<String, ArrayList<String>> relations = new HashMap<>();
+    private final Map<String, String> node = new HashMap<>();
+    private final Map<String, ArrayList<String>> relations = new HashMap<>();
     private String nodeId;
 
 

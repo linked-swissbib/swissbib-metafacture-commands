@@ -10,11 +10,11 @@ import java.util.HashMap;
  */
 class CsvWriterRegister {
 
-    private HashMap<String, BufferedCsvWriter> hm = new HashMap<>();
+    private final HashMap<String, BufferedCsvWriter> hm = new HashMap<>();
 
-    private String csvDir;
-    private int csvFileLength;
-    private int batchWriteSize;
+    private final String csvDir;
+    private final int csvFileLength;
+    private final int batchWriteSize;
 
     CsvWriterRegister(String csvDir, int csvFileLength, int batchWriteSize) {
         this.csvDir = csvDir;

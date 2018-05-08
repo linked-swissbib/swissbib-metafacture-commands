@@ -1,10 +1,10 @@
 package org.swissbib.linked.mf.morph.functions;
 
-/**
- *
- * @author Guenter Hipler, project swissbib, UB Basel
+/*
+
+  @author Guenter Hipler, project swissbib, UB Basel
  * @version 0.1
- *
+
  */
 
 
@@ -13,7 +13,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
-import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
+import org.metafacture.metamorph.api.helpers.AbstractSimpleStatelessFunction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,12 +24,12 @@ import java.util.HashSet;
  * used to match author strings against VIAF index
  * aim: integrate VIAF Id as anchor for additional relations
 */
-public class MatchViaf extends AbstractSimpleStatelessFunction {
+class MatchViaf extends AbstractSimpleStatelessFunction {
 
 
-    protected final static String fixVIAFResorce;
-    protected static String indexUrl;
-    protected static HttpSolrClient solrClient;
+    private final static String fixVIAFResorce;
+    private static final String indexUrl;
+    private static final HttpSolrClient solrClient;
 
     static {
 
@@ -84,7 +84,7 @@ public class MatchViaf extends AbstractSimpleStatelessFunction {
         return viafIds.length() > 0 ? viafIds.toString().substring(0,viafIds.length() - 1) : "";
     }
 
-    protected ArrayList<String> createQueryStrings(String values) {
+    private ArrayList<String> createQueryStrings(String values) {
         ArrayList<String> queryStrings = new ArrayList<>();
         //expected values
         //code D     ##   code a  ##  code b ##  code t ##   code d ##   code q  ## fix
@@ -118,11 +118,11 @@ public class MatchViaf extends AbstractSimpleStatelessFunction {
     }
 
 
-    protected String normalizeValue(String value) {
+    private String normalizeValue(String value) {
         return value.replaceAll("[^\\p{L}\\p{M}*\\p{N}|]", "");
     }
 
-    protected String normalizeDates(String value) {
+    private String normalizeDates(String value) {
         return value.replaceAll("[^0-9]", "");
     }
 

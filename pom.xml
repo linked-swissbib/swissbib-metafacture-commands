@@ -146,9 +146,39 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.culturegraph</groupId>
-            <artifactId>metafacture-core</artifactId>
-            <version>4.0.0</version>
+            <groupId>org.metafacture</groupId>
+            <artifactId>metafacture-framework</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.metafacture</groupId>
+            <artifactId>metafacture-io</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.metafacture</groupId>
+            <artifactId>metafacture-flowcontrol</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.metafacture</groupId>
+            <artifactId>metafacture-javaintegration</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.metafacture</groupId>
+            <artifactId>metafacture-commons</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.metafacture</groupId>
+            <artifactId>metamorph</artifactId>
+            <version>5.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

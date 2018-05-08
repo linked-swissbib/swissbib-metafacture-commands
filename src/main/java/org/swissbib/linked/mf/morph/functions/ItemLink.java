@@ -1,8 +1,8 @@
 package org.swissbib.linked.mf.morph.functions;
 
 
-import org.culturegraph.mf.commons.ResourceUtil;
-import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
+import org.metafacture.commons.ResourceUtil;
+import org.metafacture.metamorph.api.helpers.AbstractSimpleStatelessFunction;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -15,30 +15,30 @@ import java.util.regex.Pattern;
 class AlephStructure
 {
 
-    public String server;
-    public String docLibrary;
+    String server;
+    String docLibrary;
 
 }
 
 class VirtuaStructure
 {
-    public String server;
+    String server;
 }
 
 class BacklinksTemplate
 {
-    public String urlTemplate;
+    String urlTemplate;
 }
 
 
-public final class ItemLink extends AbstractSimpleStatelessFunction {
+final class ItemLink extends AbstractSimpleStatelessFunction {
 
 
-    protected HashMap< String, AlephStructure> alephNetworks;
-    protected HashMap< String, VirtuaStructure> virtuaNetworks;
-    protected HashMap< String, BacklinksTemplate> urlTemplates;
-    protected HashMap<String, Pattern> systemNumberPattern;
-    protected Pattern pNebisReplacePattern = Pattern.compile("\\{bib-system-number}");
+    private HashMap< String, AlephStructure> alephNetworks;
+    private HashMap< String, VirtuaStructure> virtuaNetworks;
+    private HashMap< String, BacklinksTemplate> urlTemplates;
+    private HashMap<String, Pattern> systemNumberPattern;
+    private final Pattern pNebisReplacePattern = Pattern.compile("\\{bib-system-number}");
 
 
     public ItemLink() throws IOException {
@@ -46,7 +46,7 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
 
         Properties config = ResourceUtil.loadProperties("itemLinks/AlephNetworks.properties");
         Enumeration<Object> keys = config.keys();
-        this.alephNetworks = new HashMap<String, AlephStructure>();
+        this.alephNetworks = new HashMap<>();
         while (keys.hasMoreElements()) {
             String alephKey =    (String) keys.nextElement();
             String[] keyValues = config.getProperty(alephKey).split(",");
@@ -59,7 +59,7 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
 
         config = ResourceUtil.loadProperties("itemLinks/VirtuaNetworks.properties");
         keys = config.keys();
-        this.virtuaNetworks = new HashMap<String, VirtuaStructure>();
+        this.virtuaNetworks = new HashMap<>();
         while (keys.hasMoreElements()) {
             String key =    (String) keys.nextElement();
             String[] keyValues = config.getProperty(key).split(",");
@@ -71,7 +71,7 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
 
         config = ResourceUtil.loadProperties("itemLinks/Backlinks.properties");
         keys = config.keys();
-        this.urlTemplates = new HashMap<String, BacklinksTemplate>();
+        this.urlTemplates = new HashMap<>();
         while (keys.hasMoreElements()) {
             String key =    (String) keys.nextElement();
             BacklinksTemplate bT = new BacklinksTemplate();
@@ -83,7 +83,7 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
         //(RERO)R004689410!!(SGBN)000187319!!(NEBIS)000262918!!(IDSBB)000217483
         //we need (!!|$) to catch a pattern (IDSBB)000217483 at the end of the string (without !! as delimiter)
         Pattern p = Pattern.compile("\\(IDSBB\\)(.*?)(!!|$)",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE|Pattern.DOTALL);
-        this.systemNumberPattern = new HashMap<String, Pattern>();
+        this.systemNumberPattern = new HashMap<>();
         this.systemNumberPattern.put("IDSBB", p);
         p = Pattern.compile("\\(RERO\\)(.*?)(!!|$)",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE|Pattern.DOTALL);
         this.systemNumberPattern.put("RERO", p);
@@ -200,7 +200,7 @@ public final class ItemLink extends AbstractSimpleStatelessFunction {
         if (!m.find()) return "";
         String url = "";
         String subLibraryCode = valueParts[2].length() > 0 ? valueParts[2] : valueParts[1].length() > 0 ? valueParts[1] : null;
-        String bibSysNumber = "";
+        String bibSysNumber;
         switch (valueParts[0]) {
             case "IDSBB":
                 //IDSBB  "http://baselbern.swissbib.ch/Record/{id}?expandlib={sub-library-code}#holding-institution-{network}-{sub-library-code}"

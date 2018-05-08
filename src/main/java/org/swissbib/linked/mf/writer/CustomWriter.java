@@ -1,7 +1,7 @@
 package org.swissbib.linked.mf.writer;
 
-import org.culturegraph.mf.io.ConfigurableObjectWriter;
-import org.culturegraph.mf.io.FileCompression;
+import org.metafacture.io.ConfigurableObjectWriter;
+import org.metafacture.io.FileCompression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,16 +19,16 @@ import java.util.regex.Pattern;
  *          <p>
  *          Created on 10.09.15
  */
-public abstract class CustomWriter<T> implements ConfigurableObjectWriter<T> {
+abstract class CustomWriter<T> implements ConfigurableObjectWriter<T> {
 
-    protected final static Logger LOG = LoggerFactory.getLogger(ESBulkWriter.class);
-    static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
-    protected String type = null;
-    String header = DEFAULT_HEADER;
-    String footer = DEFAULT_FOOTER;
-    String separator = DEFAULT_SEPARATOR;
+    final static Logger LOG = LoggerFactory.getLogger(ESBulkWriter.class);
+    private static final String SET_COMPRESSION_ERROR = "Cannot compress Triple store";
+    private String type = null;
+    private String header = DEFAULT_HEADER;
+    private String footer = DEFAULT_FOOTER;
+    private String separator = DEFAULT_SEPARATOR;
     boolean firstObject = true;
-    boolean closed;
+    private boolean closed;
     //is set by the previous module
     String documentHeader = null;
     //private String documentFooter = "</collection>\n</rdf:RDF>";
@@ -39,20 +39,20 @@ public abstract class CustomWriter<T> implements ConfigurableObjectWriter<T> {
     Pattern person;
     Pattern organization;
     Pattern containsContributor;
-    String baseOutDir = "/tmp";
-    String outFilePrefix = "rdfdump";
+    private String baseOutDir = "/tmp";
+    private String outFilePrefix = "rdfdump";
     int fileSize = 2000;
-    Boolean compress = true;
-    String extension = "";
+    private Boolean compress = true;
+    private String extension = "";
     int numberLinesWritten = 0;
-    int subdirSize = 0;
-    int currentSubDir = 1;
-    int numberOpenedFiles = 0;
-    String encoding = "UTF-8";
+    private int subdirSize = 0;
+    private int currentSubDir = 1;
+    private int numberOpenedFiles = 0;
+    private final String encoding = "UTF-8";
     BufferedWriter fout = null;
-    FileCompression compression = FileCompression.AUTO;
+    private final FileCompression compression = FileCompression.AUTO;
 
-    Random rng = new Random();
+    private final Random rng = new Random();
 
     private static String rmTrailingSlash(String t) {
         if (t.endsWith("/")) t = t.substring(0, t.length() - 1);
@@ -225,7 +225,7 @@ public abstract class CustomWriter<T> implements ConfigurableObjectWriter<T> {
 
     abstract void closeOutFile();
 
-    String generateRandomString() {
+    private String generateRandomString() {
         char[] text = new char[2];
         String characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         for (int i = 0; i < 2; i++) text[i] = characters.charAt(rng.nextInt(characters.length()));

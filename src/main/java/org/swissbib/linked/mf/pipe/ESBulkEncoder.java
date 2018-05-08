@@ -2,12 +2,12 @@ package org.swissbib.linked.mf.pipe;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import org.culturegraph.mf.framework.ObjectReceiver;
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultStreamPipe;
+import org.metafacture.framework.ObjectReceiver;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultStreamPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -229,10 +229,10 @@ public final class ESBulkEncoder extends DefaultStreamPipe<ObjectReceiver<String
      */
     private class JsonToken {
 
-        byte type;            // Type of the token
-        String name;        // Name (only if type == parent / value, else null)
-        List<JsonToken> children = new ArrayList<>();    // Last element belonging to the parent (parent only, else null)
-        JsonToken parent;        // Key which token belongs to (for parent: root parent)
+        final byte type;            // Type of the token
+        final String name;        // Name (only if type == parent / value, else null)
+        final List<JsonToken> children = new ArrayList<>();    // Last element belonging to the parent (parent only, else null)
+        final JsonToken parent;        // Key which token belongs to (for parent: root parent)
         byte parentheses = -1;  // Parentheses which surrounds descendants (none, brackets or braces)
 
 

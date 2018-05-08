@@ -1,22 +1,19 @@
 package org.swissbib.linked.mf.morph.functions;
 
 import java.net.URISyntaxException;
-import java.util.regex.Pattern;
 
 /**
  * Created by swissbib on 6/30/16.
  */
-public class ItemHash extends HashGenerator{
+public class ItemHash extends HashGenerator {
 
 
     /**
-     *
-     * @param value
-     * we expect for value a string which contains single tokens separated by ## delimiters
-     * we don't validate the tokens if they are in a defined sequence. The single tokens are
-     * - normalized
-     * - concatenated
-     * - as concatenated String used to generate a hash value
+     * @param value we expect for value a string which contains single tokens separated by ## delimiters
+     *              we don't validate the tokens if they are in a defined sequence. The single tokens are
+     *              - normalized
+     *              - concatenated
+     *              - as concatenated String used to generate a hash value
      * @return String
      * the generated hash value
      */
@@ -25,7 +22,7 @@ public class ItemHash extends HashGenerator{
 
 
         String globalIdentifier = NO_HASH;
-        String[] valueParts =  value.split("##");
+        String[] valueParts = value.split("##");
         StringBuilder normalizedValueParts = new StringBuilder();
         for (String valuePart : valueParts) {
             normalizedValueParts.append(charsToReplace.matcher(valuePart).replaceAll(""));

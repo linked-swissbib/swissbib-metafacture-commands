@@ -1,11 +1,11 @@
 package org.swissbib.linked.mf.pipe;
 
-import org.culturegraph.mf.framework.ObjectReceiver;
-import org.culturegraph.mf.framework.StreamReceiver;
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
-import org.culturegraph.mf.framework.helpers.DefaultStreamPipe;
+import org.metafacture.framework.ObjectReceiver;
+import org.metafacture.framework.StreamReceiver;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
+import org.metafacture.framework.helpers.DefaultStreamPipe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +22,9 @@ import java.util.List;
 @Out(String.class)
 public class NtriplesEncoder extends DefaultStreamPipe<ObjectReceiver<String>> {
 
-    private List<String> subjects = new ArrayList<>();
+    private final List<String> subjects = new ArrayList<>();
     private int bnodeCounter = 0;
-    private StringBuilder resource = new StringBuilder();
+    private final StringBuilder resource = new StringBuilder();
 
     /**
      * Performs a simple check if a string could be a URI

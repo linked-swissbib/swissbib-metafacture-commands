@@ -1,8 +1,8 @@
 package org.swissbib.linked.mf.writer;
 
-import org.culturegraph.mf.framework.annotations.Description;
-import org.culturegraph.mf.framework.annotations.In;
-import org.culturegraph.mf.framework.annotations.Out;
+import org.metafacture.framework.annotations.Description;
+import org.metafacture.framework.annotations.In;
+import org.metafacture.framework.annotations.Out;
 
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
 @Out(Void.class)
 public class SingleLineWriterRDFXml<T> extends CustomWriter<T> {
 
-    protected boolean useContributor = false;
-    String rootTag = "rdf:RDF";
+    private boolean useContributor = false;
+    private String rootTag = "rdf:RDF";
     String footer = "</collection>\n</rdf:RDF>\n";
 
 
@@ -42,7 +42,7 @@ public class SingleLineWriterRDFXml<T> extends CustomWriter<T> {
     }
 
 
-    public void trimmer(Matcher m) {
+    private void trimmer(Matcher m) {
         String recordToStore = m.group().replaceAll("[\n\r]", "").trim() + "\n";
         this.writeText(recordToStore);
     }

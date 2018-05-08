@@ -1,6 +1,6 @@
 package org.swissbib.linked.mf.morph.functions;
 
-import org.culturegraph.mf.metamorph.api.helpers.AbstractSimpleStatelessFunction;
+import org.metafacture.metamorph.api.helpers.AbstractSimpleStatelessFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  */
 abstract class HashGenerator extends AbstractSimpleStatelessFunction {
 
-    protected static final Logger hashError;
+    private static final Logger hashError;
     static final String NO_HASH = "NO_HASH";
     static final String VALUES_OK = "OK";
     static final Pattern charsToReplace = Pattern.compile(",| *",Pattern.CASE_INSENSITIVE|Pattern.MULTILINE|Pattern.DOTALL);
@@ -30,8 +30,8 @@ abstract class HashGenerator extends AbstractSimpleStatelessFunction {
 
 
 
-    protected String generateId(String name) throws URISyntaxException {
-        String normalizedName = null;
+    String generateId(String name) throws URISyntaxException {
+        String normalizedName;
         //decompose unicode characters eg. é -> e´
         if (!Normalizer.isNormalized(name, Normalizer.Form.NFD)) {
             normalizedName = Normalizer.normalize(name, Normalizer.Form.NFD);
@@ -49,7 +49,7 @@ abstract class HashGenerator extends AbstractSimpleStatelessFunction {
     }
 
 
-    protected String  concatenateAndNormalizeValueParts (List<String> valueParts) {
+    String  concatenateAndNormalizeValueParts(List<String> valueParts) {
 
         StringBuilder normalizedValueParts = new StringBuilder();
         for (String valuePart : valueParts) {
