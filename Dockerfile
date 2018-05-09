@@ -8,4 +8,4 @@ RUN mkdir /mfwf
 VOLUME /mfwf
 WORKDIR /mfwf
 
-ENTRYPOINT ["/bin/bash", "/app/metafacture-core-5.0.0-dist/flux.sh"]
+ENTRYPOINT ["/bin/bash", "/app/flux.sh"]
