@@ -1,8 +1,8 @@
 variables:
-- APP_VERSION:1.1
+  APP_VERSION:"1.1"
 stages:
 - build
-# - integrate
+- integrate
 # - test
 # - deploy
 
