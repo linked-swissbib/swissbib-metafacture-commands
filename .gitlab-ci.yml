@@ -1,8 +1,12 @@
+variables:
+- APP_VERSION:1.1
 stages:
 - build
 # - integrate
 # - test
 # - deploy
+
+
 
 build_sb_commands:
   stage: build
@@ -21,14 +25,16 @@ build_sb_commands:
     expire_in: 1 week
 
 
-# integrate_sb_commands:
-#   stage: integrate
-#   image: archlinux/base:latest
-#   before_script:
-#   - pacman -Syy
-#   - pacman -S --noconfirm wget
-#   script:
-#   - wget 
+integrate_sb_commands:
+  stage: integrate
+  image: archlinux/base:latest
+  before_script:
+  - pacman -Syy
+  - pacman -S --noconfirm wget
+  script:
+  - wget https://github.com/metafacture/metafacture-core/releases/download/metafacture-core-5.0.0/metafacture-core-5.0.0-dist.tar.gz
+  - tar xzf metafacture-core-5.0.0-dist.tar.gz
+  - cp swissbibMF-plugins-$APP_VERSION-all.jar metafacture-core-5.0.0-dist/plugins
 
 # e2e_tests:
 #   stage: test
