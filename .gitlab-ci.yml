@@ -1,0 +1,39 @@
+stages:
+- build
+# - integrate
+# - test
+# - deploy
+
+build_sb_commands:
+  stage: build
+  image: java:8-jdk
+  cache:
+    paths:
+    - .gradle/wrapper
+    - .gradle/caches
+  before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+  script:
+  - ./gradlew shadowJar
+  artifacts:
+    paths:
+    - build/libs/*.jar
+    expire_in: 1 week
+
+
+# integrate_sb_commands:
+#   stage: integrate
+#   image: archlinux/base:latest
+#   before_script:
+#   - pacman -Syy
+#   - pacman -S --noconfirm wget
+#   script:
+#   - wget 
+
+# e2e_tests:
+#   stage: test
+
+# deploy_to_docker_hub:
+#   image: 
+#   only:
+#   - master
