@@ -1,0 +1,54 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+    }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'ch.linked-swissbib'
+version = '1.1'
+
+description = """swissbib-metafacture-plugins"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+configurations.all {
+}
+
+repositories {
+        
+     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.elasticsearch.client', name: 'transport', version:'5.4.1'
+    compile group: 'com.google.guava', name: 'guava', version:'22.0'
+    compile group: 'org.neo4j', name: 'neo4j', version:'3.2.1'
+    compile group: 'org.apache.solr', name: 'solr-solrj', version:'6.6.0'
+    compile group: 'org.apache.kafka', name: 'kafka-clients', version:'0.10.2.1'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version:'2.8.2'
+    compileOnly group: 'org.metafacture', name: 'metafacture-framework', version:'5.0.0'
+    compileOnly group: 'org.metafacture', name: 'metafacture-io', version:'5.0.0'
+    compileOnly group: 'org.metafacture', name: 'metafacture-flowcontrol', version:'5.0.0'
+    compileOnly group: 'org.metafacture', name: 'metafacture-javaintegration', version:'5.0.0'
+    compileOnly group: 'org.metafacture', name: 'metafacture-commons', version:'5.0.0'
+    compileOnly group: 'org.metafacture', name: 'metamorph', version:'5.0.0'
+    compileOnly group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+}
+
+shadowJar {
+    dependencies {
+        exclude(dependency('org.metafacture::'))
+        exclude(dependency('org.slf4j:slf4j-api:1.7.21'))
+    }
+}
