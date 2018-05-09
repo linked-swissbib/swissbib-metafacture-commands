@@ -4,7 +4,7 @@ stages:
 - build
 - integrate
 # - test
-# - deploy
+- deploy
 
 
 
@@ -19,10 +19,10 @@ build_sb_commands:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   script:
   - ./gradlew shadowJar
-  artifacts:
-    paths:
-    - build/libs/*.jar
-    expire_in: 1 week
+#  artifacts:
+#    paths:
+#    - build/libs/*.jar
+#    expire_in: 1 week
 
 
 integrate_sb_commands:
@@ -36,10 +36,19 @@ integrate_sb_commands:
   - tar xzf metafacture-core-5.0.0-dist.tar.gz
   - cp build/libs/swissbibMF-plugins-$APP_VERSION-all.jar metafacture-core-5.0.0-dist/plugins
 
+
 # e2e_tests:
 #   stage: test
 
-# deploy_to_docker_hub:
-#   image: 
-#   only:
-#   - master
+deploy_to_docker_hub:
+  stage: deploy
+  image: docker:latest
+  services:
+  - docker:dind
+  before_script:
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+  - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+  - docker push "$CI_REGISTRY_IMAGE"
+# only:
+# - master
