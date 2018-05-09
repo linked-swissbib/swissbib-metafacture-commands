@@ -30,7 +30,7 @@ integrate_sb_commands:
   image: archlinux/base:latest
   before_script:
   - pacman -Syy
-  - pacman -S --noconfirm wget
+  - pacman -S --noconfirm wget tar
   script:
   - wget https://github.com/metafacture/metafacture-core/releases/download/metafacture-core-5.0.0/metafacture-core-5.0.0-dist.tar.gz
   - tar xzf metafacture-core-5.0.0-dist.tar.gz
