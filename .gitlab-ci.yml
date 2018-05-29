@@ -18,7 +18,7 @@ build_sb_commands:
   before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   script:
-  - ./gradlew shadowJar
+  - ./gradlew integrationTest shadowJar
   artifacts:
     paths:
     - build/libs/*.jar
