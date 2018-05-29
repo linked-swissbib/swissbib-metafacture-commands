@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<rules xmlns="http://www.culturegraph.org/metamorph">
+
+    <data source="008" name="@pubY">
+        <substring start="7" end="11"/>
+    </data>
+
+    <combine name="@711" value="${number}###${name}###${subunit}###${date}###${location}###${gnd}" flushWith="711??"
+             reset="true"
+             sameEntity="true">
+        <data source="711??.a" name="name"/>
+        <data source="711??.e" name="subunit"/>
+        <data source="711??.n" name="number"/>
+        <data source="711??.d" name="date"/>
+        <data source="711??.c" name="location"/>
+        <data source="711??.0" name="gnd">
+            <replace pattern="^\(DE-588\)$" with=""/>
+        </data>
+    </combine>
+
+    <combine name="@key711" value="711__###${swissbib_id}###${711}###${publishYear}###${title245a}" flushWith="711??">
+        <data source="001" name="swissbib_id"/>
+        <data source="@711" name="711"/>
+        <data source="@pubY" name="publishYear"/>
+        <data source="245*.a" name="title245a"/>
+        <postprocess>
+            <java class="org.swissbib.linked.mf.morph.functions.AuthorHash"/>
+        </postprocess>
+    </combine>
+
+</rules>

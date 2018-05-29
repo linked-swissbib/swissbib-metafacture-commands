@@ -3,7 +3,7 @@ variables:
 stages:
 - build
 - integrate
-# - test
+- test
 - deploy
 
 
@@ -40,9 +40,16 @@ integrate_sb_commands:
     - metafacture-core-5.0.0-dist
     expire_in: 1 day
 
-
-# e2e_tests:
-#   stage: test
+e2e_tests:
+  stage: test
+  image: archlinux/base:latest
+  before_script:
+  - mkdir flux
+  - cp -r .e2e/baseLineResource flux
+  script:
+  - cd flux/baseLineResource
+  - ../metafacture-core-5.0.0-dist/flux.sh resource.flux
+  - diff -q *.jsonld
 
 deploy_to_docker_hub:
   stage: deploy

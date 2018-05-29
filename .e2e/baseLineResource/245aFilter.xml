@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<metamorph xmlns="http://www.culturegraph.org/metamorph" version="1">
+
+    <rules>
+        <data source="245*.a"/>
+    </rules>
+
+</metamorph>

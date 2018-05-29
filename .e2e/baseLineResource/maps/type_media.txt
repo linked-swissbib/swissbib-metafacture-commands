@@ -1,0 +1,41 @@
+00	http://rdvocab.info/termList/RDAMediaType/1007
+01	http://rdvocab.info/termList/RDAMediaType/1002
+47	http://rdvocab.info/termList/RDAMediaType/1003
+48	http://rdvocab.info/termList/RDAMediaType/1003
+49	http://rdvocab.info/termList/RDAMediaType/1003
+53	http://rdvocab.info/termList/RDAMediaType/1003
+54	http://rdvocab.info/termList/RDAMediaType/1003
+CF010100	http://rdvocab.info/termList/RDAMediaType/1003
+CF010200	http://rdvocab.info/termList/RDAMediaType/1003
+CF010300	http://rdvocab.info/termList/RDAMediaType/1003
+CF010400	http://rdvocab.info/termList/RDAMediaType/1003
+CF010500	http://rdvocab.info/termList/RDAMediaType/1003
+CF010600	http://rdvocab.info/termList/RDAMediaType/1003
+CF010000	http://rdvocab.info/termList/RDAMediaType/1003
+MU030000	http://rdvocab.info/termList/RDAMediaType/1001
+MU030100	http://rdvocab.info/termList/RDAMediaType/1001
+MU030200	http://rdvocab.info/termList/RDAMediaType/1001
+MU030300	http://rdvocab.info/termList/RDAMediaType/1001
+MU030400	http://rdvocab.info/termList/RDAMediaType/1001
+MU030500	http://rdvocab.info/termList/RDAMediaType/1001
+MU030600	http://rdvocab.info/termList/RDAMediaType/1001
+MU040000	http://rdvocab.info/termList/RDAMediaType/1001
+MU040100	http://rdvocab.info/termList/RDAMediaType/1001
+MU040200	http://rdvocab.info/termList/RDAMediaType/1001
+MU040300	http://rdvocab.info/termList/RDAMediaType/1001
+MU040400	http://rdvocab.info/termList/RDAMediaType/1001
+MU040500	http://rdvocab.info/termList/RDAMediaType/1001
+MU040600	http://rdvocab.info/termList/RDAMediaType/1001
+VM010000	
+VM010100	http://rdvocab.info/termList/RDAMediaType/1005
+VM010200	http://rdvocab.info/termList/RDAMediaType/1008
+VM010300	http://rdvocab.info/termList/RDAMediaType/1008
+VM010400	http://rdvocab.info/termList/RDAMediaType/1008
+VM020100	http://rdvocab.info/termList/RDAMediaType/1005
+VM020200	http://rdvocab.info/termList/RDAMediaType/1005
+VM030100	
+VM030200	
+VM030400	
+VM030000	
+VM040000	
+MX010000	

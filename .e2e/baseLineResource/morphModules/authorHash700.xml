@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<rules xmlns="http://www.culturegraph.org/metamorph">
+
+    <data source="008" name="@publishYear">
+        <substring start="7" end="11"/>
+    </data>
+
+
+    <combine name="@7000" value="${number}###${name}###${title}###${lifedata}###${fullname}###${gnd}" flushWith="7000 "
+             reset="true"
+             sameEntity="true">
+        <data source="7000 .a" name="name"/>
+        <data source="7000 .b" name="number"/>
+        <data source="7000 .c" name="title"/>
+        <data source="7000 .d" name="lifedata"/>
+        <data source="7000 .q" name="fullname"/>
+        <data source="7000 .0" name="gnd">
+            <replace pattern="^\(DE-588\)$" with=""/>
+        </data>
+    </combine>
+
+    <combine name="@key7000" value="7000###${swissbib_id}###${7000}###${publishYear}###${title245a}" flushWith="7000 ">
+        <data source="001" name="swissbib_id"/>
+        <data source="@publishYear" name="publishYear"/>
+        <data source="245*.a" name="title245a"/>
+        <data source="@7000" name="7000"/>
+        <postprocess>
+            <java class="org.swissbib.linked.mf.morph.functions.AuthorHash"/>
+        </postprocess>
+    </combine>
+
+
+    <combine name="@7001" value="${number}###${lastname}###${firstname}###${title}###${lifedata}###${fullname}###${gnd}"
+             flushWith="7001 " reset="true" sameEntity="true">
+        <data source="7001 .a" name="lastname"/>
+        <data source="7001 .D" name="firstname"/>
+        <data source="7001 .b" name="number"/>
+        <data source="7001 .c" name="title"/>
+        <data source="7001 .d" name="lifedata"/>
+        <data source="7001 .q" name="fullname"/>
+        <data source="7001 .0" name="gnd">
+            <replace pattern="^\(DE-588\)$" with=""/>
+        </data>
+    </combine>
+
+    <combine name="@key7001" value="7001###${swissbib_id}###${7001}###${publishYear}###${title245a}" flushWith="7001 ">
+        <data source="001" name="swissbib_id"/>
+        <data source="@publishYear" name="publishYear"/>
+        <data source="245*.a" name="title245a"/>
+        <data source="@7001" name="7001"/>
+        <postprocess>
+            <java class="org.swissbib.linked.mf.morph.functions.AuthorHash"/>
+        </postprocess>
+    </combine>
+
+</rules>
+
+
