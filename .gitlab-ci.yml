@@ -29,7 +29,7 @@ integrate_sb_commands:
   image: archlinux/base:latest
   before_script:
   - pacman -Syy
-  - pacman -S --noconfirm wget tar grep jre8-openjdk-headless
+  - pacman -S --noconfirm wget tar grep jre8-openjdk-headless diff
   - mkdir e2e
   - cp -r .e2e/baseLineResource e2e
   script:
