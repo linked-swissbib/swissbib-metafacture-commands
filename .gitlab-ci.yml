@@ -3,7 +3,6 @@ variables:
 stages:
 - build
 - integrate
-- test
 - deploy
 
 
@@ -31,25 +30,22 @@ integrate_sb_commands:
   before_script:
   - pacman -Syy
   - pacman -S --noconfirm wget tar
+  - mkdir e2e
+  - cp -r .e2e/baseLineResource e2e
   script:
   - wget https://github.com/metafacture/metafacture-core/releases/download/metafacture-core-5.0.0/metafacture-core-5.0.0-dist.tar.gz
   - tar xzf metafacture-core-5.0.0-dist.tar.gz
   - cp build/libs/swissbibMF-plugins-$APP_VERSION-all.jar metafacture-core-5.0.0-dist/plugins
+  - cd e2e/baseLineResource
+  - ../metafacture-core-5.0.0-dist/flux.sh resource.flux
+  - diff -q *.jsonld
+  after_script:
+  - cd ..
+  - rm -r e2e
   artifacts:
     paths:
     - metafacture-core-5.0.0-dist
     expire_in: 1 day
-
-e2e_tests:
-  stage: test
-  image: archlinux/base:latest
-  before_script:
-  - mkdir flux
-  - cp -r .e2e/baseLineResource flux
-  script:
-  - cd flux/baseLineResource
-  - ../metafacture-core-5.0.0-dist/flux.sh resource.flux
-  - diff -q *.jsonld
 
 deploy_to_docker_hub:
   stage: deploy
