@@ -1,7 +1,20 @@
+/**
+ * Run tests:
+ * - gradle clean test: Runs only unit tests
+ * - gradle clean integrationTest: Runs only integration tests
+ * - gradle clean test integrationTest: Runs unit and integration tests
+ * - gradle clean build -x integrationTest: Builds application without integration tests
+ * - gradle clean build -x test: Builds application without unit tests
+ * - gradle clean build: Builds application and runs unit and integration tests
+ */
+
 buildscript {
     repositories {
         mavenCentral()
         jcenter()
+    }
+    dependencies {
+        classpath "org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.5"
     }
 }
 
@@ -10,6 +23,7 @@ plugins {
     id "java"
     id "maven"
     id "scala"
+    id "org.unbroken-dome.test-sets" version "1.4.5"
 }
 
 ext {
@@ -21,18 +35,23 @@ repositories {
     mavenCentral()
 }
 
-group = 'ch.linked-swissbib'
-version = '1.1'
+group = "ch.linked-swissbib"
+version = "1.1"
 
 description = """swissbib-metafacture-plugins"""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+    options.encoding = "UTF-8"
 }
 
-configurations.all {
+testSets {
+    integrationTest { dirName = "integration-test" }
+}
+
+project.integrationTest {
+    outputs.upToDateWhen { false } // Run integration tests when invoked if input and output are the same
 }
 
 dependencies {
@@ -42,11 +61,6 @@ dependencies {
     compile "org.apache.solr:solr-solrj:6.6.0"
     compile "org.apache.kafka:kafka-clients:0.10.2.1"
     compile "org.apache.logging.log4j:log4j-to-slf4j:2.8.2"
-    testCompile "junit:junit:4.12"
-    testCompile "org.scala-lang:scala-library:2.12.6"
-    testCompile "org.scalacheck:scalacheck_${scalaVersion}:1.14.0"
-    testCompile "org.scalatest:scalatest_${scalaVersion}:3.0.5"
-    testRuntime "org.scala-lang.modules:scala-xml_${scalaVersion}:1.10.0"
     compileOnly "org.metafacture:metafacture-framework:${mfVersion}"
     compileOnly "org.metafacture:metafacture-io:${mfVersion}"
     compileOnly "org.metafacture:metafacture-flowcontrol:${mfVersion}"
@@ -54,13 +68,25 @@ dependencies {
     compileOnly "org.metafacture:metafacture-commons:${mfVersion}"
     compileOnly "org.metafacture:metamorph:${mfVersion}"
     compileOnly "org.slf4j:slf4j-api:1.7.25"
-
+    testCompile "junit:junit:4.12"
+    testCompile "org.scala-lang:scala-library:2.12.6"
+    testCompile "org.scalacheck:scalacheck_${scalaVersion}:1.14.0"
+    testCompile "org.scalatest:scalatest_${scalaVersion}:3.0.5"
+    testRuntime "org.scala-lang.modules:scala-xml_${scalaVersion}:1.1.0"
+    integrationTestCompile "org.metafacture:metafacture-biblio:${mfVersion}"
+    integrationTestCompile "org.metafacture:metafacture-io:${mfVersion}"
+    integrationTestCompile "org.metafacture:metafacture-mangling:${mfVersion}"
+    integrationTestCompile "org.metafacture:metafacture-xml:${mfVersion}"
+    integrationTestCompile "org.metafacture:metamorph:${mfVersion}"
+    integrationTestCompile "org.assertj:assertj-core:3.10.0"
 }
-
 
 shadowJar {
     dependencies {
-        exclude(dependency('org.metafacture::'))
-        exclude(dependency('org.slf4j:slf4j-api:1.7.21'))
+        exclude(dependency("org.metafacture::"))
+        exclude(dependency("org.slf4j:slf4j-api:1.7.21"))
     }
 }
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
