@@ -22,7 +22,6 @@ plugins {
     id "com.github.johnrengelman.shadow" version "2.0.4"
     id "java"
     id "maven"
-    id "scala"
     id "org.unbroken-dome.test-sets" version "1.4.5"
 }
 
@@ -69,10 +68,9 @@ dependencies {
     compileOnly "org.metafacture:metamorph:${mfVersion}"
     compileOnly "org.slf4j:slf4j-api:1.7.25"
     testCompile "junit:junit:4.12"
-    testCompile "org.scala-lang:scala-library:2.12.6"
-    testCompile "org.scalacheck:scalacheck_${scalaVersion}:1.14.0"
-    testCompile "org.scalatest:scalatest_${scalaVersion}:3.0.5"
-    testRuntime "org.scala-lang.modules:scala-xml_${scalaVersion}:1.1.0"
+    testCompile "org.mockito:mockito-core:2.18.3"
+    testCompile "com.pholser:junit-quickcheck-core:0.8"
+    testCompile "org.metafacture:metafacture-framework:${mfVersion}"
     integrationTestCompile "org.metafacture:metafacture-biblio:${mfVersion}"
     integrationTestCompile "org.metafacture:metafacture-io:${mfVersion}"
     integrationTestCompile "org.metafacture:metafacture-mangling:${mfVersion}"

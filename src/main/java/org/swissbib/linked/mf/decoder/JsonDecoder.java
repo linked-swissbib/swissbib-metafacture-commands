@@ -26,58 +26,29 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
     private static final char ENDOBJECT = '}';
     private static final char STARTARRAY = '[';
     private static final char ENDARRAY = ']';
-    private static final char STARTLITERAL = '"';
-    private static final char ENDLITERAL = '"';
-    private static final char SEPLITERALS = ':';
-    private static final char SEPOBJECTS = ',';
+    private static final char STARTSTRINGVALUE = '"';
+    private static final char ENDSTRINGVALUE = '"';
+    private static final char KEYVALUESEPARATOR = ':';
+    private static final char ELEMENTSEPARATOR = ',';
     private static final char WHITESPACE = ' ';
-    private static final char ESCAPECHAR = '\'';
+    private static final char ESCAPESPECIALCHAR = '\'';
     private static final byte OBJECT = 0;
     private static final byte ARRAY = 1;
-    private static final byte LITERAL = 2;
-    private static final byte SPECIALLITERAL = 3;
-    private static final StringBuilder literal = new StringBuilder();
+    private static final byte STRINGVALUE = 2;
+    private static final byte NONSTRINGVALUE = 3;
+    private static final StringBuilder charCollector = new StringBuilder();
     private String nullValue = "";
-    private boolean ignoreNextChar = false;
+    private boolean escapeSpecialChar = false;
     private final Path path = new Path();
     private String key = "";
 
-    private static boolean charArrayContainsNot(char[] array, char character) {
+    private static boolean charNotInArray(char character, char[] array) {
         for (char elem : array) {
             if (elem == character) {
                 return false;
             }
         }
         return true;
-    }
-
-    private static boolean checkValidNumber(String s) {
-        boolean valid = true;
-        boolean followedBySign = false;
-        char[] validFirstChars = {'-', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        char[] validMiddleChars = {'-', '+', 'e', 'E', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        char[] validLastChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        if (charArrayContainsNot(validFirstChars, s.charAt(0))) {
-            valid = false;
-        }
-        for (int i = 1; i < s.length() - 1; i++) {
-            if (charArrayContainsNot(validMiddleChars, s.charAt(i))) {
-                valid = false;
-                break;
-            } else if (s.charAt(i) == 'e' || s.charAt(i) == 'E') {
-                followedBySign = true;
-            } else if (followedBySign) {
-                if (!(s.charAt(i) == '-' || s.charAt(i) == '+')) { // e not followed by - or +
-                    valid = false;
-                } else {
-                    followedBySign = false;
-                }
-            }
-        }
-        if (charArrayContainsNot(validLastChars, s.charAt(s.length() - 1))) {
-            valid = false;
-        }
-        return valid;
     }
 
     public void setNullValue(String nullValue) {
@@ -90,62 +61,66 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
         for (int i = 0; i < obj.length(); i++) {
             char c = obj.charAt(i);
             if (path.empty()) {
-                if (c == '{') {
+                if (c == STARTOBJECT) {
                     path.add(new JsonObject(""));
                     getReceiver().startRecord("");
                 }
             } else {
-                if (ignoreNextChar) {
-                    literal.append(c);
-                    ignoreNextChar = false;
+                if (escapeSpecialChar) {
+                    charCollector.append(c);
+                    escapeSpecialChar = false;
                 } else {
-                    if (path.literal()) {
+                    if (path.insideStringValue()) {
                         switch (c) {
-                            case ESCAPECHAR:
-                                ignoreNextChar = true;
+                            case ESCAPESPECIALCHAR:
+                                escapeSpecialChar = true;
                                 break;
-                            case ENDLITERAL:
+                            case ENDSTRINGVALUE:
                                 path.remove();
-                                // Is value, else key
                                 if (key.length() > 0) {
-                                    getReceiver().literal(key, literal.toString());
-                                    key = "";
+                                    getReceiver().literal(key, charCollector.toString());
+                                    if (!path.array()) key = "";
                                 } else {
-                                    key = literal.toString();
+                                    key = charCollector.toString();
                                 }
-                                literal.setLength(0);
+                                charCollector.setLength(0);
                                 break;
                             default:
-                                literal.append(c);
+                                charCollector.append(c);
                         }
-                    } else if (path.specialLiteral()) { // If value is not delimited by apostrophes
+                    } else if (path.insideNonStringValue()) {
                         switch (c) {
-                            case SEPOBJECTS:
+                            case ELEMENTSEPARATOR:
                             case ENDOBJECT:
                             case ENDARRAY:
                             case WHITESPACE:
-                                if (literal.toString().equals("null")) {
+                                if (valueIsNull()) {
                                     getReceiver().literal(key, nullValue);
-                                } else if (literal.toString().equals("true") ||
-                                        literal.toString().equals("false") ||
-                                        checkValidNumber(literal.toString())) {
-                                    getReceiver().literal(key, literal.toString());
+                                } else if (valueIsBoolean() || valueIsNumber()) {
+                                    getReceiver().literal(key, charCollector.toString());
                                 } else {
                                     // Todo: Better exception handling...
                                     getReceiver().literal(key, "");
                                 }
-                                literal.setLength(0);
+                                charCollector.setLength(0);
+                                path.remove();
                                 if (!path.array()) {
                                     key = "";
                                 }
-                                path.remove();
+                                if (path.empty() || path.onRootLevel()) {
+                                    getReceiver().endRecord();
+                                }
+                                if (c == ENDARRAY) {
+                                    key = "";
+                                    path.remove();
+                                }
                                 break;
-                            case ESCAPECHAR:
-                                ignoreNextChar = true;
+                            case ESCAPESPECIALCHAR:
+                                escapeSpecialChar = true;
                             default:
-                                literal.append(c);
+                                charCollector.append(c);
                         }
-                    } else {
+                    } else {  // Not inside value
                         switch (c) {
                             case STARTOBJECT:
                                 if (path.empty()) {
@@ -160,12 +135,15 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
                                 key = "";
                                 break;
                             case ENDOBJECT:
-                                if (path.size() > 1) {
+                                if (path.aboveRootLevel()) {
                                     getReceiver().endEntity();
                                 } else {
                                     getReceiver().endRecord();
                                 }
                                 path.remove();
+                                if (path.array()) {
+                                    key = path.last().key;
+                                }
                                 break;
                             case STARTARRAY:
                                 path.add(new JsonArray(key));
@@ -174,18 +152,18 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
                                 path.remove();
                                 key = "";
                                 break;
-                            case STARTLITERAL:
+                            case STARTSTRINGVALUE:
                                 path.add(new JsonLiteral());
                                 break;
-                            case ESCAPECHAR:
-                                ignoreNextChar = true;
+                            case ESCAPESPECIALCHAR:
+                                escapeSpecialChar = true;
                                 break;
-                            case SEPOBJECTS:
-                            case SEPLITERALS:
+                            case ELEMENTSEPARATOR:
+                            case KEYVALUESEPARATOR:
                             case WHITESPACE:
                                 break;
                             default:
-                                literal.append(c);
+                                charCollector.append(c);
                                 path.add(new JsonSpecialLiteral());
                         }
                     }
@@ -237,7 +215,7 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
     private class JsonLiteral extends JsonToken {
         @Override
         byte type() {
-            return LITERAL;
+            return STRINGVALUE;
         }
 
         @Override
@@ -249,7 +227,7 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
     private class JsonSpecialLiteral extends JsonToken {
         @Override
         byte type() {
-            return SPECIALLITERAL;
+            return NONSTRINGVALUE;
         }
 
         @Override
@@ -264,6 +242,10 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
         boolean empty() {
             return path.size() == 0;
         }
+
+        boolean onRootLevel() { return path.size() == 1; }
+
+        boolean aboveRootLevel() { return path.size() > 1;}
 
         void add(JsonToken token) {
             path.add(token);
@@ -285,17 +267,56 @@ public class JsonDecoder extends DefaultObjectPipe<String, StreamReceiver> {
             return !empty() && last().type() == ARRAY;
         }
 
-        boolean literal() {
-            return !empty() && last().type() == LITERAL;
+        boolean insideStringValue() {
+            return !empty() && last().type() == STRINGVALUE;
         }
 
-        boolean specialLiteral() {
-            return !empty() && last().type() == SPECIALLITERAL;
+        boolean insideNonStringValue() {
+            return !empty() && last().type() == NONSTRINGVALUE;
         }
 
         private int indexLast() {
             return path.size() - 1;
         }
+    }
+
+    private boolean valueIsNumber() {
+        String value = charCollector.toString();
+        boolean valid = true;
+        boolean followedBySign = false;
+        char[] validFirstChars = {'-', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        char[] validMiddleChars = {'-', '+', 'e', 'E', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        char[] validLastChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        if (charNotInArray(value.charAt(0), validFirstChars)) {
+            valid = false;
+        }
+        for (int i = 1; i < value.length() - 1; i++) {
+            if (charNotInArray(value.charAt(i), validMiddleChars)) {
+                valid = false;
+                break;
+            } else if (value.charAt(i) == 'e' || value.charAt(i) == 'E') {
+                followedBySign = true;
+            } else if (followedBySign) {
+                if (!(value.charAt(i) == '-' || value.charAt(i) == '+')) { // e not followed by - or +
+                    valid = false;
+                } else {
+                    followedBySign = false;
+                }
+            }
+        }
+        if (charNotInArray(value.charAt(value.length() - 1), validLastChars)) {
+            valid = false;
+        }
+        return valid;
+    }
+
+    private boolean valueIsNull() {
+       return charCollector.toString().equals("null");
+    }
+
+    private boolean valueIsBoolean() {
+        return charCollector.toString().equals("true") ||
+                                        charCollector.toString().equals("false");
     }
 
 }
