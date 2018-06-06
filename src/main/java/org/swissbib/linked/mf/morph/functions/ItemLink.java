@@ -31,7 +31,7 @@ class BacklinksTemplate
 }
 
 
-final class ItemLink extends AbstractSimpleStatelessFunction {
+public final class ItemLink extends AbstractSimpleStatelessFunction {
 
 
     private HashMap< String, AlephStructure> alephNetworks;

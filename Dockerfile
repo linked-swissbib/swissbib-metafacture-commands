@@ -4,8 +4,8 @@ RUN apk add --update bash && rm -rf /var/cache/apk/*
 
 ADD ./metafacture-core-5.0.0-dist /app
 
-RUN mkdir /mfwf
-VOLUME /mfwf
-WORKDIR /mfwf
+RUN mkdir /flux /in /out
+VOLUME /flux /in /out
+WORKDIR /flux
 
 ENTRYPOINT ["/bin/bash", "/app/flux.sh"]
