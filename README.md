@@ -1,6 +1,45 @@
 # swissbib-metafacture-commands
 Plugin with additional Metafacture commands used in linked-swissbib workflows
 
+## Build
+
+In order to use the plugins with a [standalone instance](https://github.com/linked-swissbib/mfWorkflows) of Metafacture you
+have to build a "Fat Jar". For that issue the following commands in the root
+directory:
+
+```bash
+# Clone standalone instance of Metafacture
+git clone https://github.com/linked-swissbib/mfWorkflows
+# Clone this repository
+git clone
+https://github.com/linked-swissbib/swissbib-metafacture-commands
+cd swissbib-metafacture-commands
+# Build fat jar
+./gradlew clean shadow # For *nix-OSes, otherwise use gradlew.bat
+# Move fat jar to plugins folder of mfWorkflows
+mv build/libs/swissbibMF-plugins-1.1-all.jar ../mfWorkflows/plugins
+```
+
+## Docker
+
+There is an experimental Docker image available which provides a
+standalone Metafacture instance including the linked-swissbib plugins. 
+
+```
+docker pull sschuepbach/mfrunner-sb-5
+```
+
+For further instructions see [here](https://hub.docker.com/r/sschuepbach/mfrunner-sb-5/)
+
+## Tests
+
+There are only a few unit tests available (hopefully there will be more in
+the near future...). To run them type
+
+```bash
+./gradlew clean check
+```
+
 ## List of commands
 
 The commands are divided into several categories:
