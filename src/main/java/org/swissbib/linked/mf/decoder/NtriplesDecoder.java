@@ -11,15 +11,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
  * Decodes data in N-triple format to Formeta
  *
  * @author Sebastian Schüpbach
- * @version 1.0
- * Created on 12.11.15
+ * @version 1.1
  */
 @Description("Decodes lines of N-Triple files.")
 @In(Reader.class)
@@ -77,16 +78,37 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
     public void process(Reader reader) {
 
         BufferedReader lineReader = new BufferedReader(reader, 16777216);
+        Map<String, Element> bnodeMap = new HashMap<>();
+        List<Element> rootBnodes = new ArrayList<>();
 
         try {
-            for(String e = lineReader.readLine(); e != null; e = lineReader.readLine()) {
+            for (String e = lineReader.readLine(); e != null; e = lineReader.readLine()) {
                 if (!e.startsWith("#")) {
                     List<String> statement = parseLine(e);
-                    this.getReceiver().startRecord(statement.get(0));
-                    this.getReceiver().literal(statement.get(1),
-                            unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2));
-                    this.getReceiver().endRecord();
+                    if (isBnode(statement.get(0))) {
+                        if (isBnode(statement.get(2))) {
+                            Element entity = new Element(statement.get(1));
+                            bnodeMap.get(statement.get(0)).addEntity(entity);
+                            bnodeMap.put(statement.get(2), entity);
+                        } else {
+                            Element literal = new Element(statement.get(1));
+                            literal.addValue(statement.get(2));
+                            bnodeMap.get(statement.get(0)).addEntity(literal);
+                        }
+                    } else if (isBnode(statement.get(2))) {
+                        Element elem = new Element(statement.get(1));
+                        bnodeMap.put(statement.get(2), elem);
+                        rootBnodes.add(elem);
+                    } else {
+                        this.getReceiver().startRecord(statement.get(0));
+                        this.getReceiver().literal(statement.get(1),
+                                unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2));
+                        this.getReceiver().endRecord();
+                    }
                 }
+            }
+            for (Element r : rootBnodes) {
+                r.serialise();
             }
 
         } catch (IOException var4) {
@@ -95,8 +117,13 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
 
     }
 
+    private static boolean isBnode(String str) {
+        return str.startsWith("_:");
+    }
+
     /**
      * Parses a N-triples statement and returns elements (subject, predicate, object) as three-part ArrayList
+     *
      * @param string Statement to be parsed
      * @return List with subject, predicate and object
      */
@@ -104,56 +131,123 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
 
         List<String> statement = new ArrayList<>();
 
-        Boolean inLiteral = false;
-        Boolean inURI = false;
-        Boolean inBnode = false;
-        Boolean ignoreEndLiteral = false;
-        Boolean endLiteralChar = false;
+        final byte NOCTX = 0;
+        final byte INURI = 1;
+        final byte INBNODE = 2;
+        final byte INLITERAL = 3;
+        final byte INIGNOREDCHAR = 4;
+        final byte INDATATYPEURI = 5;
+        final byte AFTERSINGLECARET = 6;
+        byte ctx = NOCTX;
         StringBuilder elem = new StringBuilder();
+
+        Predicate beginOfUri = (char character, byte context) -> character == '<' && context == NOCTX;
+        Predicate endOfUri = (char character, byte context) -> character == '>' && context == INURI;
+        Predicate startOfLiteral = (char character, byte context) -> character == '"' && context == NOCTX;
+        Predicate endOfLiteral = (char character, byte context) -> character == '"' && context == INLITERAL;
+        Predicate startOfBNode = (char character, byte context) -> character == '_' && context == NOCTX;
+        Predicate endOfBNode = (char character, byte context) -> (character == '.' || character == ' ' || character == '\t') && context == INBNODE;
+        Predicate endOfTriple = (char character, byte context) -> character == '.' && context == NOCTX;
+        Predicate escapeChar = (char character, byte context) -> character == 0x005c && context == INLITERAL;
+        Predicate possibleDatatypeUri = (char character, byte context) -> character == '^' && context == NOCTX;
+        Predicate datatypeUri = (char character, byte context) -> character == '^' && context == AFTERSINGLECARET;
+        Predicate endOfDatatypeUri = (char character, byte context) -> (character == '.' || character == ' ' || character == '\t') && context == INDATATYPEURI;
 
         for (char c : string.toCharArray()) {
 
-            if (c == '<' && !inLiteral) {                               // Start of a URI
-                inURI = true;
-            } else if (c == '>' && !inLiteral) {                        // End of a URI
-                inURI = false;
+            if (is(beginOfUri, c, ctx)) {
+                ctx = INURI;
+            } else if (is(endOfUri, c, ctx)) {
+                ctx = NOCTX;
                 statement.add(elem.toString());
                 elem.setLength(0);
-            } else if (c == '\"' && !ignoreEndLiteral) {                // Start / end of a literal
+            } else if (is(startOfLiteral, c, ctx)) {
+                ctx = INLITERAL;
+            } else if (is(endOfLiteral, c, ctx)) {
+                ctx = NOCTX;
+                statement.add(elem.toString());
+                elem.setLength(0);
+            } else if (is(startOfBNode, c, ctx)) {
+                ctx = INBNODE;
                 elem.append(c);
-                if (inLiteral) {
-                    endLiteralChar = true;
-                } else if (!inURI) {
-                    inLiteral = true;
-                }
-            } else if (c == ' ' && endLiteralChar) {                    // Whitespace after the end of a literal
-                endLiteralChar = false;
-                inLiteral = false;
+            } else if (is(endOfBNode, c, ctx)) {
+                ctx = NOCTX;
                 statement.add(elem.toString());
                 elem.setLength(0);
-            } else if (c == '_' && !inLiteral && !inURI) {              // Start of a blank node
-                inBnode = true;
-            } else if (c == ' ' && inBnode) {                           // End of a blank node
-                inBnode = false;
-                statement.add(elem.toString());
-                elem.setLength(0);
-            } else if (c == '.' && !inLiteral && !inURI && !inBnode) {  // End of statement
+            } else if (is(endOfTriple, c, ctx)) {
                 break;
-            } else if (c == '\\' && inLiteral) {                        // Don't recognize an escaped " as end of literal
-                ignoreEndLiteral = true;
+            } else if (is(escapeChar, c, ctx)) {
+                ctx = INIGNOREDCHAR;
+            } else if (is(possibleDatatypeUri, c, ctx)) {
+                ctx = AFTERSINGLECARET;
+            } else if (is(datatypeUri, c, ctx)) {
+                ctx = INDATATYPEURI;
+            } else if (ctx == INIGNOREDCHAR) {
+                if (c == '"') elem.append(c);
+                ctx = INLITERAL;
+            } else if (is(endOfDatatypeUri, c, ctx)) {
+                ctx = NOCTX;
+            } else if (ctx == INURI || ctx == INLITERAL || ctx == INBNODE) {                                                      // Record content
                 elem.append(c);
-            }
-            else {                                                      // Record content
-                if (inURI || inLiteral || inBnode) elem.append(c);
-                ignoreEndLiteral = false;
             }
 
         }
 
         if (statement.size() != 3)
-            throw(new MetafactureException("Statement must have exactly three elements: " + string));
+            throw (new MetafactureException("Statement must have exactly three elements: " + string));
 
         return statement;
+    }
+
+    private boolean is(Predicate p, char c, byte ctx) {
+        return p.check(c, ctx);
+    }
+
+    interface Predicate {
+        boolean check(char c, byte ctx);
+    }
+
+    class Element {
+        String name;
+        List<Element> elems = new ArrayList<>();
+        String value;
+
+        Element(String name) {
+            this.name = name;
+        }
+
+        void addValue(String val) {
+            this.value = val;
+        }
+
+        void addEntity(Element e) {
+            this.elems.add(e);
+        }
+
+        void serialise(boolean asRoot) {
+            if (value != null && !asRoot) {
+                NtriplesDecoder.this.getReceiver().literal(this.name, this.value);
+            } else if (elems.size() > 0) {
+                if (asRoot) {
+                    NtriplesDecoder.this.getReceiver().startRecord(name);
+                } else {
+                    NtriplesDecoder.this.getReceiver().startEntity(name);
+                }
+                for (Element e : elems) {
+                    e.serialise(false);
+                }
+                if (asRoot) {
+                    NtriplesDecoder.this.getReceiver().endRecord();
+                } else {
+                    NtriplesDecoder.this.getReceiver().endEntity();
+                }
+            }
+        }
+
+        void serialise() {
+            this.serialise(true);
+        }
+
     }
 
 }
