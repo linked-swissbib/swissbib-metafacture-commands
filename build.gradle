@@ -49,6 +49,18 @@ testSets {
     integrationTest { dirName = "integration-test" }
 }
 
+test {
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+
+    reports {
+        html.enabled = true
+    }
+}
+
 project.integrationTest {
     outputs.upToDateWhen { false } // Run integration tests when invoked if input and output are the same
 }
@@ -67,23 +79,25 @@ dependencies {
     compileOnly "org.metafacture:metafacture-commons:${mfVersion}"
     compileOnly "org.metafacture:metamorph:${mfVersion}"
     compileOnly "org.slf4j:slf4j-api:1.7.25"
-    testCompile "junit:junit:4.12"
+    testCompile "org.junit.jupiter:junit-jupiter-api:5.2.0"
+    testCompile "org.mockito:mockito-junit-jupiter:2.18.3"
     testCompile "org.mockito:mockito-core:2.18.3"
-    testCompile "com.pholser:junit-quickcheck-core:0.8"
+    // testCompile "com.pholser:junit-quickcheck-core:0.8"
     testCompile "org.metafacture:metafacture-framework:${mfVersion}"
-    integrationTestCompile "org.metafacture:metafacture-biblio:${mfVersion}"
-    integrationTestCompile "org.metafacture:metafacture-io:${mfVersion}"
-    integrationTestCompile "org.metafacture:metafacture-mangling:${mfVersion}"
-    integrationTestCompile "org.metafacture:metafacture-xml:${mfVersion}"
-    integrationTestCompile "org.metafacture:metamorph:${mfVersion}"
-    integrationTestCompile "org.assertj:assertj-core:3.10.0"
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.2.0')
+    // integrationTestCompile "org.metafacture:metafacture-biblio:${mfVersion}"
+    // integrationTestCompile "org.metafacture:metafacture-io:${mfVersion}"
+    // integrationTestCompile "org.metafacture:metafacture-mangling:${mfVersion}"
+    // integrationTestCompile "org.metafacture:metafacture-xml:${mfVersion}"
+    // integrationTestCompile "org.metafacture:metamorph:${mfVersion}"
+    // integrationTestCompile "org.assertj:assertj-core:3.10.0"
 }
 
 shadowJar {
-    dependencies {
+   /* dependencies {
         exclude(dependency("org.metafacture::"))
         exclude(dependency("org.slf4j:slf4j-api:1.7.21"))
-    }
+    }*/
 }
 
 check.dependsOn integrationTest

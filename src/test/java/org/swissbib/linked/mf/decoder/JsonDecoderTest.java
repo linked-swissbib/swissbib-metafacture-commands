@@ -1,38 +1,38 @@
 package org.swissbib.linked.mf.decoder;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.metafacture.framework.StreamReceiver;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.inOrder;
 
 
-public class JsonDecoderTest {
+@ExtendWith(MockitoExtension.class)
+class JsonDecoderTest {
 
     private JsonDecoder decoder;
 
     @Mock
     private StreamReceiver receiver;
 
-    @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+    @BeforeEach
+    void setUp() throws Exception {
         decoder = new JsonDecoder();
-        // decoder.setNullValue("");
         decoder.setReceiver(receiver);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         decoder.closeStream();
     }
 
     @Test
-    public void onlyStrings() {
+    void onlyStrings() {
         decoder.process("{\"k1\": \"v1\", \"k2\": \"v2\", \"k3\": \"v3\"}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -43,7 +43,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void intAtBeginning() {
+    void intAtBeginning() {
         decoder.process("{\"k1\": 1, \"k2\": \"v2\"}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -53,7 +53,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void intAtEnd() {
+    void intAtEnd() {
         decoder.process("{\"k1\": \"v1\", \"k2\": 2}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -63,7 +63,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void floatAtEnd() {
+    void floatAtEnd() {
         decoder.process("{\"k1\": \"v1\", \"k2\": 2.2}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -73,7 +73,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void floatAtBeginning() {
+    void floatAtBeginning() {
         decoder.process("{\"k1\": 1.1, \"k2\": \"v2\"}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -83,7 +83,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void expoAtEnd() {
+    void expoAtEnd() {
         decoder.process("{\"k1\": \"v1\", \"k2\": 2e2}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -93,7 +93,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void expoAtBeginning() {
+    void expoAtBeginning() {
         decoder.process("{\"k1\": 1e1, \"k2\": \"v2\"}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -103,7 +103,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void stringArrayAtBeginning() {
+    void stringArrayAtBeginning() {
         decoder.process("{\"k1\": [\"1\", \"2\"], \"k2\": \"v2\"}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -114,7 +114,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void stringArrayAtEnd() {
+    void stringArrayAtEnd() {
         decoder.process("{\"k1\": \"v1\", \"k2\": [\"2\", \"3\"]}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -125,7 +125,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void intArrayAtBeginning() {
+    void intArrayAtBeginning() {
         decoder.process("{\"k1\": [1, 2], \"k2\": \"v2\"}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -136,7 +136,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void intArrayAtEnd() {
+    void intArrayAtEnd() {
         decoder.process("{\"k1\": \"v1\", \"k2\": [2,3]}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -147,7 +147,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void objectAtEnd() {
+    void objectAtEnd() {
         decoder.process("{\"k1\": \"v1\", \"e2\": {\"k22\": \"v21\"}}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -159,7 +159,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void objectAtBeginning() {
+    void objectAtBeginning() {
         decoder.process("{\"e1\": {\"k11\":\"v1\"}, \"k2\": \"v2\"}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
@@ -171,7 +171,7 @@ public class JsonDecoderTest {
     }
 
     @Test
-    public void complexJson() {
+    void complexJson() {
         decoder.process("{\"k1\": [{\"k11\":\"v1\"}, 2e3, null, true], \"k2\": \"v2\", \"e3\": {\"k31\": 3, \"k32\": [1, 2, 3]}}");
         final InOrder ordered = inOrder(receiver);
         ordered.verify(receiver).startRecord("");
