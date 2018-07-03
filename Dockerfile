@@ -1,2 +1,2 @@
 FROM sschuepbach/metafacture-runner:5.0.0
-ADD /app/plugins /app/plugins
+ADD ./metafacture-core-5.0.0-dist/plugins /app/plugins
