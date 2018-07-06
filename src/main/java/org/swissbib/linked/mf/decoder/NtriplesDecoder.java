@@ -6,6 +6,8 @@ import org.metafacture.framework.annotations.Description;
 import org.metafacture.framework.annotations.In;
 import org.metafacture.framework.annotations.Out;
 import org.metafacture.framework.helpers.DefaultObjectPipe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,6 +30,7 @@ import java.util.Map;
 public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamReceiver> {
 
     private Boolean unicodeEscapeSeq = true;
+    private static final Logger LOG = LoggerFactory.getLogger(NtriplesDecoder.class);
 
     /**
      * Converts Unicode escape sequences in strings to regular UTF-8 encoded characters
@@ -54,7 +57,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                     unicodeChar = false;
                 }
             } else {
-                // Unicode escape sequences begin are initialized with \\u. So we have to check for such a tuple,
+                // Unicode escape sequences are initialized with \\u. So we have to check for such a tuple,
                 // but at the same time have to make sure that this tuple is not escaped either (i.e. a literal \\u).
                 if (secondLastArtifact != '\\' && lastArtifact == '\\' && c == 'u') {
                     unicodeChar = true;
@@ -70,6 +73,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
         return utf8String.toString().substring(1);
     }
 
+    @SuppressWarnings("unused")
     public void setUnicodeEscapeSeq(String unicodeEscapeSeq) {
         this.unicodeEscapeSeq = Boolean.valueOf(unicodeEscapeSeq);
     }
@@ -82,9 +86,19 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
         List<Element> rootBnodes = new ArrayList<>();
 
         try {
+            int i = 0;
             for (String e = lineReader.readLine(); e != null; e = lineReader.readLine()) {
+                i++;
                 if (!e.startsWith("#")) {
-                    List<String> statement = parseLine(e);
+                    LOG.debug("Processing triple on line {}: {}", i, e);
+                    List<String> statement;
+                    try {
+                        statement = parseLine(e);
+                    } catch (Exception ex) {
+                        LOG.error("Triple parse error: {}", ex);
+                        LOG.warn("Skipping triple because of error");
+                        continue;
+                    }
                     if (isBnode(statement.get(0))) {
                         if (isBnode(statement.get(2))) {
                             Element entity = new Element(statement.get(1));
@@ -102,7 +116,9 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                     } else {
                         this.getReceiver().startRecord(statement.get(0));
                         this.getReceiver().literal(statement.get(1),
-                                unicodeEscapeSeq ? toutf8(statement.get(2)) : statement.get(2));
+                                (unicodeEscapeSeq && statement.get(2).length() > 0)
+                                        ? toutf8(statement.get(2))
+                                        : statement.get(2));
                         this.getReceiver().endRecord();
                     }
                 }
@@ -127,7 +143,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
      * @param string Statement to be parsed
      * @return List with subject, predicate and object
      */
-    private List<String> parseLine(String string) {
+    private List<String> parseLine(String string) throws MetafactureException {
 
         List<String> statement = new ArrayList<>();
 
