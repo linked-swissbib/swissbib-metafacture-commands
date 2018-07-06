@@ -95,8 +95,8 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                     try {
                         statement = parseLine(e);
                     } catch (Exception ex) {
-                        LOG.error("Triple parse error: {}", ex);
-                        LOG.warn("Skipping triple because of error");
+                        LOG.error("Parse error for triple on line {}: {}", i, ex.getClass().getName());
+                        LOG.warn("Skipping triple on line {} because of error", i);
                         continue;
                     }
                     if (isBnode(statement.get(0))) {
