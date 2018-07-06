@@ -3,16 +3,18 @@ package org.swissbib.linked.mf.decoder;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.metafacture.framework.MetafactureException;
 import org.metafacture.framework.StreamReceiver;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.io.StringReader;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.inOrder;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,7 +33,7 @@ class NtriplesDecoderTest {
     }
 
     @AfterEach
-    void teardown() throws IOException {
+    void teardown() {
         decoder.closeStream();
         stringReader.close();
     }
@@ -45,6 +47,18 @@ class NtriplesDecoderTest {
         decoder.process(stringReader);
         ordered.verify(receiver).startRecord("http://www.w3.org/2001/sw/RDFCore/ntriples/");
         ordered.verify(receiver).literal("http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "http://xmlns.com/foaf/0.1/Document");
+        ordered.verify(receiver).endRecord();
+    }
+
+    @Test
+    void ntripleWithEmptyLiteral() {
+        stringReader = new StringReader(
+                "<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://purl.org/dc/terms/title> \"\" ."
+        );
+        final InOrder ordered = inOrder(receiver);
+        decoder.process(stringReader);
+        ordered.verify(receiver).startRecord("http://www.w3.org/2001/sw/RDFCore/ntriples/");
+        ordered.verify(receiver).literal("http://purl.org/dc/terms/title", "");
         ordered.verify(receiver).endRecord();
     }
 
@@ -82,6 +96,20 @@ class NtriplesDecoderTest {
         ordered.verify(receiver).startRecord("http://www.w3.org/2001/sw/RDFCore/ntriples/");
         ordered.verify(receiver).literal("http://purl.org/dc/terms/title", "\"$çäöÜ");
         ordered.verify(receiver).endRecord();
+    }
+
+    @Disabled("For stability reasons this exception is normally caught in process()")
+    @Test
+    void invalidNtripleShouldThrowMetafactureException() {
+        assertThrows(
+                MetafactureException.class,
+                () -> {
+                    stringReader = new StringReader(
+                            "<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://purl.org/dc/terms/title> ."
+                    );
+                    decoder.process(stringReader);
+                }
+        );
     }
 
     @Test
