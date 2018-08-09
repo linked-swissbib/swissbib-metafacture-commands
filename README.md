@@ -106,7 +106,10 @@ Resources:
 * Implementation: [org.swissbib.linked.mf.decoder.NtriplesDecoder](https://github.com/linked-swissbib/swissbib-metafacture-commands/blob/master/src/main/java/org/swissbib/linked/mf/decoder/NtriplesDecoder.java)
 * In: `java.io.Reader`
 * Out: [org.culturegraph.mf.framework.StreamReceiver](https://github.com/culturegraph/metafacture-core/blob/master/src/main/java/org/culturegraph/mf/framework/StreamReceiver.java)
-* Option: `unicodeEscapeSeq`: "true", "false"
+* Options: 
+    * `unicodeEscapeSeq`: "true", "false"
+    * `keepLanguageTags`: "true", "false". If set to true (the default), the tag is separated from the literal by two `#`.
+    * `keepTypeAnnotations`: "true", "false". If set to true (the default), the annotation is separated from the literal by two `#`.
 
 Example: [linked-swissbib "EnrichedLine"](https://github.com/sschuepbach/metafacture-examples/tree/master/Swissbib-Extensions/Linked-Swissbib-Enrichedline)
 
