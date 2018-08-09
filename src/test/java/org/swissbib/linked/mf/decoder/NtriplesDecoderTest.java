@@ -70,12 +70,38 @@ class NtriplesDecoderTest {
         final InOrder ordered = inOrder(receiver);
         decoder.process(stringReader);
         ordered.verify(receiver).startRecord("http://www.w3.org/2001/sw/RDFCore/ntriples/");
+        ordered.verify(receiver).literal("http://purl.org/dc/terms/title", "N-Triples##@en-US");
+        ordered.verify(receiver).endRecord();
+    }
+
+    @Test
+    void ntripleWithIgnoredLanguageTag() {
+        decoder.setKeepLanguageTags("false");
+        stringReader = new StringReader(
+                "<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://purl.org/dc/terms/title> \"N-Triples\"@en-US ."
+        );
+        final InOrder ordered = inOrder(receiver);
+        decoder.process(stringReader);
+        ordered.verify(receiver).startRecord("http://www.w3.org/2001/sw/RDFCore/ntriples/");
         ordered.verify(receiver).literal("http://purl.org/dc/terms/title", "N-Triples");
         ordered.verify(receiver).endRecord();
     }
 
     @Test
     void ntripleWithTypedLiteral() {
+        stringReader = new StringReader(
+                "<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://purl.org/dc/terms/title> \"2\"^^<http:/www.w3.org/2001/XMLSchema#integer> ."
+        );
+        final InOrder ordered = inOrder(receiver);
+        decoder.process(stringReader);
+        ordered.verify(receiver).startRecord("http://www.w3.org/2001/sw/RDFCore/ntriples/");
+        ordered.verify(receiver).literal("http://purl.org/dc/terms/title", "2##^^<http:/www.w3.org/2001/XMLSchema#integer>");
+        ordered.verify(receiver).endRecord();
+    }
+
+    @Test
+    void ntripleWithIgnoredTypedLiteral() {
+        decoder.setKeepTypeAnnotations("false");
         stringReader = new StringReader(
                 "<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://purl.org/dc/terms/title> \"2\"^^<http:/www.w3.org/2001/XMLSchema#integer> ."
         );

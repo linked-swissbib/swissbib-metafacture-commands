@@ -30,6 +30,8 @@ import java.util.Map;
 public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamReceiver> {
 
     private Boolean unicodeEscapeSeq = true;
+    private Boolean keepLanguageTags = true;
+    private Boolean keepTypeAnnotations = true;
     private static final Logger LOG = LoggerFactory.getLogger(NtriplesDecoder.class);
 
     /**
@@ -76,6 +78,16 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
     @SuppressWarnings("unused")
     public void setUnicodeEscapeSeq(String unicodeEscapeSeq) {
         this.unicodeEscapeSeq = Boolean.valueOf(unicodeEscapeSeq);
+    }
+
+    @SuppressWarnings("unused")
+    public void setKeepLanguageTags(String keepLanguageTags) {
+       this.keepLanguageTags = Boolean.valueOf(keepLanguageTags);
+    }
+
+    @SuppressWarnings("unused")
+    public void setKeepTypeAnnotations(String keepTypeAnnotations) {
+        this.keepTypeAnnotations = Boolean.valueOf(keepTypeAnnotations);
     }
 
     @Override
@@ -154,6 +166,7 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
         final byte INIGNOREDCHAR = 4;
         final byte INDATATYPEURI = 5;
         final byte AFTERSINGLECARET = 6;
+        final byte INLANGUAGETAG = 7;
         byte ctx = NOCTX;
         StringBuilder elem = new StringBuilder();
 
@@ -165,9 +178,12 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
         Predicate endOfBNode = (char character, byte context) -> (character == '.' || character == ' ' || character == '\t') && context == INBNODE;
         Predicate endOfTriple = (char character, byte context) -> character == '.' && context == NOCTX;
         Predicate escapeChar = (char character, byte context) -> character == 0x005c && context == INLITERAL;
+        Predicate languageTag = (char character, byte context) -> character == 0x0040 && context == NOCTX;
+        Predicate endOfLanguageTag = (char character, byte context) -> (character == '.' || character == ' ' || character == '\t') && context == INLANGUAGETAG;
         Predicate possibleDatatypeUri = (char character, byte context) -> character == '^' && context == NOCTX;
+        Predicate noDatatypeUri = (char character, byte context) -> character != '^' && context == AFTERSINGLECARET;
         Predicate datatypeUri = (char character, byte context) -> character == '^' && context == AFTERSINGLECARET;
-        Predicate endOfDatatypeUri = (char character, byte context) -> (character == '.' || character == ' ' || character == '\t') && context == INDATATYPEURI;
+        Predicate endOfDatatypeUri = (char character, byte context) -> character == '>' && context == INDATATYPEURI;
 
         for (char c : string.toCharArray()) {
 
@@ -194,16 +210,36 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                 break;
             } else if (is(escapeChar, c, ctx)) {
                 ctx = INIGNOREDCHAR;
+            } else if (is(languageTag, c, ctx)){
+                ctx = INLANGUAGETAG;
+                elem.append("##");
+                elem.append(c);
             } else if (is(possibleDatatypeUri, c, ctx)) {
                 ctx = AFTERSINGLECARET;
+                elem.append("##");
+                elem.append(c);
+            } else if (is(noDatatypeUri, c, ctx)) {
+                elem.setLength(0);
             } else if (is(datatypeUri, c, ctx)) {
                 ctx = INDATATYPEURI;
+                elem.append(c);
             } else if (ctx == INIGNOREDCHAR) {
                 if (c == '"') elem.append(c);
                 ctx = INLITERAL;
+            } else if (is(endOfLanguageTag, c, ctx)) {
+                ctx = NOCTX;
+                if (keepLanguageTags) {
+                    statement.set(statement.size() -1, statement.get(statement.size() -1 ) + elem.toString());
+                }
+                elem.setLength(0);
             } else if (is(endOfDatatypeUri, c, ctx)) {
                 ctx = NOCTX;
-            } else if (ctx == INURI || ctx == INLITERAL || ctx == INBNODE) {                                                      // Record content
+                elem.append(c);
+                if (keepTypeAnnotations) {
+                    statement.set(statement.size() -1, statement.get(statement.size() -1 ) + elem.toString());
+                }
+                elem.setLength(0);
+            } else if (ctx == INURI || ctx == INLITERAL || ctx == INBNODE || ctx == INLANGUAGETAG || ctx == INDATATYPEURI) {                                                      // Record content
                 elem.append(c);
             }
 
