@@ -57,10 +57,10 @@ public final class JsonObjectReader extends
                             objectType = (buffer[i] == START_OBJECT) ? 1 : 0;
                         }
                         level = level + 1;
-                    } else if (!inString && (buffer[i] == '"' || buffer[i] == '\'')) {
+                    } else if (!inString && buffer[i] == '"') {
                         // Start of a literal string
                         inString = true;
-                    } else if (inString && (lastChars[0] != '\\' || lastChars[1] == '\\')) {
+                    } else if (inString && buffer[i] == '"' && (lastChars[0] != '\\' || lastChars[1] == '\\')) {
                         // End of a literal string
                         inString = false;
                     } else if (!inString && ((objectType == 1 && buffer[i] == END_OBJECT) ||
