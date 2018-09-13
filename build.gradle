@@ -91,9 +91,16 @@ dependencies {
     // integrationTestCompile "org.metafacture:metafacture-xml:${mfVersion}"
     // integrationTestCompile "org.metafacture:metamorph:${mfVersion}"
     // integrationTestCompile "org.assertj:assertj-core:3.10.0"
+    //runtime group: 'org.eclipse.rdf4j', name: 'rdf4j-rio-jsonld', version: '2.3.2'
+    compile group: 'org.eclipse.rdf4j', name: 'rdf4j-rio-jsonld', version: '2.3.2'
+    compile group: 'org.eclipse.rdf4j', name: 'rdf4j-rio-turtle', version: '2.3.2'
+
+
+
 }
 
 shadowJar {
+    mergeServiceFiles()
    /* dependencies {
         exclude(dependency("org.metafacture::"))
         exclude(dependency("org.slf4j:slf4j-api:1.7.21"))
