@@ -12,6 +12,8 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
+        //maven {url "https://jitpack.io"}
+
     }
     dependencies {
         classpath "org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.5"
@@ -32,6 +34,7 @@ ext {
 
 repositories {
     mavenCentral()
+    //maven {url "https://jitpack.io"}
 }
 
 group = "ch.linked-swissbib"
@@ -94,6 +97,8 @@ dependencies {
     //runtime group: 'org.eclipse.rdf4j', name: 'rdf4j-rio-jsonld', version: '2.3.2'
     compile group: 'org.eclipse.rdf4j', name: 'rdf4j-rio-jsonld', version: '2.3.2'
     compile group: 'org.eclipse.rdf4j', name: 'rdf4j-rio-turtle', version: '2.3.2'
+    //compile 'com.github.json-ld.org:json-ld:1.0'
+    compile group: 'com.github.jsonld-java', name: 'jsonld-java', version: '0.8.3'
 
 
 
