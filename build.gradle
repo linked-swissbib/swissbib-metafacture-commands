@@ -70,7 +70,6 @@ dependencies {
     compile "com.google.guava:guava:22.0"
     compile "org.neo4j:neo4j:3.2.1"
     compile "org.apache.solr:solr-solrj:6.6.0"
-    compile "org.apache.kafka:kafka-clients:0.10.2.1"
     compile "org.apache.logging.log4j:log4j-to-slf4j:2.8.2"
     compileOnly "org.metafacture:metafacture-framework:${mfVersion}"
     compileOnly "org.metafacture:metafacture-io:${mfVersion}"
