@@ -113,6 +113,18 @@ class NtriplesDecoderTest {
     }
 
     @Test
+    void ntripleWithLiteralUnicode() {
+        stringReader = new StringReader(
+                "<https://data.swissbib.ch/person/23b9ccfe-e591-3259-b043-0da71d01ce90> <http://www.w3.org/2000/01/rdf-schema#label> \"Moln\u00E1r, P\u00E9ter\"."
+        );
+        final InOrder ordered = inOrder(receiver);
+        decoder.process(stringReader);
+        ordered.verify(receiver).startRecord("https://data.swissbib.ch/person/23b9ccfe-e591-3259-b043-0da71d01ce90");
+        ordered.verify(receiver).literal("http://www.w3.org/2000/01/rdf-schema#label", "Molnár, Péter");
+        ordered.verify(receiver).endRecord();
+    }
+
+    @Test
     void ntripleWithLiteralWithEscapedApostropheAndSpecialChars() {
         stringReader = new StringReader(
                 "<http://www.w3.org/2001/sw/RDFCore/ntriples/> <http://purl.org/dc/terms/title> \"\\\"$çäöÜ\" ."

@@ -225,6 +225,9 @@ public final class NtriplesDecoder extends DefaultObjectPipe<Reader, StreamRecei
                 elem.append(c);
             } else if (ctx == INIGNOREDCHAR) {
                 if (c == '"') elem.append(c);
+                if (c == 'u') {
+                    elem.append("\\u");
+                }
                 ctx = INLITERAL;
             } else if (is(endOfLanguageTag, c, ctx)) {
                 ctx = NOCTX;
