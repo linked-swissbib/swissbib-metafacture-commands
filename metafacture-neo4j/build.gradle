@@ -1,0 +1,8 @@
+description = 'Commands for working with Neo4j'
+
+dependencies {
+    implementation "org.neo4j:neo4j:3.2.1"
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+    implementation "org.metafacture:metafacture-io:${mfVersion}"
+    implementation project(':metafacture-csv')
+}

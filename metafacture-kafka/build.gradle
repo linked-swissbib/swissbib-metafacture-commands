@@ -1,0 +1,8 @@
+description = 'Commands for working with Apache Kafka'
+
+dependencies {
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+    implementation "org.metafacture:metafacture-io:${mfVersion}"
+    implementation project(':metafacture-commons')
+    implementation "org.apache.kafka:kafka-clients:0.10.2.1"
+}

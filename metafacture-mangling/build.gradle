@@ -1,0 +1,5 @@
+description = 'Commands for manipulating the workflow'
+
+dependencies {
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+}

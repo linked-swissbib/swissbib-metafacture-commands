@@ -1,0 +1,8 @@
+description = 'Commands for linked data editing'
+
+dependencies {
+    implementation "com.google.guava:guava:22.0"
+    implementation project(':metafacture-commons')
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+    implementation "org.metafacture:metafacture-io:${mfVersion}"
+}

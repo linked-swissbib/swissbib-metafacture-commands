@@ -1,0 +1,5 @@
+description = 'Commonly used types'
+
+dependencies {
+    api "org.metafacture:metafacture-io:${mfVersion}"
+}

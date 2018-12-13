@@ -1,0 +1,1 @@
+# Extensions to [`metafacture-mangling`](https://github.com/metafacture/metafacture-core/tree/master/metafacture-mangling)

@@ -1,0 +1,5 @@
+description = 'Commands for using Swissbib APIs'
+
+dependencies {
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+}

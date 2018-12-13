@@ -1,0 +1,5 @@
+description = 'JSON decoding tools'
+
+dependencies {
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+}

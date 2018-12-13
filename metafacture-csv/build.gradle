@@ -1,0 +1,7 @@
+description = 'Commands for working with CSV data'
+
+dependencies {
+    implementation 'org.apache.commons:commons-lang3:3.8.1'
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+    implementation "org.metafacture:metafacture-io:${mfVersion}"
+}

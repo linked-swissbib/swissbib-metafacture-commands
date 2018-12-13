@@ -14,91 +14,60 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.5"
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.5'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
     }
 }
 
-plugins {
-    id "com.github.johnrengelman.shadow" version "2.0.4"
-    id "java"
-    id "maven"
-    id "org.unbroken-dome.test-sets" version "1.4.5"
-}
+allprojects {
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'org.unbroken-dome.test-sets'
 
-ext {
-    mfVersion = "5.0.0"
-    scalaVersion = "2.12"
-}
+    group = 'org.swissbib.linked'
+    version = '2.0-alpha1'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-repositories {
-    mavenCentral()
-}
-
-group = "ch.linked-swissbib"
-version = "1.1"
-
-description = """swissbib-metafacture-plugins"""
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
-
-testSets {
-    integrationTest { dirName = "integration-test" }
-}
-
-test {
-    useJUnitPlatform()
-
-    testLogging {
-        events "passed", "skipped", "failed"
+    dependencies {
+        testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+        testCompile 'org.mockito:mockito-junit-jupiter:2.18.3'
+        testCompile 'org.mockito:mockito-core:2.18.3'
+        // testCompile 'com.pholser:junit-quickcheck-core:0.8'
+        testRuntime('org.junit.jupiter:junit-jupiter-engine:5.2.0')
     }
 
-    reports {
-        html.enabled = true
+    test {
+        useJUnitPlatform()
+
+        testLogging {
+            events 'passed', 'skipped', 'failed'
+        }
+
+        reports {
+            html.enabled = true
+        }
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
     }
 }
 
-project.integrationTest {
-    outputs.upToDateWhen { false } // Run integration tests when invoked if input and output are the same
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven'
+
+    dependencies {
+        compile 'org.apache.logging.log4j:log4j-to-slf4j:2.8.2'
+        compileOnly 'org.slf4j:slf4j-api:1.7.25'
+    }
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    ext.mfVersion = '5.0.0'
 }
 
-dependencies {
-    compile "org.elasticsearch.client:transport:5.4.1"
-    compile "com.google.guava:guava:22.0"
-    compile "org.neo4j:neo4j:3.2.1"
-    compile "org.apache.solr:solr-solrj:6.6.0"
-    compile "org.apache.kafka:kafka-clients:0.10.2.1"
-    compile "org.apache.logging.log4j:log4j-to-slf4j:2.8.2"
-    compileOnly "org.metafacture:metafacture-framework:${mfVersion}"
-    compileOnly "org.metafacture:metafacture-io:${mfVersion}"
-    compileOnly "org.metafacture:metafacture-flowcontrol:${mfVersion}"
-    compileOnly "org.metafacture:metafacture-javaintegration:${mfVersion}"
-    compileOnly "org.metafacture:metafacture-commons:${mfVersion}"
-    compileOnly "org.metafacture:metamorph:${mfVersion}"
-    compileOnly "org.slf4j:slf4j-api:1.7.25"
-    testCompile "org.junit.jupiter:junit-jupiter-api:5.2.0"
-    testCompile "org.mockito:mockito-junit-jupiter:2.18.3"
-    testCompile "org.mockito:mockito-core:2.18.3"
-    // testCompile "com.pholser:junit-quickcheck-core:0.8"
-    testCompile "org.metafacture:metafacture-framework:${mfVersion}"
-    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.2.0')
-    // integrationTestCompile "org.metafacture:metafacture-biblio:${mfVersion}"
-    // integrationTestCompile "org.metafacture:metafacture-io:${mfVersion}"
-    // integrationTestCompile "org.metafacture:metafacture-mangling:${mfVersion}"
-    // integrationTestCompile "org.metafacture:metafacture-xml:${mfVersion}"
-    // integrationTestCompile "org.metafacture:metamorph:${mfVersion}"
-    // integrationTestCompile "org.assertj:assertj-core:3.10.0"
-}
-
-shadowJar {
-   /* dependencies {
-        exclude(dependency("org.metafacture::"))
-        exclude(dependency("org.slf4j:slf4j-api:1.7.21"))
-    }*/
-}
-
-check.dependsOn integrationTest
-integrationTest.mustRunAfter test
+description = 'Plugins extending Metafacture core functionalities'

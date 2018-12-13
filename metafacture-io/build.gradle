@@ -1,0 +1,6 @@
+description = 'Commands for working with I/O'
+
+dependencies {
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+    implementation "org.metafacture:metafacture-io:${mfVersion}"
+}

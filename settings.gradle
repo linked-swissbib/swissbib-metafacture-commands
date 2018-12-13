@@ -1,1 +1,13 @@
 rootProject.name = 'swissbibMF-plugins'
+
+include 'metafacture-commons',
+'metafacture-csv',
+'metafacture-elasticsearch',
+'metafacture-io',
+'metafacture-json',
+'metafacture-kafka',
+'metafacture-linkeddata',
+'metafacture-mangling',
+'metafacture-neo4j',
+'metafacture-swissbib',
+'metamorph'

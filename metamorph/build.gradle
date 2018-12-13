@@ -1,0 +1,10 @@
+description = 'Metamorph functions'
+
+dependencies  {
+    implementation "org.apache.solr:solr-solrj:6.6.0"
+    implementation "org.metafacture:metafacture-framework:${mfVersion}"
+    implementation "org.metafacture:metafacture-commons:${mfVersion}"
+    implementation "org.metafacture:metafacture-flowcontrol:${mfVersion}"
+    implementation "org.metafacture:metamorph-api:${mfVersion}"
+    implementation "org.metafacture:metamorph:${mfVersion}"
+}

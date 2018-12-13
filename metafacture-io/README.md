@@ -1,0 +1,1 @@
+# Extensions to [`metafacture-elasticsearch`](https://github.com/metafacture/metafacture-core/tree/master/metafacture-elasticsearch)
