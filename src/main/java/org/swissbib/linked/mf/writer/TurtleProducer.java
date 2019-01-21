@@ -8,6 +8,8 @@ import org.metafacture.framework.annotations.Out;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swissbib.linked.mf.utils.JSONLDParserCachedContext;
+import org.swissbib.linked.mf.writer.helper.SwissbibTurtleWriter;
+
 import java.io.*;
 import java.util.*;
 
@@ -55,7 +57,7 @@ public class TurtleProducer<T> extends CustomWriter<T> {
         this.openOutFile();
 
         Reader r = (Reader) obj;
-        TurtleWriter tw = new TurtleWriter(this.fout);
+        TurtleWriter tw = new SwissbibTurtleWriter(this.fout);
         rdfParser.setRDFHandler(tw);
 
         try {

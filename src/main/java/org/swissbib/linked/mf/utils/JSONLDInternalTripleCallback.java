@@ -76,7 +76,16 @@ class JSONLDInternalTripleCallback implements JsonLdTripleCallback {
     }
 
     private void triple(String s, String p, String o, String graph) {
-        if (s == null || p == null || o == null) {
+
+
+        //throw away ll triples related to lsb predicates because they often contain rubbish
+        //making problems with Tutle serialization
+        //I couldn't filter out all the predicates here in the TripleCallback so I implemented
+        //this filter in SwissbibTurtleWriter a second time because I have to deliver a test set to BAR
+        //both places in conjunction produce valid turtle
+        if (s == null || p == null  || o == null || p.startsWith("lsb") ||
+                p.startsWith("<lsb") || p.contains("Literal")
+                    || s.contains("Literal") || o.contains("Literal")) {
             // TODO: i don't know what to do here!!!!
             return;
         }
